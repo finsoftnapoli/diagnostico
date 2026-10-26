@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Diagnostico d'impresa (nome provvisorio)
 
-## Getting Started
+Servizio web di Finsoft: diagnostico gratuito su 8 ambiti di gestione per aziende da 2 a 100 milioni di fatturato,
+con profilo a radar e tre priorità calcolate con regole dichiarate.
 
-First, run the development server:
+## Stato
+
+Fase 1 in corso. Funziona già:
+
+- pagina iniziale, questionario in cinque sezioni con salvataggio automatico e ripresa;
+- motore di punteggio e priorità, verificato contro il foglio Excel della banca delle domande v0.2;
+- pagina dei risultati con radar, tre priorità e avvisi di possibile sovrastima;
+- schema del database Supabase con regole di accesso, provato in locale.
+
+Da fare nella fase 1: accesso con link via email, salvataggio nel database, area riservata con esportazione CSV,
+informativa iubenda, PostHog.
+
+## Comandi
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install        # installa le dipendenze
+npm run dev        # sito in locale su http://localhost:3000
+npm test           # test del motore di punteggio
+npm run lint       # controllo del codice
+npm run build      # build di produzione
+python3 scripts/genera_domande.py   # rigenera le domande da scripts/content.py
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Struttura
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Percorso | Contenuto |
+|---|---|
+| `src/config/brand.ts` | Nome del servizio e dati di contatto: l'unico punto da cambiare quando il nome sarà deciso |
+| `src/lib/questionnaire.ts` | Banca delle domande (generata, non modificare a mano) |
+| `src/lib/scoring.ts` | Motore di punteggio e priorità, con i parametri da calibrare nel pilota |
+| `src/lib/scoring.test.ts` | Test che confrontano il motore con il foglio di esempio |
+| `src/components/Wizard.tsx` | Questionario |
+| `src/components/ResultsView.tsx` | Pagina dei risultati |
+| `supabase/migrations/` | Schema del database e regole di accesso |
+| `supabase/tests/` | Prove delle regole di accesso su un Postgres locale |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Regole
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Chiavi e password solo nelle variabili d'ambiente (vedi `.env.example`), mai nel codice.
+- Sicurezza a livello di riga attiva su ogni tabella; punteggi e risposte definitive li scrive solo il server.
+- Ogni modifica al motore di punteggio passa da `npm test`.
+- Ogni compilazione registra la versione del questionario.

@@ -7,3 +7,12 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Progetto
+
+- Lingua: interfaccia, testi e commenti in italiano; tono executive, niente gergo.
+- Il nome del servizio è provvisorio: usarlo solo tramite `src/config/brand.ts`.
+- La banca delle domande si modifica in `scripts/content.py` e si rigenera con `python3 scripts/genera_domande.py`.
+- Il motore in `src/lib/scoring.ts` deve sempre riprodurre il foglio Excel: `npm test` prima di ogni commit.
+- Database: ogni nuova tabella ha la sicurezza a livello di riga attiva e una prova in `supabase/tests/rls_test.sql`.
+- Mai chiavi nel codice; variabili d'ambiente elencate in `.env.example`.
