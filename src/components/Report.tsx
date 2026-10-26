@@ -4,7 +4,7 @@ import { ArrowRight, Banknote, CircleCheck, Landmark, Footprints, Gauge, Info, S
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
-import { bandText, MIN_SAMPLE, normativeBenchmark, type Benchmark } from "@/config/benchmark";
+import { bandText, type Benchmark, medianBenchmark, normativeBenchmark, type RealBenchmark } from "@/config/benchmark";
 import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
 import type { Draft } from "@/lib/draft";
 import { financialKpis } from "@/lib/documents";
@@ -16,6 +16,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
 import type { ReportNarrative } from "@/lib/report";
 import InviteColleagues from "./InviteColleagues";
+import PrintButton from "./PrintButton";
+import Progress, { type PreviousResult } from "./Progress";
 import RadarProfile from "./RadarProfile";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
@@ -24,11 +26,14 @@ export default function Report({
   draft,
   narrative,
   sources = [],
+  previous,
 }: {
   draft: Draft;
   narrative?: ReportNarrative | null;
   /** Documenti archiviati di cui il report approfondito ha tenuto conto. */
   sources?: string[];
+  /** Diagnostico precedente della stessa azienda, per mostrare i progressi. */
+  previous?: PreviousResult;
 }) {
   const r = draft.responses;
   const band = r.profile["PR-02"];
@@ -39,15 +44,9 @@ export default function Report({
     if (!band) return;
     fetch(`/api/confronto?fascia=${encodeURIComponent(band)}`)
       .then((x) => (x.ok ? x.json() : null))
-      .then((j: { sample: number; values: Record<AreaCode, number> | null } | null) => {
-        if (j?.values && j.sample >= MIN_SAMPLE)
-          setBench({
-            kind: "mediana",
-            label: `Mediana aziende ${bandText(band)}`,
-            note: `Mediana di ${j.sample} aziende con fatturato ${bandText(band)} che hanno compilato il diagnostico.`,
-            sample: j.sample,
-            values: j.values,
-          });
+      .then((j: RealBenchmark | null) => {
+        const real = medianBenchmark(j);
+        if (real) setBench(real);
       })
       .catch(() => {});
   }, [band]);
@@ -68,7 +67,10 @@ export default function Report({
         {band ? ` · fatturato ${bandText(band)}` : ""}
         {r.profile["PR-01"] ? ` · ${r.profile["PR-01"]}` : ""}
       </p>
-      <h1 className="mt-1 text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
+      <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
+        {narrative && <PrintButton />}
+      </div>
 
       {narrative && <Narrative n={narrative} sources={sources} />}
 
@@ -143,6 +145,10 @@ export default function Report({
           </div>
         </div>
       </section>
+
+      {previous && (
+        <Progress previous={previous} overall={ins.overall} scores={Object.fromEntries(res.areas.map((a) => [a.code, a.score]))} />
+      )}
 
       {/* Numeri del bilancio */}
       {r.financials && <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />}
@@ -341,25 +347,32 @@ export default function Report({
       </section>
 
       {/* Colleghi */}
-      {isSupabaseConfigured() && draft.savedId && !r.context && <InviteColleagues people={r.people ?? []} />}
+      {isSupabaseConfigured() && draft.savedId && !r.context && (
+        <div className="no-print">
+          <InviteColleagues people={r.people ?? []} />
+        </div>
+      )}
 
       {/* Invito */}
-      <section className="mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
+      <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
         <h2 className="text-xl font-semibold">Vuoi trasformare le priorità in un piano?</h2>
         <p className="mt-2 text-white/85 max-w-2xl">
-          In una sessione con un nostro esperto validiamo il {BRAND.reportName}, definiamo il livello da raggiungere su
-          ogni tema e i primi interventi, con tempi e responsabili. Stiamo selezionando le prime aziende per il programma
-          pilota.
+          In un&apos;ora con un nostro consulente senior validiamo il {BRAND.reportName}, definiamo il livello da raggiungere
+          su ogni tema e i primi interventi, con tempi e responsabili.
         </p>
         <a
-          href={`mailto:${BRAND.contactEmail}?subject=${encodeURIComponent(`Programma pilota ${BRAND.reportName}`)}`}
+          href={
+            draft.savedId
+              ? "/area/servizi#consulenza"
+              : `mailto:${BRAND.contactEmail}?subject=${encodeURIComponent(`Consulenza sul ${BRAND.reportName}`)}`
+          }
           className="mt-5 inline-flex items-center gap-2 bg-white text-navy font-semibold px-5 py-2.5 rounded-lg"
         >
-          Partecipa al pilota <ArrowRight className="size-4" aria-hidden />
+          Prenota una consulenza <ArrowRight className="size-4" aria-hidden />
         </a>
       </section>
 
-      <div className="mt-8 flex gap-4 text-sm">
+      <div className="no-print mt-8 flex gap-4 text-sm">
         <Link href="/diagnostico" className="underline text-navy-soft">
           Nuovo diagnostico
         </Link>

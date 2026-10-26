@@ -21,6 +21,37 @@ export const REVENUE_BANDS = [
   "€100M e oltre",
 ] as const;
 
+/**
+ * Macro-fasce per la mediana reale: finché una fascia non ha MIN_SAMPLE aziende, si usa la macro-fascia
+ * che la contiene (se a sua volta ha abbastanza aziende), così il confronto reale arriva prima.
+ */
+export const MACRO_BANDS: { text: string; bands: (typeof REVENUE_BANDS)[number][] }[] = [
+  { text: "fino a €5M", bands: ["Meno di €1M", "€1-2M", "€2-5M"] },
+  { text: "€5-25M", bands: ["€5-10M", "€10-25M"] },
+  { text: "da €25M in su", bands: ["€25-50M", "€50-100M", "€100M e oltre"] },
+];
+export const macroOf = (band: string) => MACRO_BANDS.find((m) => (m.bands as string[]).includes(band)) ?? null;
+
+/** Risposta di /api/confronto. */
+export interface RealBenchmark {
+  sample: number;
+  values: Record<AreaCode, number> | null;
+  /** Segmento a cui si riferisce la mediana, in forma leggibile ("€5-10M" o "€5-25M"). */
+  scopeText?: string;
+}
+
+/** Mediana reale da usare nel report, oppure null se il campione non basta. */
+export function medianBenchmark(j: RealBenchmark | null): Benchmark | null {
+  if (!j?.values || j.sample < MIN_SAMPLE || !j.scopeText) return null;
+  return {
+    kind: "mediana",
+    label: `Mediana aziende ${j.scopeText}`,
+    note: `Mediana di ${j.sample} aziende con fatturato ${j.scopeText} che hanno compilato il diagnostico.`,
+    sample: j.sample,
+    values: j.values,
+  };
+}
+
 // Una colonna per fascia, nello stesso ordine di REVENUE_BANDS.
 const REF: Record<AreaCode, number[]> = {
   STR: [30, 35, 40, 45, 55, 60, 67, 72],

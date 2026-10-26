@@ -3,11 +3,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import InterestList from "@/components/InterestList";
-import { listAssessments, listInterests, priorities } from "@/lib/admin";
+import { listAssessments, listInterests, listToReview, priorities } from "@/lib/admin";
 import { AREAS } from "@/lib/questionnaire";
 import { currentUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Area riservata" };
+
+const REPORT_STATE: Record<string, string> = { pending: "in coda", review: "da rivedere", ready: "inviato", failed: "non riuscito" };
 
 export default function AdminPage() {
   return (
@@ -23,9 +25,33 @@ async function AdminList() {
   const { user, isStaff } = await currentUser();
   if (!user) redirect("/accedi?next=/admin");
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
-  const [rows, interests] = await Promise.all([listAssessments(), listInterests()]);
+  const [rows, interests, toReview] = await Promise.all([listAssessments(), listInterests(), listToReview()]);
   return (
     <>
+      <nav className="mb-8 flex flex-wrap gap-4 text-sm">
+        <Link href="/admin/agenda" className="underline text-navy-soft">Agenda consulenze</Link>
+        <Link href="/admin/ordini" className="underline text-navy-soft">Ordini e fatture</Link>
+      </nav>
+      <section className="mb-12">
+        <h2 className="text-xl font-semibold text-navy">Report da rivedere ({toReview.length})</h2>
+        {toReview.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">Nessun report in attesa.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-line border-y border-line text-sm">
+            {toReview.map((t) => (
+              <li key={t.href} className="py-2 flex flex-wrap justify-between gap-3">
+                <span>
+                  <strong>{t.company}</strong> · {t.what}
+                  <span className="text-muted"> · completato il {new Date(t.date).toLocaleDateString("it-IT")}</span>
+                </span>
+                <Link href={t.href} className="underline text-navy-soft">
+                  Rivedi e approva
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
       <InterestList rows={interests} areaNames={Object.fromEntries(AREAS.map((a) => [a.code, a.name]))} />
       <div className="mt-12 flex flex-wrap items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold text-navy">Compilazioni ({rows.length})</h1>
@@ -42,7 +68,8 @@ async function AdminList() {
               <th className="py-2 pr-4 font-medium">Email</th>
               <th className="py-2 pr-4 font-medium">Fatturato</th>
               <th className="py-2 pr-4 font-medium">Media</th>
-              <th className="py-2 font-medium">Priorità</th>
+              <th className="py-2 pr-4 font-medium">Priorità</th>
+              <th className="py-2 font-medium">Report</th>
             </tr>
           </thead>
           <tbody>
@@ -57,7 +84,8 @@ async function AdminList() {
                 <td className="py-2 pr-4">{r.respondent_email}</td>
                 <td className="py-2 pr-4">{r.profile?.["PR-02"] ?? ""}</td>
                 <td className="py-2 pr-4 tabular-nums">{r.overall_score}</td>
-                <td className="py-2">{priorities(r).join(" · ")}</td>
+                <td className="py-2 pr-4">{priorities(r).join(" · ")}</td>
+                <td className="py-2 whitespace-nowrap">{REPORT_STATE[r.report_status] ?? r.report_status}</td>
               </tr>
             ))}
           </tbody>

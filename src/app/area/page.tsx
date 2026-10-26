@@ -110,6 +110,19 @@ async function AreaContent() {
         </p>
       </div>
 
+      {memberOf.length > 0 && (
+        <Link
+          href="/area/servizi"
+          className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-navy bg-navy/5 p-4 hover:bg-navy/10"
+        >
+          <span>
+            <strong className="text-navy">Approfondimenti e consulenze</strong>
+            <span className="block text-sm text-muted">Moduli per ambito, prenotazione della consulenza, dati di fatturazione e acquisti.</span>
+          </span>
+          <span className="text-sm font-semibold text-navy">I tuoi servizi →</span>
+        </Link>
+      )}
+
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-navy">I tuoi {BRAND.reportName}</h2>
         {mine?.length ? (

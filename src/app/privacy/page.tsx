@@ -98,6 +98,10 @@ export default function Privacy() {
                 b="Misure precontrattuali su tua richiesta (art. 6.1.b)."
               />
               <Row
+                a="Gestire gli acquisti dei servizi a pagamento: dati di fatturazione dell'azienda, pagamento, fattura elettronica, attivazione dei moduli di approfondimento e prenotazione delle consulenze."
+                b="Esecuzione del contratto (art. 6.1.b) e obblighi fiscali (art. 6.1.c)."
+              />
+              <Row
                 a="Elaborare statistiche, confronti tra aziende e ricerche sulla gestione delle imprese, anche sui dati di bilancio estratti dai documenti caricati, sempre in forma aggregata e anonima: nessun dato della tua azienda è mostrato ad altri, e un confronto è pubblicato solo se riguarda un numero minimo di aziende."
                 b="Legittimo interesse del titolare a migliorare il servizio e a svolgere ricerca (art. 6.1.f), bilanciato dall'uso esclusivo di dati aggregati. Puoi opporti in qualsiasi momento scrivendo all'indirizzo indicato al punto 1. È una condizione del servizio, indicata al momento dell'accesso."
               />
@@ -150,6 +154,8 @@ export default function Privacy() {
           <li>Vercel: hosting del sito, con elaborazione nell&apos;Unione europea (Francoforte);</li>
           <li>Anthropic: lettura dei documenti e testi del report;</li>
           <li>Resend: invio delle email del servizio;</li>
+          <li>Stripe: pagamenti online (i dati della carta sono trattati solo da Stripe e non arrivano a noi);</li>
+          <li>Aruba: emissione e trasmissione delle fatture elettroniche al Sistema di Interscambio;</li>
           <li>Cloudflare: verifica di sicurezza contro gli accessi automatici;</li>
           <li>Google (Workspace): gestione della corrispondenza con te.</li>
         </ul>
@@ -172,6 +178,7 @@ export default function Privacy() {
             Dati di bilancio estratti: riguardano l&apos;azienda e sono conservati per statistiche e confronti aggregati;
             per le ditte individuali, in cui riguardano una persona, sono resi anonimi dopo 24 mesi.
           </li>
+          <li>Ordini, dati di fatturazione e fatture: 10 anni, come richiesto dalla normativa fiscale e civilistica.</li>
           <li>Inviti ai colleghi non accettati: 14 giorni, poi scadono; i dati dell&apos;invito sono eliminati dopo 6 mesi. [Da confermare.]</li>
           <li>Bozze del questionario salvate per riprendere più tardi: 30 giorni.</li>
           <li>

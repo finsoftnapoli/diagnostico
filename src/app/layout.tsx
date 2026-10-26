@@ -30,12 +30,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <span>
               Un servizio di {BRAND.owner}. Autovalutazione orientativa: non è una consulenza né un rating.
             </span>
-            <span className="flex gap-4">
+            <span className="flex flex-wrap gap-x-4 gap-y-1">
               <Link href="/area" className="hover:underline">
                 Area personale
               </Link>
               <Link href="/privacy" className="hover:underline">
                 Informativa privacy
+              </Link>
+              <Link href="/termini" className="hover:underline">
+                Condizioni di vendita
               </Link>
               <a href={`mailto:${BRAND.contactEmail}`} className="hover:underline">
                 Contatti

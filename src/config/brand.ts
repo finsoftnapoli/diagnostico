@@ -14,4 +14,6 @@ export const BRAND = {
   questionnaireVersion: "0.4",
   /** Versione dell'informativa: registrata con ogni consenso. Cambiarla a ogni modifica sostanziale. */
   privacyVersion: "bozza-2026-10-26",
+  /** Versione delle condizioni di vendita: registrata con ogni ordine. */
+  termsVersion: "bozza-2026-10-26",
 } as const;

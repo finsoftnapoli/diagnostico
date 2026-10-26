@@ -142,6 +142,72 @@ do $$ begin
   assert (select count(*) from public.documents_to_purge()) = 1, 'solo il documento orfano da 40 giorni va eliminato';
 end $$;
 
+-- Acquisti: ordini, moduli e prenotazioni visibili solo al titolare e allo staff; nessuna scrittura dal browser
+reset role;
+select set_config('test.alfa', (select id::text from public.companies where name = 'Alfa Meccanica'), false);
+insert into public.orders (id, user_id, company_id, items, net_cents, vat_cents, total_cents, billing)
+  values ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-00000000000a', current_setting('test.alfa')::uuid,
+          '[{"sku":"modulo","area":"FIN"}]', 10000, 2200, 12200, '{}');
+insert into public.entitlements (company_id, user_id, order_id, kind, area)
+  values (current_setting('test.alfa')::uuid, '00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-0000000000d1', 'area_module', 'FIN');
+insert into public.entitlements (id, company_id, user_id, kind, quantity)
+  values ('00000000-0000-0000-0000-0000000000f1', current_setting('test.alfa')::uuid, '00000000-0000-0000-0000-00000000000a', 'consult_hours', 2);
+do $$ begin
+  assert public.use_credit('00000000-0000-0000-0000-0000000000f1', 1) and public.use_credit('00000000-0000-0000-0000-0000000000f1', 1), 'due ore usate';
+  assert not public.use_credit('00000000-0000-0000-0000-0000000000f1', 1), 'non oltre le ore acquistate';
+  assert public.use_credit('00000000-0000-0000-0000-0000000000f1', -1), 'ora restituita';
+end $$;
+insert into public.expert_slots (id, starts_at) values
+  ('00000000-0000-0000-0000-0000000000e1', now() + interval '3 days'),
+  ('00000000-0000-0000-0000-0000000000e2', now() + interval '2 hours');
+do $$ begin
+  assert public.claim_slot('00000000-0000-0000-0000-0000000000e1', 'held', 30), 'slot libero bloccato';
+  assert not public.claim_slot('00000000-0000-0000-0000-0000000000e1', 'booked', 0), 'slot già bloccato non si riprende';
+  assert not public.claim_slot('00000000-0000-0000-0000-0000000000e2', 'held', 30), 'slot troppo vicino non prenotabile';
+  assert public.claim_slot('00000000-0000-0000-0000-0000000000e1', 'booked', 0, (select id from public.orders limit 1)) = false, 'altro ordine non lo prende';
+  update public.expert_slots set held_by_order = '00000000-0000-0000-0000-0000000000d1' where id = '00000000-0000-0000-0000-0000000000e1';
+  assert public.claim_slot('00000000-0000-0000-0000-0000000000e1', 'booked', 0, '00000000-0000-0000-0000-0000000000d1'), 'lo stesso ordine conferma lo slot';
+  assert public.next_invoice_seq(2026) = 1 and public.next_invoice_seq(2026) = 2 and public.next_invoice_seq(2027) = 1, 'numerazione fatture';
+end $$;
+do $$ begin
+  insert into public.entitlements (company_id, user_id, kind) values (current_setting('test.alfa')::uuid, '00000000-0000-0000-0000-00000000000a', 'area_module');
+  raise exception 'non doveva riuscire';
+exception when check_violation then null;
+end $$;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+do $$ begin
+  assert (select count(*) from public.orders) = 1, 'il titolare vede il proprio ordine';
+  assert (select count(*) from public.entitlements) = 2, 'il titolare vede moduli e ore';
+  assert (select count(*) from public.expert_slots) = 2, 'gli orari futuri sono visibili';
+end $$;
+do $$ begin
+  perform meeting_url from public.expert_slots;
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+do $$ begin
+  update public.orders set status = 'paid';
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+do $$ begin
+  perform public.next_invoice_seq(2026);
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+do $$ begin
+  perform 1 from public.invoice_counters;
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000c';
+do $$ begin
+  assert (select count(*) from public.orders) = 0, 'Beta non vede gli ordini di Alfa';
+  assert (select count(*) from public.entitlements) = 0, 'Beta non vede i moduli di Alfa';
+end $$;
+reset role;
+
 -- Un utente anonimo non vede nulla
 reset role;
 set role anon;

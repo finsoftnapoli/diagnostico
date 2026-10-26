@@ -10,5 +10,7 @@ export async function GET(request: NextRequest) {
   if (!auth.user) return NextResponse.json({ status: "none" });
   // la regola di accesso restituisce la compilazione solo a chi ha diritto di vederla
   const { data } = await sb.from("assessments").select("report_status").eq("id", id).maybeSingle();
-  return NextResponse.json({ status: (data?.report_status as string) ?? "none" });
+  // per il cliente un report in revisione è ancora "in elaborazione"
+  const status = (data?.report_status as string) ?? "none";
+  return NextResponse.json({ status: status === "review" ? "pending" : status });
 }

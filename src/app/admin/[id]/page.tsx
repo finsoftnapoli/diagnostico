@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import NarrativeEditor from "@/components/NarrativeEditor";
 import { getAssessment, priorities, scoreOf } from "@/lib/admin";
+import { DIAGNOSTIC_SPEC } from "@/lib/narrative-spec";
 import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "@/lib/questionnaire";
 import { currentUser } from "@/lib/supabase/server";
 
@@ -32,6 +34,14 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
       <p className="text-muted text-sm">
         {r.respondent_email} · {new Date(r.completed_at).toLocaleString("it-IT")} · provenienza {r.source}
       </p>
+
+      <NarrativeEditor
+        endpoint={`/api/admin/report/diagnostico/${r.id}`}
+        spec={DIAGNOSTIC_SPEC}
+        initial={r.report_narrative ?? null}
+        status={r.report_status}
+        labels={Object.fromEntries(AREAS.map((a) => [a.code, a.name]))}
+      />
 
       <h2 className="mt-8 font-semibold text-navy">Profilo</h2>
       <dl className="mt-2 grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">

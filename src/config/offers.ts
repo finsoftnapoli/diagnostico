@@ -1,28 +1,83 @@
-// Offerte a pagamento presentate nel report. Prezzi IVA esclusa, da confermare.
-// La vendita vera (Stripe) arriva nella fase pagamenti; per ora l'utente manifesta interesse
-// e viene ricontattato. I prezzi stanno qui per cambiarli in un punto solo.
+// Catalogo dei servizi a pagamento: unico punto in cui cambiare prezzi e descrizioni.
+// Prezzi in euro IVA esclusa; l'IVA si aggiunge al momento dell'acquisto.
 
-export const DEEP_DIVE = {
-  /** Approfondimento di dettaglio su un singolo ambito. */
-  priceEach: 149,
-  /** Pacchetto con tutti gli ambiti prioritari. */
-  pricePriorities: 390,
-  bullets: [
-    "Questionario di dettaglio sull'ambito, oltre le 3 domande del diagnostico gratuito",
-    "Analisi delle pratiche rispetto alle aziende migliori della tua fascia",
-    "Raccomandazioni operative con livello da raggiungere, tempi e indicatori",
-  ],
-} as const;
+export const VAT_RATE = 22;
 
-export const EXPERT = {
-  /** Sessione di restituzione con un consulente. */
-  price: 250,
-  durationMin: 90,
-  bullets: [
-    "Lettura del tuo Ottogramma con un consulente esperto",
-    "Validazione delle priorità e delle prime azioni, con tempi e responsabili",
-    "Risposte alle tue domande sul percorso di miglioramento",
-  ],
-} as const;
+export type Sku = "modulo" | "consulenza" | "bundle";
 
-export const euro = (v: number) => `€${v.toLocaleString("it-IT")}`;
+export interface Product {
+  sku: Sku;
+  name: string;
+  /** Prezzo unitario IVA esclusa, in euro. */
+  price: number;
+  /** Descrizione in fattura. */
+  invoiceText: string;
+  bullets: string[];
+}
+
+export const PRODUCTS: Record<Sku, Product> = {
+  modulo: {
+    sku: "modulo",
+    name: "Approfondimento per ambito",
+    price: 100,
+    invoiceText: "Modulo di approfondimento diagnostico",
+    bullets: [
+      "Questionario di dettaglio sull'ambito, tema per tema",
+      "Punteggio per ciascun tema e confronto con il diagnostico",
+      "Report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire, rivisto dai nostri esperti",
+    ],
+  },
+  consulenza: {
+    sku: "consulenza",
+    name: "Consulenza senior da remoto",
+    price: 200,
+    invoiceText: "Consulenza direzionale da remoto (1 ora)",
+    bullets: [
+      "Un'ora in videochiamata con un consulente senior",
+      "Lettura del tuo Ottogramma e validazione delle priorità",
+      "Prime azioni con tempi e responsabili; scegli tu data e ora",
+    ],
+  },
+  bundle: {
+    sku: "bundle",
+    name: "Percorso completo",
+    price: 500,
+    invoiceText: "Percorso diagnostico completo: 8 moduli di approfondimento e 2 ore di consulenza",
+    bullets: [
+      "Tutti gli 8 approfondimenti per ambito",
+      "2 ore di consulenza senior da remoto, anche in due sessioni",
+      "Risparmi €700 rispetto ai singoli servizi acquistati separatamente",
+    ],
+  },
+};
+
+/** Ore di consulenza incluse nel percorso completo. */
+export const BUNDLE_HOURS = 2;
+/** Durata di una sessione di consulenza prenotabile. */
+export const SESSION_MIN = 60;
+
+export const euro = (v: number) => `€${v.toLocaleString("it-IT", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 })}`;
+export const withVat = (net: number) => Math.round(net * (100 + VAT_RATE)) / 100;
+
+export interface CartLine {
+  sku: Sku;
+  area?: string;
+}
+
+export interface PricedLine extends CartLine {
+  description: string;
+  netCents: number;
+  topic?: string;
+}
+
+/** Righe con prezzo e totali, calcolati sempre dal server. */
+export function priceCart(lines: CartLine[], areaName: (code: string) => string) {
+  const priced: PricedLine[] = lines.map((l) => ({
+    ...l,
+    description: l.sku === "modulo" && l.area ? `${PRODUCTS.modulo.invoiceText}: ${areaName(l.area)}` : PRODUCTS[l.sku].invoiceText,
+    netCents: PRODUCTS[l.sku].price * 100,
+  }));
+  const net = priced.reduce((s, l) => s + l.netCents, 0);
+  const vat = Math.round((net * VAT_RATE) / 100);
+  return { lines: priced, netCents: net, vatCents: vat, totalCents: net + vat };
+}

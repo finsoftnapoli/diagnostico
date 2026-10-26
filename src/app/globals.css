@@ -32,3 +32,36 @@ body {
   outline: 2px solid var(--navy-soft);
   outline-offset: 2px;
 }
+
+/* Stampa e PDF dei report: solo il contenuto, colori conservati, niente elementi interattivi. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    font-size: 10.5pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  main > div {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  li,
+  .print-keep {
+    break-inside: avoid;
+  }
+  a {
+    text-decoration: none;
+  }
+}

@@ -4,7 +4,7 @@ import { ArrowRight, Clock3, Gauge, Info, Scale, TrendingDown, TrendingUp } from
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
-import { bandText, MIN_SAMPLE, normativeBenchmark, type Benchmark } from "@/config/benchmark";
+import { bandText, type Benchmark, medianBenchmark, normativeBenchmark, type RealBenchmark } from "@/config/benchmark";
 import type { Draft } from "@/lib/draft";
 import { LEVEL_NAMES, buildInsights } from "@/lib/insights";
 import { AREAS } from "@/lib/questionnaire";
@@ -12,6 +12,7 @@ import { computeResult } from "@/lib/scoring";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode } from "@/lib/types";
 import Offers from "./Offers";
+import Progress, { type PreviousResult } from "./Progress";
 import InviteColleagues from "./InviteColleagues";
 import RadarProfile from "./RadarProfile";
 
@@ -22,10 +23,13 @@ export default function Ottogramma({
   draft,
   reportStatus = "none",
   reportHref,
+  previous,
 }: {
   draft: Draft;
   reportStatus?: "none" | "pending" | "ready" | "failed";
   reportHref?: string;
+  /** Diagnostico precedente della stessa azienda, per mostrare i progressi. */
+  previous?: PreviousResult;
 }) {
   const r = draft.responses;
   const band = r.profile["PR-02"];
@@ -35,15 +39,9 @@ export default function Ottogramma({
     if (!band) return;
     fetch(`/api/confronto?fascia=${encodeURIComponent(band)}`)
       .then((x) => (x.ok ? x.json() : null))
-      .then((j: { sample: number; values: Record<AreaCode, number> | null } | null) => {
-        if (j?.values && j.sample >= MIN_SAMPLE)
-          setBench({
-            kind: "mediana",
-            label: `Mediana aziende ${bandText(band)}`,
-            note: `Mediana di ${j.sample} aziende con fatturato ${bandText(band)} che hanno compilato il diagnostico.`,
-            sample: j.sample,
-            values: j.values,
-          });
+      .then((j: RealBenchmark | null) => {
+        const real = medianBenchmark(j);
+        if (real) setBench(real);
       })
       .catch(() => {});
   }, [band]);
@@ -121,6 +119,10 @@ export default function Ottogramma({
           </div>
         </div>
       </section>
+
+      {previous && (
+        <Progress previous={previous} overall={ins.overall} scores={Object.fromEntries(res.areas.map((a) => [a.code, a.score]))} />
+      )}
 
       <Offers assessmentId={draft.savedId} priorities={priorities} />
 
