@@ -2,6 +2,10 @@
 import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "./questionnaire";
 import { emptyResponses } from "./scoring";
 import type { AreaCode, Responses } from "./types";
+import { isValidItalianVat, normalizeVat } from "./vat";
+
+/** Lunghezza minima dei testi su ambizioni e sfide (uguale a quella del questionario). */
+export const MIN_TEXT = 40;
 
 const AREA_CODES = new Set<string>(AREAS.map((a) => a.code));
 const str = (v: unknown, max = 600) => (typeof v === "string" ? v.slice(0, max).trim() : "");
@@ -15,15 +19,16 @@ export function sanitizeResponses(input: unknown): Responses {
   const out = emptyResponses();
   const profile = (r.profile ?? {}) as Record<string, unknown>;
   for (const f of PROFILE_FIELDS) {
-    const v = str(profile[f.id], 120);
+    let v = str(profile[f.id], 160);
+    if (f.id === "PR-10") v = normalizeVat(v);
     if (!v) continue;
     if (f.type === "select" && !f.options?.includes(v)) continue;
     out.profile[f.id] = v;
   }
   out.objectives = codes(r.objectives, new Set(OBJECTIVES.map((o) => o.code)));
   out.issues = codes(r.issues, new Set(ISSUES.map((o) => o.code)));
-  out.objectivesText = str(r.objectivesText);
-  out.issuesText = str(r.issuesText);
+  out.objectivesText = str(r.objectivesText, 1200);
+  out.issuesText = str(r.issuesText, 1200);
   out.objectivesTextAreas = areas(r.objectivesTextAreas);
   out.issuesTextAreas = areas(r.issuesTextAreas);
   out.textAreas = Array.from(new Set([...out.objectivesTextAreas, ...out.issuesTextAreas]));
@@ -49,8 +54,9 @@ export function sanitizeResponses(input: unknown): Responses {
 export function incompleteReason(r: Responses): string | null {
   if (!r.consents.service) return "manca il consenso al servizio";
   if (PROFILE_FIELDS.some((f) => f.required && !r.profile[f.id])) return "profilo incompleto";
-  if (!r.objectives.length || !r.issues.length) return "obiettivi o criticità mancanti";
+  if (!isValidItalianVat(r.profile["PR-10"] ?? "")) return "partita IVA non valida";
+  if (!r.objectives.length || !r.issues.length) return "obiettivi o sfide mancanti";
+  if (r.objectivesText.length < MIN_TEXT || r.issuesText.length < MIN_TEXT) return "descrizioni di ambizioni e sfide troppo brevi";
   if (QUESTIONS.some((q) => !r.levels[q.id])) return "domande senza risposta";
-  if (AREAS.some((a) => !r.importance[a.code])) return "importanza mancante";
   return null;
 }

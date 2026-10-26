@@ -15,7 +15,7 @@ export interface Draft {
   /** Id della compilazione salvata nel database. */
   savedId?: string;
   /** Dati inseriti prima di confermare l'email, per completare il salvataggio dopo il link. */
-  pending?: { email: string; company: string };
+  pending?: { email: string; draftId?: string };
 }
 
 export function loadDraft(): Draft | null {

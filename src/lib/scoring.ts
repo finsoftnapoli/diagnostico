@@ -1,5 +1,10 @@
 // Motore di punteggio e priorità. Replica le regole del foglio "Esempio_priorita"
-// della banca delle domande v0.2. Ogni modifica va verificata con `npm test`.
+// della banca delle domande v0.3. Ogni modifica va verificata con `npm test`.
+//
+// Dalla v0.3 l'importanza degli ambiti non si chiede più: la rilevanza di ogni ambito
+// si ricava dal legame con obiettivi, criticità e testi liberi.
+// Indice di priorità = (100 − punteggio) × rilevanza
+// Rilevanza = 1 + bonus obiettivi × indice obiettivi + bonus criticità × indice criticità + bonus testo × richiamo nel testo
 import { AREAS, ISSUES, OBJECTIVES, QUESTIONS } from "./questionnaire";
 import type { AreaCode, Choice, Responses } from "./types";
 
@@ -7,15 +12,13 @@ import type { AreaCode, Choice, Responses } from "./types";
 export const PARAMS = {
   /** Punti per livello 1-4. */
   levelPoints: [0, 33, 67, 100],
-  /** Peso dell'importanza dichiarata (1 = poco rilevante, 2 = rilevante, 3 = decisiva). */
-  importanceWeights: [1, 2, 3],
   /** Peso della posizione per obiettivi e criticità (1°, 2°, 3°). */
   rankWeights: [1, 0.67, 0.33],
   /** Legame dell'ambito con un obiettivo o una criticità. */
   primaryLink: 1,
   secondaryLink: 0.5,
-  bonusObjectives: 1.0,
-  bonusIssues: 1.0,
+  bonusObjectives: 1.5,
+  bonusIssues: 1.5,
   bonusText: 0.25,
   priorities: 3,
 } as const;
@@ -25,7 +28,8 @@ export interface AreaResult {
   name: string;
   score: number | null; // 0-100, null se nessuna risposta
   answered: number;
-  importance: number;
+  /** Rilevanza ricavata da obiettivi, criticità e testi (da 1 a 4,25). */
+  relevance: number;
   objectivesIndex: number; // 0-1
   issuesIndex: number; // 0-1
   fromText: boolean;
@@ -82,27 +86,23 @@ export function computeResult(r: Responses): Result {
       .filter((l): l is number => typeof l === "number" && l >= 1 && l <= 4)
       .map((l): number => PARAMS.levelPoints[l - 1]);
     const score = pts.length ? round(pts.reduce((x, y) => x + y, 0) / pts.length) : null;
-    const importance = r.importance[a.code] ?? 2;
     const objectivesIndex = linkIndex(r.objectives, OBJECTIVES, a.code);
     const issuesIndex = linkIndex(r.issues, ISSUES, a.code);
     const fromText = r.textAreas.includes(a.code);
-    const priorityIndex =
-      score === null
-        ? 0
-        : round(
-            (100 - score) *
-              PARAMS.importanceWeights[importance - 1] *
-              (1 +
-                PARAMS.bonusObjectives * objectivesIndex +
-                PARAMS.bonusIssues * issuesIndex +
-                PARAMS.bonusText * (fromText ? 1 : 0)),
-          );
+    const relevance = round(
+      1 +
+        PARAMS.bonusObjectives * objectivesIndex +
+        PARAMS.bonusIssues * issuesIndex +
+        PARAMS.bonusText * (fromText ? 1 : 0),
+      3,
+    );
+    const priorityIndex = score === null ? 0 : round((100 - score) * relevance);
     return {
       code: a.code,
       name: a.name,
       score,
       answered: pts.length,
-      importance,
+      relevance,
       objectivesIndex,
       issuesIndex,
       fromText,
@@ -145,12 +145,17 @@ export function computeResult(r: Responses): Result {
   return { areas: rows, priorities: order.filter((x) => x.isPriority), flags, overall };
 }
 
-const IMPORTANCE_LABEL = ["poco rilevante", "rilevante", "decisivo"];
+/** Etichetta della rilevanza per i vostri obiettivi. */
+export function relevanceLabel(rel: number): "alta" | "media" | "bassa" {
+  if (rel >= 2) return "alta";
+  if (rel > 1) return "media";
+  return "bassa";
+}
 
 function reasonsFor(row: AreaResult, r: Responses): string[] {
   const out: string[] = [];
   if (row.score !== null) out.push(`Punteggio ${row.score} su 100`);
-  out.push(`Indicato come ${IMPORTANCE_LABEL[row.importance - 1]} per i vostri obiettivi`);
+  out.push(`Rilevanza ${relevanceLabel(row.relevance)} rispetto a obiettivi e criticità indicati`);
   const ob = r.objectives
     .map((c) => OBJECTIVES.find((o) => o.code === c))
     .filter((o): o is Choice => !!o && link(o, row.code) > 0)

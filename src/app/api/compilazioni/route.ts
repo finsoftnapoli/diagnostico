@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const user = auth.user;
   if (!user) return NextResponse.json({ error: "Accesso richiesto" }, { status: 401 });
 
-  let body: { responses?: unknown; companyName?: unknown; source?: unknown };
+  let body: { responses?: unknown; source?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -23,7 +23,8 @@ export async function POST(request: Request) {
   const responses = sanitizeResponses(body.responses);
   const missing = incompleteReason(responses);
   if (missing) return NextResponse.json({ error: `Questionario incompleto: ${missing}` }, { status: 422 });
-  const companyName = typeof body.companyName === "string" ? body.companyName.trim().slice(0, 160) : "";
+  const companyName = responses.profile["PR-11"] ?? "";
+  const vatNumber = responses.profile["PR-10"] ?? null;
   if (!companyName) return NextResponse.json({ error: "Indica il nome dell'azienda" }, { status: 422 });
   const source = typeof body.source === "string" && body.source ? body.source.slice(0, 60) : "diretto";
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
   if (!companyId) {
     const { data: company, error } = await db
       .from("companies")
-      .insert({ name: companyName, source, created_by: user.id })
+      .insert({ name: companyName, vat_number: vatNumber, source, created_by: user.id })
       .select("id")
       .single();
     if (error) return fail("azienda", error);
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
       assessment_id: assessmentId,
       area: a.code,
       score: a.score,
-      importance: a.importance,
+      relevance: a.relevance,
       objectives_index: a.objectivesIndex,
       issues_index: a.issuesIndex,
       from_text: a.fromText,

@@ -8,7 +8,9 @@ con profilo a radar e tre priorità calcolate con regole dichiarate.
 Fase 1 in corso. Funziona già:
 
 - pagina iniziale, questionario in cinque sezioni con salvataggio automatico e ripresa;
-- motore di punteggio e priorità, verificato contro il foglio Excel della banca delle domande v0.2;
+- motore di punteggio e priorità, verificato contro il foglio Excel della banca delle domande v0.3 (rilevanza ricavata da obiettivi, criticità e testi);
+- report con indicatori, confronto con il riferimento di fascia (`src/config/benchmark.ts`), prontezza per le ambizioni, cause delle sfide e prossimi passi (`src/lib/insights.ts`);
+- salvataggio della bozza e ripresa via email (`/api/bozze`), verifica della partita IVA (`/api/piva`);
 - pagina dei risultati con radar, tre priorità e avvisi di possibile sovrastima;
 - schema del database Supabase con regole di accesso, provato in locale;
 - conferma dell'email con codice prima dei risultati e salvataggio nel database (`/api/compilazioni`);

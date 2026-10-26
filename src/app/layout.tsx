@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import HeaderAction from "@/components/HeaderAction";
 import { BRAND } from "@/config/brand";
 import "./globals.css";
 
@@ -17,9 +19,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/" className="font-semibold tracking-tight text-navy">
               {BRAND.name}
             </Link>
-            <Link href="/diagnostico" className="text-sm text-navy-soft hover:underline">
-              Inizia il diagnostico
-            </Link>
+            <Suspense fallback={null}>
+              <HeaderAction />
+            </Suspense>
           </div>
         </header>
         <main className="flex-1">{children}</main>

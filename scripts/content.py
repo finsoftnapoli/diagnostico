@@ -1,4 +1,4 @@
-# Contenuti del diagnostico gratuito v0.1 (testi originali)
+# Contenuti del diagnostico gratuito v0.3 (testi originali)
 
 AMBITI = [
     ("STR", "Strategia e governance",
@@ -282,6 +282,8 @@ CRITICITA = [
 ]
 
 PROFILAZIONE = [
+    ("PR-10", "Partita IVA", "Testo", "", "Verifica dell'azienda e collegamento ai dati pubblici e ai bilanci", "Sì"),
+    ("PR-11", "Ragione sociale", "Testo", "", "Identificazione dell'azienda e arricchimento con dati pubblici", "Sì"),
     ("PR-01", "Settore di attività", "Elenco", "Macrosettore e codice ATECO a 2 cifre", "Segmentazione del benchmark", "Sì"),
     ("PR-02", "Fatturato dell'ultimo esercizio", "Scelta singola", "€2-5M / €5-10M / €10-25M / €25-50M / €50-100M / Fuori da queste fasce", "Benchmark e adattamento dei livelli alla fascia", "Sì"),
     ("PR-03", "Numero di addetti", "Scelta singola", "Meno di 10 / 10-19 / 20-49 / 50-99 / 100-249 / 250 e oltre", "Benchmark (le statistiche ufficiali sono per addetti)", "Sì"),
@@ -291,7 +293,6 @@ PROFILAZIONE = [
     ("PR-07", "Assetto di controllo", "Scelta singola", "Familiare con gestione familiare / Familiare con manager esterni / Non familiare / Parte di un gruppo", "Contesto e lettura dell'ambito Strategia e governance", "Sì"),
     ("PR-08", "Ruolo di chi compila", "Scelta singola", "Titolare o amministratore delegato / Direttore generale / Responsabile amministrazione e finanza / Altro responsabile", "Lettura delle risposte e futura modalità con più compilatori", "Sì"),
     ("PR-09", "Anno di fondazione", "Numero", "", "Contesto del report", "No"),
-    ("PR-10", "Partita IVA", "Testo", "", "Collegamento ai bilanci nella versione a pagamento; da trattare secondo il parere privacy", "No"),
 ]
 
 # Esempio: azienda meccanica, livelli scelti per le 24 domande

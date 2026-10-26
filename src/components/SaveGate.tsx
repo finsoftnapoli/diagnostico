@@ -1,39 +1,71 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import type { AuthChangeEvent } from "@supabase/supabase-js";
+import { MailCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BRAND } from "@/config/brand";
 import { patchDraft, type Draft } from "@/lib/draft";
+import { saveDraftAndSendLink } from "@/lib/emailLink";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
-type Phase = "email" | "sent" | "saving";
+type Phase = "checking" | "email" | "sent" | "saving";
 
 /**
  * Prima dei risultati: conferma dell'email, poi salvataggio nel database.
- * Funziona sia con il codice nell'email sia con il link (aperto nello stesso browser):
- * in quel caso la pagina si riapre, il client Supabase legge la sessione dal link e il salvataggio riparte da solo.
+ * - Se l'utente ha già un accesso attivo, salva subito.
+ * - Altrimenti invia un'email con link e, quando il modello lo prevede, un codice.
+ *   Il link riporta a /risultati?bozza=<id>: dallo stesso browser riprende questa pagina,
+ *   da un altro dispositivo la bozza viene recuperata dal server.
  */
 export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d: Draft) => void }) {
-  const [phase, setPhase] = useState<Phase>(draft.pending ? "sent" : "email");
+  const [phase, setPhase] = useState<Phase>("checking");
   const [email, setEmail] = useState(draft.pending?.email ?? "");
-  const [company, setCompany] = useState(draft.pending?.company ?? "");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
 
-  async function sendCode(e: React.FormEvent) {
+  async function save() {
+    if (started.current) return;
+    started.current = true;
+    setPhase("saving");
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/compilazioni", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ responses: draft.responses }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Salvataggio non riuscito");
+      const next = patchDraft({ savedId: json.id, pending: undefined }) ?? { ...draft, savedId: json.id, pending: undefined };
+      window.history.replaceState(null, "", "/risultati");
+      onSaved(next);
+    } catch (err) {
+      started.current = false;
+      setError(err instanceof Error ? err.message : "Salvataggio non riuscito");
+      setPhase(draft.pending ? "sent" : "email");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controlla l'indirizzo email.");
-    if (!company.trim()) return setError("Indica il nome dell'azienda.");
     setBusy(true);
-    patchDraft({ pending: { email: email.trim(), company: company.trim() } });
-    const { error } = await supabaseBrowser().auth.signInWithOtp({
+    const res = await saveDraftAndSendLink({
       email: email.trim(),
-      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/risultati` },
+      step: draft.step,
+      responses: draft.responses,
+      path: "/risultati",
+      param: "bozza",
     });
     setBusy(false);
-    if (error) return setError(otpError(error.message));
+    if ("error" in res) return setError(res.error);
+    patchDraft({ pending: { email: email.trim(), draftId: res.id } });
     setPhase("sent");
   }
 
@@ -42,53 +74,20 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
     setError(null);
     setBusy(true);
     const { error } = await supabaseBrowser().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
-    if (error) {
-      setBusy(false);
-      return setError("Codice non valido o scaduto. Controlla l'email o richiedine uno nuovo.");
-    }
-    started.current = true;
-    await save(company.trim());
+    setBusy(false);
+    if (error) return setError("Codice non valido o scaduto. Controlla l'email o richiedine uno nuovo.");
+    await save();
   }
 
-  async function save(companyName: string) {
-    setPhase("saving");
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/compilazioni", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ responses: draft.responses, companyName }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Salvataggio non riuscito");
-      const next = patchDraft({ savedId: json.id, pending: undefined }) ?? { ...draft, savedId: json.id };
-      // toglie dall'indirizzo eventuali parametri del link
-      window.history.replaceState(null, "", "/risultati");
-      onSaved(next);
-    } catch (err) {
-      started.current = false;
-      setError(err instanceof Error ? err.message : "Salvataggio non riuscito");
-      setPhase("sent");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // ritorno dal link nell'email: se c'è una sessione valida, si salva subito
+  // all'apertura: se c'è già un accesso (link appena aperto o sessione precedente) si salva subito
   useEffect(() => {
-    if (!draft.pending) return;
     const sb = supabaseBrowser();
-    const trySave = async () => {
-      const { data } = await sb.auth.getUser();
-      if (data.user && !started.current) {
-        started.current = true;
-        void save(draft.pending!.company);
-      }
-    };
-    void trySave();
+    void sb.auth.getUser().then(({ data }: { data: { user: unknown } }) => {
+      if (data.user) void save();
+      else setPhase(draft.pending ? "sent" : "email");
+    });
     const { data: sub } = sb.auth.onAuthStateChange((event: AuthChangeEvent) => {
-      if (event === "SIGNED_IN") void trySave();
+      if (event === "SIGNED_IN") void save();
     });
     return () => sub.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- da eseguire una sola volta all'apertura
@@ -96,26 +95,32 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
-      <h1 className="text-2xl font-semibold text-navy">I risultati sono pronti</h1>
+      <MailCheck className="size-8 text-navy" aria-hidden strokeWidth={1.5} />
+      <h1 className="mt-3 text-3xl font-semibold text-navy">Il tuo {BRAND.reportName} è pronto</h1>
+      {phase === "checking" && <p className="mt-6 text-muted">Un momento…</p>}
       {phase === "email" && (
-        <form onSubmit={sendCode} className="mt-6 space-y-4">
+        <form onSubmit={sendLink} className="mt-6 space-y-4">
           <p className="text-muted">
             Indica la tua email aziendale: ti inviamo un messaggio per confermarla. Così salviamo il profilo e potrai
             ritrovarlo, confrontarlo nel tempo e invitare i colleghi.
           </p>
-          <Field label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
-          <Field label="Nome dell'azienda" value={company} onChange={setCompany} autoComplete="organization" />
+          <label className="block text-sm">
+            <span className="font-medium">Email</span>
+            <input type="email" required autoComplete="email" className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
           <Submit busy={busy}>Conferma l&apos;email</Submit>
         </form>
       )}
       {phase === "sent" && (
         <form onSubmit={verify} className="mt-6 space-y-4">
           <p className="text-muted">
-            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Apri il link contenuto nell&apos;email da
-            questo stesso browser, oppure inserisci qui il codice se l&apos;email ne contiene uno. Se non la trovi,
-            controlla nella posta indesiderata.
+            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Apri il link contenuto nell&apos;email, oppure
+            inserisci qui il codice se l&apos;email ne contiene uno. Se non la trovi, controlla nella posta indesiderata.
           </p>
-          <Field label="Codice" value={code} onChange={setCode} inputMode="numeric" autoComplete="one-time-code" />
+          <label className="block text-sm">
+            <span className="font-medium">Codice</span>
+            <input required inputMode="numeric" autoComplete="one-time-code" className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={code} onChange={(e) => setCode(e.target.value)} />
+          </label>
           <Submit busy={busy}>Conferma e vedi i risultati</Submit>
           <button
             type="button"
@@ -137,44 +142,15 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
         </p>
       )}
       <p className="mt-8 text-xs text-muted">
-        Usiamo l&apos;email solo per l&apos;accesso e per i consensi che hai indicato all&apos;inizio.
+        Usiamo l&apos;email per l&apos;accesso e per le comunicazioni che hai scelto all&apos;inizio.
       </p>
     </div>
   );
 }
 
-function otpError(msg: string) {
-  if (/rate|too many|seconds/i.test(msg)) return "Hai richiesto troppi messaggi: attendi qualche minuto e riprova.";
-  return "Non siamo riusciti a inviare l'email. Riprova tra poco.";
-}
-
-function Field(props: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  inputMode?: "numeric" | "text";
-  autoComplete?: string;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="font-medium">{props.label}</span>
-      <input
-        className="mt-1 w-full border border-line rounded px-3 py-2"
-        type={props.type ?? "text"}
-        inputMode={props.inputMode}
-        autoComplete={props.autoComplete}
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
-        required
-      />
-    </label>
-  );
-}
-
 function Submit({ busy, children }: { busy: boolean; children: React.ReactNode }) {
   return (
-    <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded disabled:opacity-60">
+    <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60">
       {busy ? "Attendere…" : children}
     </button>
   );

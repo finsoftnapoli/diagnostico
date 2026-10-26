@@ -7,24 +7,23 @@ function exampleResponses(): Responses {
   return {
     ...emptyResponses(),
     levels: { ...EXAMPLE.levels },
-    importance: { ...EXAMPLE.importance } as Responses["importance"],
     objectives: [...EXAMPLE.objectives],
     issues: [...EXAMPLE.issues],
     textAreas: [...EXAMPLE.textAreas] as AreaCode[],
   };
 }
 
-// Valori calcolati dal foglio Esempio_priorita (banca delle domande v0.2).
+// Valori calcolati dal foglio Esempio_priorita (banca delle domande v0.3).
 const EXPECTED: Record<AreaCode, [number, number, number, number, number]> = {
   // punteggio, indice obiettivi, indice criticità, indice priorità, rango
-  STR: [11, 0.33, 0.34, 513, 2],
-  FIN: [22, 0.5, 0.67, 566, 1],
-  MKT: [33, 0.25, 0, 168, 4],
-  PER: [22, 0.42, 0.17, 431, 3],
-  OPS: [56, 0.25, 0, 110, 6],
-  DIG: [22, 0, 0.08, 168, 5],
-  INN: [22, 0, 0, 78, 7],
-  SOS: [22, 0, 0, 78, 8],
+  STR: [11, 0.33, 0.34, 201, 2],
+  FIN: [22, 0.5, 0.67, 234, 1],
+  MKT: [33, 0.25, 0, 92, 4],
+  PER: [22, 0.42, 0.17, 167, 3],
+  OPS: [56, 0.25, 0, 61, 8],
+  DIG: [22, 0, 0.08, 87, 5],
+  INN: [22, 0, 0, 78, 6],
+  SOS: [22, 0, 0, 78, 7],
 };
 
 describe("motore di punteggio", () => {

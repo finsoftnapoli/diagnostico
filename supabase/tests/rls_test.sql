@@ -88,6 +88,18 @@ do $$ begin
   assert (select count(*) from public.assessments) = 2, 'lo staff vede tutte le compilazioni';
 end $$;
 
+-- Le bozze non sono accessibili agli utenti, nemmeno collegati
+reset role;
+insert into public.drafts (email, responses, questionnaire_version) values ('titolare@alfa.it', '{}', '0.3');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+do $$ begin
+  perform 1 from public.drafts;
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+reset role;
+
 -- Un utente anonimo non vede nulla
 reset role;
 set role anon;

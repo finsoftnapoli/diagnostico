@@ -1,20 +1,20 @@
 "use client";
 
+import { ArrowLeft, ArrowRight, Check as CheckIcon, Clock, Info, Radar, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/draft";
 import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "@/lib/questionnaire";
+import { MIN_TEXT } from "@/lib/sanitize";
 import { emptyResponses } from "@/lib/scoring";
+import { supabaseBrowser } from "@/lib/supabase/browser";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode, Choice, Responses } from "@/lib/types";
+import { isValidItalianVat, normalizeVat } from "@/lib/vat";
 
-type Step =
-  | { kind: "intro" }
-  | { kind: "profile" }
-  | { kind: "objectives" }
-  | { kind: "area"; area: AreaCode }
-  | { kind: "issues" }
-  | { kind: "importance" };
+type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
 
 const STEPS: Step[] = [
   { kind: "intro" },
@@ -22,23 +22,15 @@ const STEPS: Step[] = [
   { kind: "objectives" },
   ...AREAS.map((a) => ({ kind: "area" as const, area: a.code })),
   { kind: "issues" },
-  { kind: "importance" },
 ];
 
-const SECTION_LABEL: Record<Step["kind"], string> = {
-  intro: "Prima di iniziare",
-  profile: "1 · La tua azienda",
-  objectives: "2 · Obiettivi",
-  area: "3 · Come lavorate oggi",
-  issues: "4 · Criticità",
-  importance: "5 · Importanza degli ambiti",
-};
-
-const IMPORTANCE_OPTIONS = [
-  { v: 1, label: "Poco rilevante" },
-  { v: 2, label: "Rilevante" },
-  { v: 3, label: "Decisivo" },
+const SECTIONS: { kind: Step["kind"]; label: string }[] = [
+  { kind: "profile", label: "Azienda" },
+  { kind: "objectives", label: "Ambizioni" },
+  { kind: "area", label: "Come lavorate oggi" },
+  { kind: "issues", label: "Sfide" },
 ];
+
 
 export default function Wizard() {
   const router = useRouter();
@@ -49,18 +41,44 @@ export default function Wizard() {
   });
   const [r, setR] = useState<Responses>(() => initial?.responses ?? emptyResponses());
   const [step, setStep] = useState(() => initial?.step ?? 0);
-  const [resumed, setResumed] = useState(() => (initial?.step ?? 0) > 0);
+  const [notice, setNotice] = useState<string | null>(() =>
+    (initial?.step ?? 0) > 0 ? "Abbiamo ripreso da dove eri rimasto." : null,
+  );
   const [error, setError] = useState<string | null>(null);
   const topRef = useRef<HTMLDivElement>(null);
+
   // salvataggio automatico a ogni modifica
   useEffect(() => {
     saveDraft({ step, responses: r });
   }, [r, step]);
 
+  // ripresa da un link "salva e continua più tardi" (?riprendi=<id>)
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("riprendi");
+    if (!id || !isSupabaseConfigured()) return;
+    void (async () => {
+      const sb = supabaseBrowser();
+      const { data } = await sb.auth.getUser();
+      if (!data.user) {
+        setNotice("Per riprendere apri il link dell'email da questo stesso browser.");
+        return;
+      }
+      const res = await fetch(`/api/bozze/${encodeURIComponent(id)}`);
+      if (!res.ok) {
+        setNotice("Non abbiamo trovato la bozza salvata: il link potrebbe essere scaduto.");
+        return;
+      }
+      const d = (await res.json()) as { step: number; responses: Responses };
+      setR({ ...emptyResponses(), ...d.responses });
+      setStep(Math.min(Math.max(d.step, 0), STEPS.length - 1));
+      setNotice("Bozza recuperata: riprendi da dove eri rimasto.");
+      window.history.replaceState(null, "", "/diagnostico");
+    })();
+  }, []);
+
   const update = (patch: Partial<Responses>) => setR((prev) => ({ ...prev, ...patch }));
   const cur = STEPS[step];
   const progress = Math.round((step / (STEPS.length - 1)) * 100);
-
   const missing = useMemo(() => validate(cur, r), [cur, r]);
 
   function go(delta: number) {
@@ -84,22 +102,16 @@ export default function Wizard() {
     clearDraft();
     setR(emptyResponses());
     setStep(0);
-    setResumed(false);
+    setNotice(null);
   }
 
   return (
-    <div ref={topRef} className="mx-auto max-w-3xl px-4 py-10">
-      <div className="flex items-center justify-between text-sm text-muted">
-        <span>{SECTION_LABEL[cur.kind]}</span>
-        <span>{progress}%</span>
-      </div>
-      <div className="mt-2 h-1.5 bg-paper rounded">
-        <div className="h-1.5 bg-navy rounded transition-all" style={{ width: `${progress}%` }} />
-      </div>
+    <div ref={topRef} className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+      {cur.kind !== "intro" && <Progress step={step} r={r} progress={progress} />}
 
-      {resumed && step > 0 && (
-        <p className="mt-4 text-sm bg-paper border border-line rounded px-3 py-2">
-          Abbiamo ripreso da dove eri rimasto.{" "}
+      {notice && step > 0 && (
+        <p className="mt-4 text-sm bg-paper border border-line rounded-lg px-3 py-2 flex flex-wrap gap-x-2">
+          <span>{notice}</span>
           <button className="underline" onClick={restart}>
             Ricomincia da capo
           </button>
@@ -111,15 +123,16 @@ export default function Wizard() {
         {cur.kind === "profile" && <Profile r={r} update={update} />}
         {cur.kind === "objectives" && (
           <Ranked
-            title="Quali sono gli obiettivi dell'azienda per i prossimi 2-3 anni?"
+            eyebrow="Ambizioni"
+            title="Dove volete portare l'azienda nei prossimi 2-3 anni?"
             hint="Scegli fino a tre obiettivi, nell'ordine di importanza: il primo che selezioni è il più importante."
             catalogue={OBJECTIVES}
             selected={r.objectives}
             onChange={(objectives) => update({ objectives })}
             text={r.objectivesText}
             onText={(objectivesText) => update({ objectivesText })}
-            textLabel="Descrivi in due righe cosa volete ottenere (facoltativo)"
-            textPlaceholder="Per esempio: entro due anni mio figlio entra in azienda e voglio delegare la parte commerciale."
+            textLabel="Racconta le vostre ambizioni: cosa volete ottenere e perché"
+            textPlaceholder="Per esempio: vogliamo crescere all'estero del 30% e, entro due anni, mio figlio entrerà in azienda; per questo devo delegare la parte commerciale, che oggi seguo da solo."
             textAreas={r.objectivesTextAreas}
             onTextAreas={(objectivesTextAreas) => update({ objectivesTextAreas })}
           />
@@ -127,20 +140,20 @@ export default function Wizard() {
         {cur.kind === "area" && <AreaQuestions area={cur.area} r={r} update={update} />}
         {cur.kind === "issues" && (
           <Ranked
-            title="Quali sono oggi le criticità principali?"
+            eyebrow="Sfide"
+            title="Quali sono oggi le sfide principali?"
             hint="Scegli fino a tre criticità, nell'ordine di gravità: la prima che selezioni è la più pressante."
             catalogue={ISSUES}
             selected={r.issues}
             onChange={(issues) => update({ issues })}
             text={r.issuesText}
             onText={(issuesText) => update({ issuesText })}
-            textLabel="Descrivi in due righe la situazione (facoltativo)"
-            textPlaceholder="Per esempio: scopriamo solo a fine anno se abbiamo guadagnato e la banca ci chiede previsioni di cassa."
+            textLabel="Descrivi le sfide: cosa sta frenando l'azienda e quali conseguenze vedete"
+            textPlaceholder="Per esempio: scopriamo solo a fine anno se abbiamo guadagnato, la banca ci chiede previsioni di cassa che non sappiamo fare e i margini sulle commesse più grandi sono in calo."
             textAreas={r.issuesTextAreas}
             onTextAreas={(issuesTextAreas) => update({ issuesTextAreas })}
           />
         )}
-        {cur.kind === "importance" && <Importance r={r} update={update} />}
       </div>
 
       {error && (
@@ -149,21 +162,78 @@ export default function Wizard() {
         </p>
       )}
 
-      <div className="mt-8 flex justify-between gap-4">
+      <div className="mt-10 flex justify-between gap-4">
         {step > 0 ? (
-          <button onClick={() => go(-1)} className="px-5 py-2.5 rounded border border-line hover:bg-paper">
-            Indietro
+          <button onClick={() => go(-1)} className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper inline-flex items-center gap-2">
+            <ArrowLeft className="size-4" aria-hidden /> Indietro
           </button>
         ) : (
-          <Link href="/" className="px-5 py-2.5 rounded border border-line hover:bg-paper">
+          <Link href="/" className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper">
             Annulla
           </Link>
         )}
-        <button onClick={() => go(1)} className="px-6 py-2.5 rounded bg-navy text-white font-semibold hover:bg-navy-soft">
+        <button
+          onClick={() => go(1)}
+          className="px-6 py-2.5 rounded-lg bg-navy text-white font-semibold hover:bg-navy-soft inline-flex items-center gap-2"
+        >
           {step === STEPS.length - 1 ? "Vedi i risultati" : step === 0 ? "Inizia" : "Avanti"}
+          <ArrowRight className="size-4" aria-hidden />
         </button>
       </div>
-      <p className="mt-4 text-xs text-muted text-right">Le risposte si salvano automaticamente.</p>
+      {step > 0 && <p className="mt-4 text-xs text-muted text-right">Le risposte si salvano automaticamente.</p>}
+    </div>
+  );
+}
+
+function areaDone(area: AreaCode, r: Responses) {
+  return QUESTIONS.filter((q) => q.area === area).every((q) => r.levels[q.id] && r.checks[q.id]);
+}
+
+function Progress({ step, r, progress }: { step: number; r: Responses; progress: number }) {
+  const cur = STEPS[step];
+  return (
+    <div>
+      <ol className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+        {SECTIONS.map((s, i) => {
+          const active = s.kind === cur.kind;
+          const firstIdx = STEPS.findIndex((x) => x.kind === s.kind);
+          const done = step > firstIdx && !active;
+          return (
+            <li key={s.kind} className={`flex items-center gap-1.5 ${active ? "text-navy font-semibold" : done ? "text-ink" : "text-muted"}`}>
+              <span
+                className={`size-5 rounded-full text-[11px] flex items-center justify-center ${
+                  active ? "bg-navy text-white" : done ? "bg-navy/15 text-navy" : "border border-line"
+                }`}
+              >
+                {done ? <CheckIcon className="size-3" aria-hidden /> : i + 1}
+              </span>
+              {s.label}
+            </li>
+          );
+        })}
+      </ol>
+      <div className="mt-3 h-1.5 bg-paper rounded-full" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+        <div className="h-1.5 bg-navy rounded-full transition-all" style={{ width: `${progress}%` }} />
+      </div>
+      {cur.kind === "area" && (
+        <div className="mt-4 grid grid-cols-8 gap-1.5" aria-label="Ambiti">
+          {AREAS.map((a) => {
+            const active = a.code === cur.area;
+            const done = areaDone(a.code, r);
+            return (
+              <div
+                key={a.code}
+                title={a.name}
+                className={`h-10 rounded-lg flex items-center justify-center border ${
+                  active ? "bg-navy text-white border-navy" : done ? "bg-navy/10 text-navy border-transparent" : "border-line text-muted"
+                }`}
+              >
+                <AreaIcon code={a.code} className="size-4" />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -171,13 +241,17 @@ export default function Wizard() {
 function validate(s: Step, r: Responses): string | null {
   switch (s.kind) {
     case "intro":
-      return r.consents.service ? null : "Per proseguire conferma di aver letto l'informativa.";
+      return r.consents.service ? null : "Per proseguire accetta l'informativa e le condizioni del servizio.";
     case "profile": {
-      const miss = PROFILE_FIELDS.filter((f) => f.required && !r.profile[f.id]);
-      return miss.length ? `Completa: ${miss.map((f) => f.label.toLowerCase()).join(", ")}.` : null;
+      const miss = PROFILE_FIELDS.filter((f) => f.required && !r.profile[f.id]?.trim());
+      if (miss.length) return `Completa: ${miss.map((f) => f.label.toLowerCase()).join(", ")}.`;
+      if (!isValidItalianVat(r.profile["PR-10"] ?? "")) return "Controlla la partita IVA: deve avere 11 cifre valide.";
+      return null;
     }
     case "objectives":
-      return r.objectives.length ? null : "Scegli almeno un obiettivo.";
+      if (!r.objectives.length) return "Scegli almeno un obiettivo.";
+      if (r.objectivesText.trim().length < MIN_TEXT) return `Racconta le vostre ambizioni in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
+      return null;
     case "area": {
       const qs = QUESTIONS.filter((q) => q.area === s.area);
       if (qs.some((q) => !r.levels[q.id])) return "Scegli una situazione per ogni domanda.";
@@ -185,9 +259,9 @@ function validate(s: Step, r: Responses): string | null {
       return null;
     }
     case "issues":
-      return r.issues.length ? null : "Scegli almeno una criticità.";
-    case "importance":
-      return AREAS.every((a) => r.importance[a.code]) ? null : "Indica l'importanza di ogni ambito.";
+      if (!r.issues.length) return "Scegli almeno una sfida.";
+      if (r.issuesText.trim().length < MIN_TEXT) return `Descrivi le sfide in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
+      return null;
   }
 }
 
@@ -197,31 +271,48 @@ interface SectionProps {
 }
 
 function Intro({ r, update }: SectionProps) {
-  const set = (k: keyof Responses["consents"], v: boolean) => update({ consents: { ...r.consents, [k]: v } });
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy">Come funziona</h1>
-      <ul className="mt-4 space-y-2 text-muted list-disc pl-5">
-        <li>Cinque sezioni, circa 15 minuti. Puoi interrompere e riprendere.</li>
-        <li>Per ogni tema scegli la descrizione più vicina alla situazione di oggi, non a quella desiderata.</li>
-        <li>Alla fine vedi subito il profilo dell&apos;azienda e le tre priorità.</li>
-      </ul>
-      <div className="mt-8 space-y-3">
-        <Check checked={r.consents.service} onChange={(v) => set("service", v)}>
+      <h1 className="text-3xl font-semibold text-navy">Prima di iniziare</h1>
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        {[
+          { icon: Clock, t: "15 minuti", d: "Quattro sezioni. Puoi salvare e riprendere quando vuoi." },
+          { icon: Radar, t: "Risultato immediato", d: "Profilo sugli 8 ambiti, confronto e tre priorità." },
+          { icon: ShieldCheck, t: "Dati protetti", d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri." },
+        ].map(({ icon: Icon, t, d }) => (
+          <div key={t} className="rounded-xl border border-line p-4">
+            <Icon className="size-5 text-navy" aria-hidden strokeWidth={1.75} />
+            <p className="mt-2 font-semibold">{t}</p>
+            <p className="mt-1 text-sm text-muted">{d}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-6 text-muted">
+        Per ogni tema scegli la descrizione più vicina alla situazione di <strong className="text-ink">oggi</strong>, non a
+        quella desiderata: un quadro onesto produce priorità più utili.
+      </p>
+      <div className="mt-8 space-y-4">
+        <Check
+          checked={r.consents.service}
+          onChange={(v) => update({ consents: { ...r.consents, service: v, benchmark: v } })}
+        >
           Ho letto l&apos;
           <Link href="/privacy" className="underline" target="_blank">
             informativa privacy
           </Link>{" "}
-          e accetto il trattamento dei dati per ricevere il profilo e il report. <span className="text-accent">*</span>
+          e accetto le condizioni del servizio, compreso l&apos;uso delle risposte in forma anonima e aggregata per
+          statistiche, confronti tra aziende e finalità di ricerca. <span className="text-accent">*</span>
         </Check>
-        <Check checked={r.consents.benchmark} onChange={(v) => set("benchmark", v)}>
-          Acconsento all&apos;uso delle mie risposte, in forma aggregata e anonima, per i confronti tra aziende
-          (facoltativo).
-        </Check>
-        <Check checked={r.consents.marketing} onChange={(v) => set("marketing", v)}>
-          Desidero ricevere comunicazioni su servizi e iniziative (facoltativo).
+        <Check checked={r.consents.marketing} onChange={(v) => update({ consents: { ...r.consents, marketing: v } })}>
+          Desidero ricevere comunicazioni su servizi, ricerche e iniziative (facoltativo).
         </Check>
       </div>
+      <p className="mt-6 text-xs text-muted flex gap-2">
+        <Info className="size-4 shrink-0" aria-hidden />
+        Il diagnostico fa parte di un programma di ricerca sulla gestione delle imprese italiane: i dati raccolti
+        servono anche a studi e confronti, sempre in forma anonima e aggregata. Il risultato è un&apos;autovalutazione
+        orientativa, non una consulenza né un rating.
+      </p>
     </div>
   );
 }
@@ -237,10 +328,36 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: (v
 
 function Profile({ r, update }: SectionProps) {
   const set = (id: string, v: string) => update({ profile: { ...r.profile, [id]: v } });
+  const [vatInfo, setVatInfo] = useState<string | null>(null);
+
+  async function checkVat() {
+    const n = normalizeVat(r.profile["PR-10"] ?? "");
+    if (!isValidItalianVat(n)) {
+      setVatInfo(n ? "La partita IVA non sembra corretta." : null);
+      return;
+    }
+    setVatInfo("Partita IVA corretta.");
+    try {
+      const res = await fetch(`/api/piva?n=${n}`);
+      const j = (await res.json()) as { valid: boolean; checked?: boolean; name?: string | null };
+      if (j.checked && !j.valid) setVatInfo("La partita IVA non risulta attiva nell'archivio europeo VIES.");
+      else if (j.name) {
+        setVatInfo(`Trovata: ${j.name}`);
+        if (!r.profile["PR-11"]?.trim()) update({ profile: { ...r.profile, "PR-10": n, "PR-11": j.name } });
+      }
+    } catch {
+      /* verifica online non disponibile: basta il controllo formale */
+    }
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy">La tua azienda</h1>
-      <p className="mt-2 text-muted">Servono per confrontarti con aziende simili e leggere le risposte nel contesto giusto.</p>
+      <p className="text-sm text-muted">Sezione 1</p>
+      <h1 className="text-3xl font-semibold text-navy">La tua azienda</h1>
+      <p className="mt-2 text-muted">
+        Con la partita IVA possiamo completare il profilo con i dati pubblici dell&apos;azienda e confrontarti con aziende
+        simili per settore e dimensione.
+      </p>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         {PROFILE_FIELDS.map((f) => (
           <label key={f.id} className="block text-sm">
@@ -250,7 +367,7 @@ function Profile({ r, update }: SectionProps) {
             </span>
             {f.type === "select" ? (
               <select
-                className="mt-1 w-full border border-line rounded px-3 py-2 bg-white"
+                className="mt-1 w-full border border-line rounded-lg px-3 py-2 bg-white"
                 value={r.profile[f.id] ?? ""}
                 onChange={(e) => set(f.id, e.target.value)}
               >
@@ -261,12 +378,16 @@ function Profile({ r, update }: SectionProps) {
               </select>
             ) : (
               <input
-                className="mt-1 w-full border border-line rounded px-3 py-2"
-                inputMode={f.type === "number" ? "numeric" : "text"}
+                className="mt-1 w-full border border-line rounded-lg px-3 py-2"
+                inputMode={f.type === "number" || f.id === "PR-10" ? "numeric" : "text"}
+                autoComplete={f.id === "PR-11" ? "organization" : undefined}
+                placeholder={f.id === "PR-10" ? "11 cifre" : undefined}
                 value={r.profile[f.id] ?? ""}
                 onChange={(e) => set(f.id, e.target.value)}
+                onBlur={f.id === "PR-10" ? checkVat : undefined}
               />
             )}
+            {f.id === "PR-10" && vatInfo && <span className="mt-1 block text-xs text-muted">{vatInfo}</span>}
           </label>
         ))}
       </div>
@@ -277,6 +398,7 @@ function Profile({ r, update }: SectionProps) {
 const RANK_LABEL = ["1°", "2°", "3°"];
 
 function Ranked(props: {
+  eyebrow: string;
   title: string;
   hint: string;
   catalogue: Choice[];
@@ -296,9 +418,11 @@ function Ranked(props: {
   };
   const toggleArea = (a: AreaCode) =>
     props.onTextAreas(props.textAreas.includes(a) ? props.textAreas.filter((x) => x !== a) : [...props.textAreas, a]);
+  const len = props.text.trim().length;
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy">{props.title}</h1>
+      <p className="text-sm text-muted">{props.eyebrow}</p>
+      <h1 className="text-3xl font-semibold text-navy">{props.title}</h1>
       <p className="mt-2 text-muted">{props.hint}</p>
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
         {props.catalogue.map((c) => {
@@ -311,35 +435,38 @@ function Ranked(props: {
               onClick={() => toggle(c.code)}
               disabled={full}
               aria-pressed={on}
-              className={`text-left border rounded px-3 py-3 flex items-start gap-3 transition ${
-                on ? "border-navy bg-navy/5" : "border-line hover:border-navy-soft"
+              className={`text-left border rounded-xl px-3 py-3 flex items-center gap-3 transition ${
+                on ? "border-navy bg-navy/5 shadow-sm" : "border-line hover:border-navy-soft"
               } ${full ? "opacity-40 cursor-not-allowed" : ""}`}
             >
               <span
-                className={`shrink-0 size-7 rounded-full text-xs font-semibold flex items-center justify-center ${
-                  on ? "bg-navy text-white" : "border border-line text-muted"
+                className={`shrink-0 size-9 rounded-lg flex items-center justify-center ${
+                  on ? "bg-navy text-white" : "bg-paper text-navy"
                 }`}
               >
-                {on ? RANK_LABEL[i] : ""}
+                {on ? <span className="text-xs font-semibold">{RANK_LABEL[i]}</span> : <AreaIcon code={c.primary} className="size-4" />}
               </span>
-              <span className="text-sm leading-snug pt-1">{c.label}</span>
+              <span className="text-sm leading-snug">{c.label}</span>
             </button>
           );
         })}
       </div>
       <label className="block mt-8 text-sm font-medium">
-        {props.textLabel}
+        {props.textLabel} <span className="text-accent">*</span>
         <textarea
-          className="mt-1 w-full border border-line rounded px-3 py-2 font-normal"
-          rows={3}
-          maxLength={600}
+          className="mt-1 w-full border border-line rounded-lg px-3 py-2 font-normal"
+          rows={4}
+          maxLength={1200}
           placeholder={props.textPlaceholder}
           value={props.text}
           onChange={(e) => props.onText(e.target.value)}
         />
       </label>
-      {props.text.trim().length > 0 && (
-        <div className="mt-3">
+      <p className={`text-xs ${len >= MIN_TEXT ? "text-muted" : "text-accent/80"}`}>
+        {len >= MIN_TEXT ? "Grazie: più dettagli ci dai, più il report sarà su misura." : `Ancora ${MIN_TEXT - len} caratteri`}
+      </p>
+      {len > 0 && (
+        <div className="mt-4">
           <p className="text-sm text-muted">A quali ambiti si riferisce soprattutto quello che hai scritto?</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {AREAS.map((a) => {
@@ -349,9 +476,12 @@ function Ranked(props: {
                   key={a.code}
                   onClick={() => toggleArea(a.code)}
                   aria-pressed={on}
-                  className={`text-xs px-3 py-1.5 rounded-full border ${on ? "bg-navy text-white border-navy" : "border-line"}`}
+                  className={`text-xs px-3 py-1.5 rounded-full border inline-flex items-center gap-1.5 ${
+                    on ? "bg-navy text-white border-navy" : "border-line"
+                  }`}
                 >
-                  {a.name}
+                  <AreaIcon code={a.code} className="size-3.5" />
+                  {AREA_SHORT[a.code]}
                 </button>
               );
             })}
@@ -362,21 +492,42 @@ function Ranked(props: {
   );
 }
 
+function LevelBar({ level, on }: { level: number; on: boolean }) {
+  return (
+    <span className="shrink-0 flex gap-0.5 mt-1" aria-hidden>
+      {[1, 2, 3, 4].map((i) => (
+        <span key={i} className={`w-1.5 h-3.5 rounded-sm ${i <= level ? (on ? "bg-navy" : "bg-navy/35") : "bg-line"}`} />
+      ))}
+    </span>
+  );
+}
+
 function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
   const a = AREAS.find((x) => x.code === area)!;
   const qs = QUESTIONS.filter((q) => q.area === area);
   const idx = AREAS.findIndex((x) => x.code === area);
   return (
     <div>
-      <p className="text-sm text-muted">
-        Ambito {idx + 1} di {AREAS.length}
-      </p>
-      <h1 className="text-2xl font-semibold text-navy">{a.name}</h1>
-      <p className="mt-1 text-muted">{a.description}</p>
-      <div className="mt-8 space-y-10">
-        {qs.map((q) => (
-          <fieldset key={q.id}>
-            <legend className="font-semibold">{q.text}</legend>
+      <div className="flex items-start gap-4">
+        <span className="shrink-0 size-12 rounded-xl bg-navy text-white flex items-center justify-center">
+          <AreaIcon code={area} className="size-6" />
+        </span>
+        <div>
+          <p className="text-sm text-muted">
+            Ambito {idx + 1} di {AREAS.length}
+          </p>
+          <h1 className="text-3xl font-semibold text-navy leading-tight">{a.name}</h1>
+          <p className="mt-1 text-muted">{a.description}</p>
+        </div>
+      </div>
+      <div className="mt-8 space-y-6">
+        {qs.map((q, qi) => (
+          <fieldset key={q.id} className="rounded-xl border border-line p-4 sm:p-5">
+            <legend className="sr-only">{q.text}</legend>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              {qi + 1}/{qs.length} · {q.theme}
+            </p>
+            <p className="mt-1 font-semibold text-ink">{q.text}</p>
             <div className="mt-3 space-y-2">
               {q.levels.map((txt, i) => {
                 const lvl = i + 1;
@@ -384,24 +535,28 @@ function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
                 return (
                   <label
                     key={lvl}
-                    className={`flex gap-3 items-start border rounded px-3 py-3 cursor-pointer text-sm leading-snug ${
+                    className={`flex gap-3 items-start border rounded-lg px-3 py-3 cursor-pointer text-sm leading-snug transition ${
                       on ? "border-navy bg-navy/5" : "border-line hover:border-navy-soft"
                     }`}
                   >
                     <input
                       type="radio"
                       name={q.id}
-                      className="mt-0.5 accent-[var(--navy)]"
+                      className="sr-only"
                       checked={on}
                       onChange={() => update({ levels: { ...r.levels, [q.id]: lvl } })}
                     />
-                    <span>{txt}</span>
+                    <LevelBar level={lvl} on={on} />
+                    <span className={on ? "text-ink" : ""}>{txt}</span>
                   </label>
                 );
               })}
             </div>
-            <div className="mt-4 pl-1">
-              <p className="text-sm font-medium">{q.check.text}</p>
+            <div className="mt-4 rounded-lg bg-paper px-3 py-3">
+              <p className="text-sm">
+                <span className="font-medium">Verifica rapida · </span>
+                {q.check.text}
+              </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {q.check.options.map((o) => {
                   const on = r.checks[q.id] === o;
@@ -410,7 +565,9 @@ function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
                       key={o}
                       onClick={() => update({ checks: { ...r.checks, [q.id]: o } })}
                       aria-pressed={on}
-                      className={`text-sm px-3 py-1.5 rounded border ${on ? "bg-navy text-white border-navy" : "border-line hover:border-navy-soft"}`}
+                      className={`text-sm px-3 py-1.5 rounded-full border ${
+                        on ? "bg-navy text-white border-navy" : "bg-white border-line hover:border-navy-soft"
+                      }`}
                     >
                       {o}
                     </button>
@@ -419,39 +576,6 @@ function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
               </div>
             </div>
           </fieldset>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Importance({ r, update }: SectionProps) {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-navy">Quanto conta ogni ambito per i vostri obiettivi?</h1>
-      <p className="mt-2 text-muted">
-        Non tutti gli ambiti pesano allo stesso modo per ogni azienda. La tua risposta orienta le priorità.
-      </p>
-      <div className="mt-6 divide-y divide-line border-y border-line">
-        {AREAS.map((a) => (
-          <div key={a.code} className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <span className="font-medium">{a.name}</span>
-            <div className="flex gap-2">
-              {IMPORTANCE_OPTIONS.map((o) => {
-                const on = r.importance[a.code] === o.v;
-                return (
-                  <button
-                    key={o.v}
-                    onClick={() => update({ importance: { ...r.importance, [a.code]: o.v } })}
-                    aria-pressed={on}
-                    className={`text-sm px-3 py-1.5 rounded border ${on ? "bg-navy text-white border-navy" : "border-line hover:border-navy-soft"}`}
-                  >
-                    {o.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         ))}
       </div>
     </div>

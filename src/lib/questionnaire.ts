@@ -1,8 +1,8 @@
-// Generato da scripts/genera_domande.py (banca delle domande v0.2). Non modificare a mano:
+// Generato da scripts/genera_domande.py (banca delle domande v0.3). Non modificare a mano:
 // cambiare scripts/content.py e rigenerare.
 import type { Area, Question, Choice, ProfileField } from "./types";
 
-export const QUESTIONNAIRE_VERSION = "0.2";
+export const QUESTIONNAIRE_VERSION = "0.3";
 
 export const AREAS: Area[] = [
   {
@@ -862,6 +862,22 @@ export const ISSUES: Choice[] = [
 
 export const PROFILE_FIELDS: ProfileField[] = [
   {
+    "id": "PR-10",
+    "label": "Partita IVA",
+    "type": "text",
+    "options": null,
+    "required": true,
+    "purpose": "Verifica dell'azienda e collegamento ai dati pubblici e ai bilanci"
+  },
+  {
+    "id": "PR-11",
+    "label": "Ragione sociale",
+    "type": "text",
+    "options": null,
+    "required": true,
+    "purpose": "Identificazione dell'azienda e arricchimento con dati pubblici"
+  },
+  {
     "id": "PR-01",
     "label": "Settore di attività",
     "type": "select",
@@ -1010,14 +1026,6 @@ export const PROFILE_FIELDS: ProfileField[] = [
     "options": null,
     "required": false,
     "purpose": "Contesto del report"
-  },
-  {
-    "id": "PR-10",
-    "label": "Partita IVA",
-    "type": "text",
-    "options": null,
-    "required": false,
-    "purpose": "Collegamento ai bilanci nella versione a pagamento; da trattare secondo il parere privacy"
   }
 ];
 

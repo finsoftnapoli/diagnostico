@@ -14,7 +14,7 @@ SETTORI = ["Agricoltura, allevamento e pesca", "Industria alimentare e delle bev
 REGIONI = ["Abruzzo", "Basilicata", "Calabria", "Campania", "Emilia-Romagna", "Friuli-Venezia Giulia", "Lazio", "Liguria",
            "Lombardia", "Marche", "Molise", "Piemonte", "Puglia", "Sardegna", "Sicilia", "Toscana", "Trentino-Alto Adige",
            "Umbria", "Valle d'Aosta", "Veneto"]
-VERSION = "0.2"
+VERSION = "0.3"
 
 amb = [dict(code=a[0], name=a[1], description=a[2]) for a in C.AMBITI]
 qs = []
