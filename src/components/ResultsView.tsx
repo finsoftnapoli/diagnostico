@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { BRAND } from "@/config/brand";
 import { loadDraft, type Draft } from "@/lib/draft";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { computeResult } from "@/lib/scoring";
 import RadarProfile from "./RadarProfile";
+import SaveGate from "./SaveGate";
 
 function levelLabel(score: number | null) {
   if (score === null) return "—";
@@ -17,7 +19,7 @@ function levelLabel(score: number | null) {
 
 export default function ResultsView() {
   // Il componente gira solo nel browser (vedi ClientOnly), quindi la bozza si legge all'avvio.
-  const [draft] = useState<Draft | null>(() => loadDraft());
+  const [draft, setDraft] = useState<Draft | null>(() => loadDraft());
   if (!draft || !draft.completedAt)
     return (
       <div className="mx-auto max-w-3xl px-4 py-16">
@@ -28,6 +30,9 @@ export default function ResultsView() {
         </Link>
       </div>
     );
+
+  // con il database collegato, i risultati si vedono dopo aver confermato l'email
+  if (isSupabaseConfigured() && !draft.savedId) return <SaveGate draft={draft} onSaved={setDraft} />;
 
   const res = computeResult(draft.responses);
   const company = draft.responses.profile["PR-01"]; // settore

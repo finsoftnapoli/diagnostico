@@ -12,6 +12,8 @@ export interface Draft {
   responses: Responses;
   updatedAt: string;
   completedAt?: string;
+  /** Id della compilazione salvata nel database. */
+  savedId?: string;
 }
 
 export function loadDraft(): Draft | null {
@@ -43,4 +45,17 @@ export function clearDraft(): void {
   } catch {
     /* niente da fare */
   }
+}
+
+/** Registra che la compilazione è stata salvata nel database. */
+export function markSaved(id: string): Draft | null {
+  const d = loadDraft();
+  if (!d) return null;
+  const next = { ...d, savedId: id };
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* archiviazione non disponibile */
+  }
+  return next;
 }

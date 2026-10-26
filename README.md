@@ -10,10 +10,11 @@ Fase 1 in corso. Funziona già:
 - pagina iniziale, questionario in cinque sezioni con salvataggio automatico e ripresa;
 - motore di punteggio e priorità, verificato contro il foglio Excel della banca delle domande v0.2;
 - pagina dei risultati con radar, tre priorità e avvisi di possibile sovrastima;
-- schema del database Supabase con regole di accesso, provato in locale.
+- schema del database Supabase con regole di accesso, provato in locale;
+- conferma dell'email con codice prima dei risultati e salvataggio nel database (`/api/compilazioni`);
+- area riservata per lo staff: `/accedi`, `/admin` (elenco e dettaglio), `/admin/export` (CSV).
 
-Da fare nella fase 1: accesso con link via email, salvataggio nel database, area riservata con esportazione CSV,
-informativa iubenda, PostHog.
+Da fare nella fase 1: invio email tramite Resend, informativa iubenda, PostHog.
 
 ## Comandi
 
