@@ -56,9 +56,15 @@ export default function Privacy() {
             sensibili.
           </li>
           <li>
-            <strong>Documenti facoltativi:</strong> se carichi la visura camerale o il bilancio, li leggiamo in modo
-            automatico per estrarre i dati anagrafici e di bilancio dell&apos;azienda. I dati di persone fisiche presenti
-            nei documenti (soci, amministratori, sindaci) non vengono estratti né salvati.
+            <strong>Documenti facoltativi:</strong> se carichi la visura camerale o il bilancio, li conserviamo in un
+            archivio privato e li leggiamo in modo automatico per estrarre i dati anagrafici, di bilancio e di governance
+            dell&apos;azienda. Dei soci e degli amministratori indicati nella visura estraiamo solo nome e ruolo, che
+            mostriamo esclusivamente a te per suggerirti chi invitare: non li salviamo nel nostro database e non li usiamo
+            per contattare queste persone.
+          </li>
+          <li>
+            <strong>Dati dei colleghi che inviti:</strong> nome, ruolo ed email delle persone che scegli di invitare, usati
+            solo per inviare l&apos;invito e, se lo accettano, per collegare le loro risposte allo spazio della tua azienda.
           </li>
           <li>
             <strong>Dati tecnici:</strong> indirizzo IP, tipo di browser, data e ora delle richieste, dati necessari alla
@@ -82,11 +88,15 @@ export default function Privacy() {
                 b="Esecuzione del servizio che richiedi (art. 6.1.b GDPR)."
               />
               <Row
+                a="Inviare, su tua richiesta, l'invito ai colleghi che indichi e mostrare all'amministratore dello spazio aziendale le risposte dei colleghi che hanno accettato, per confrontare le visioni del management."
+                b="Esecuzione del servizio che richiedi (art. 6.1.b) per chi invita; per chi è invitato, l'accettazione dell'invito e del servizio. Chi è invitato viene informato, prima di compilare, che le sue risposte individuali saranno visibili all'amministratore."
+              />
+              <Row
                 a="Rispondere alle tue richieste, per esempio di partecipare al programma pilota o di parlare con un consulente."
                 b="Misure precontrattuali su tua richiesta (art. 6.1.b)."
               />
               <Row
-                a="Elaborare statistiche, confronti tra aziende e ricerche sulla gestione delle imprese, sempre in forma aggregata e anonima: nessun dato della tua azienda è mostrato ad altri, e un confronto è pubblicato solo se riguarda un numero minimo di aziende."
+                a="Elaborare statistiche, confronti tra aziende e ricerche sulla gestione delle imprese, anche sui dati di bilancio estratti dai documenti caricati, sempre in forma aggregata e anonima: nessun dato della tua azienda è mostrato ad altri, e un confronto è pubblicato solo se riguarda un numero minimo di aziende."
                 b="Legittimo interesse del titolare a migliorare il servizio e a svolgere ricerca (art. 6.1.f), bilanciato dall'uso esclusivo di dati aggregati. Puoi opporti in qualsiasi momento scrivendo all'indirizzo indicato al punto 1. È una condizione del servizio, indicata al momento dell'accesso."
               />
               <Row
@@ -151,7 +161,16 @@ export default function Privacy() {
 
       <Section n="7" title="Per quanto tempo li conserviamo">
         <ul className="list-disc pl-5 space-y-1">
-          <li>Documenti caricati: non vengono conservati; sono eliminati subito dopo l&apos;estrazione dei dati.</li>
+          <li>
+            Documenti caricati: 24 mesi dall&apos;ultimo accesso al servizio, per gli approfondimenti e per aggiornare i dati
+            estratti; puoi eliminarli prima in qualsiasi momento dalla tua area personale. I documenti caricati senza
+            completare il diagnostico sono eliminati dopo 30 giorni.
+          </li>
+          <li>
+            Dati di bilancio estratti: riguardano l&apos;azienda e sono conservati per statistiche e confronti aggregati;
+            per le ditte individuali, in cui riguardano una persona, sono resi anonimi dopo 24 mesi.
+          </li>
+          <li>Inviti ai colleghi non accettati: 14 giorni, poi scadono; i dati dell&apos;invito sono eliminati dopo 6 mesi. [Da confermare.]</li>
           <li>Bozze del questionario salvate per riprendere più tardi: 30 giorni.</li>
           <li>
             Account, compilazioni e report: finché usi il servizio e fino a 24 mesi dall&apos;ultimo accesso, poi sono
@@ -200,7 +219,8 @@ export default function Privacy() {
       <Section n="10" title="Dati di altre persone">
         <p>
           Se nei testi liberi o nei documenti compaiono dati di altre persone, li trattiamo solo per fornire il servizio e
-          non per contattarle. Ti chiediamo di inserire solo le informazioni necessarie.
+          non le contattiamo mai di nostra iniziativa: scriviamo a un collega solo se sei tu a chiedere di invitarlo. Ti
+          chiediamo di inserire solo le informazioni necessarie.
         </p>
       </Section>
 

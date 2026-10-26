@@ -31,16 +31,29 @@ export async function POST(request: Request) {
   const db = supabaseService();
   const result = computeResult(responses);
 
-  // azienda: quella di cui l'utente è già amministratore, altrimenti una nuova
-  const { data: membership } = await db
-    .from("company_members")
-    .select("company_id")
-    .eq("user_id", user.id)
-    .eq("role", "admin")
-    .order("created_at")
-    .limit(1)
-    .maybeSingle();
-  let companyId = membership?.company_id as string | undefined;
+  // azienda: (1) quella dell'invito, se l'utente ne è membro; (2) quella con la stessa partita IVA
+  // di cui è amministratore; (3) altrimenti una nuova, di cui diventa amministratore
+  let companyId: string | undefined;
+  if (responses.context?.companyId) {
+    const { data: m } = await db
+      .from("company_members")
+      .select("company_id")
+      .eq("user_id", user.id)
+      .eq("company_id", responses.context.companyId)
+      .maybeSingle();
+    companyId = m?.company_id as string | undefined;
+  }
+  if (!companyId && vatNumber) {
+    const { data: own } = await db
+      .from("company_members")
+      .select("company_id, companies!inner(vat_number)")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .eq("companies.vat_number", vatNumber)
+      .limit(1)
+      .maybeSingle();
+    companyId = own?.company_id as string | undefined;
+  }
   if (!companyId) {
     const { data: company, error } = await db
       .from("companies")
@@ -118,7 +131,16 @@ export async function POST(request: Request) {
   );
   if (e6) return fail("consensi", e6, assessmentId);
 
-  return NextResponse.json({ id: assessmentId, service: BRAND.name });
+  // documenti caricati durante la compilazione: collegati all'utente, all'azienda e alla compilazione
+  const docIds = [responses.documents?.visura, responses.documents?.bilancio].filter((x): x is string => !!x);
+  if (docIds.length)
+    await db
+      .from("documents")
+      .update({ assessment_id: assessmentId, user_id: user.id, company_id: companyId, linked_at: now })
+      .in("id", docIds)
+      .is("assessment_id", null);
+
+  return NextResponse.json({ id: assessmentId, companyId, service: BRAND.name });
 }
 
 async function fail(what: string, error: { message: string }, assessmentId?: string) {

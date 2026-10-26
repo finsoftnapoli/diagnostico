@@ -57,8 +57,22 @@ export interface Responses {
   consents: { service: boolean; benchmark: boolean; marketing: boolean };
   /** Dati dell'ultimo bilancio caricato (facoltativo). */
   financials?: Financials;
-  /** Documenti letti per precompilare il profilo. */
-  documents?: { visura?: boolean; bilancio?: boolean };
+  /** Documenti caricati (id nell'archivio) usati per precompilare il profilo. */
+  documents?: { visura?: string; bilancio?: string };
+  /** Governance dalla visura, senza nomi. */
+  governance?: Governance;
+  /** Persone suggerite dalla visura per gli inviti: solo nel browser, mai inviate al server. */
+  people?: { name: string; role: string }[];
+  /** Compilazione da collega invitato: azienda a cui si riferisce. */
+  context?: { companyId: string; companyName: string };
+}
+
+export interface Governance {
+  organo: string | null;
+  amministratori: number | null;
+  organoControllo: boolean | null;
+  soci: number | null;
+  quotaSocioPrincipale: number | null;
 }
 
 /** Valori in euro dell'esercizio più recente; null se non presenti nel documento. */

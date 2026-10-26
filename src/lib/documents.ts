@@ -1,7 +1,8 @@
 // Lettura di visura camerale e bilancio: schema dei dati da estrarre e conversione nei campi del profilo.
-// Le persone fisiche (soci, amministratori) non vengono mai estratte né salvate.
+// Nomi e ruoli di amministratori e soci principali vengono restituiti solo al browser di chi ha caricato
+// la visura, per suggerire chi invitare: nel database si salvano solo dati aggregati di governance.
 import { PROFILE_FIELDS } from "./questionnaire";
-import type { Financials } from "./types";
+import type { Financials, Governance } from "./types";
 import { isValidItalianVat, normalizeVat } from "./vat";
 
 export type DocKind = "visura" | "bilancio";
@@ -23,10 +24,25 @@ export const VISURA_SCHEMA = {
     comune_sede: nullable("string"),
     anno_costituzione: nullable("integer"),
     addetti: nullable("integer"),
+    organo_amministrativo: nullableEnum(["amministratore unico", "consiglio di amministrazione", "più amministratori"]),
+    numero_amministratori: nullable("integer"),
+    organo_controllo: { anyOf: [{ type: "boolean" }, { type: "null" }] },
+    numero_soci: nullable("integer"),
+    quota_socio_principale: nullable("number"),
+    persone: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { nome: { type: "string" }, ruolo: { type: "string" } },
+        required: ["nome", "ruolo"],
+        additionalProperties: false,
+      },
+    },
   },
   required: [
     "ragione_sociale", "partita_iva", "forma_giuridica", "ateco_codice", "ateco_descrizione",
     "settore", "regione", "comune_sede", "anno_costituzione", "addetti",
+    "organo_amministrativo", "numero_amministratori", "organo_controllo", "numero_soci", "quota_socio_principale", "persone",
   ],
   additionalProperties: false,
 } as const;
@@ -67,7 +83,10 @@ Regole:
 - "settore": scegli la voce dell'elenco più vicina all'attività prevalente (codice ATECO).
 - "regione": la regione della sede legale.
 - "addetti": il numero di addetti più recente indicato.
-- Non riportare mai nomi, codici fiscali o dati di persone fisiche (soci, amministratori, sindaci).`,
+- "organo_controllo": true se sono presenti collegio sindacale, sindaco unico o revisore legale.
+- "quota_socio_principale": la percentuale del capitale detenuta dal socio con la quota maggiore.
+- "persone": gli amministratori in carica e i soci con almeno il 10% del capitale, con nome e cognome (o denominazione se società) e un ruolo breve, per esempio "Amministratore unico", "Presidente del CdA", "Consigliere", "Socio al 40%". Al massimo 10 persone.
+- Non riportare mai codici fiscali, date o luoghi di nascita, indirizzi di residenza o altri dati personali oltre a nome e ruolo.`,
   bilancio: `Il documento è il bilancio d'esercizio di un'impresa italiana (schema civilistico). Estrai i valori dell'esercizio più recente, in euro (converti se espressi in migliaia).
 Regole:
 - Usa solo ciò che è scritto nel documento; se un dato manca usa null. Non stimare.
@@ -90,6 +109,31 @@ export interface VisuraData {
   comune_sede: string | null;
   anno_costituzione: number | null;
   addetti: number | null;
+  organo_amministrativo: string | null;
+  numero_amministratori: number | null;
+  organo_controllo: boolean | null;
+  numero_soci: number | null;
+  quota_socio_principale: number | null;
+  persone: { nome: string; ruolo: string }[];
+}
+
+/** Dati di governance senza nomi: questi si possono salvare. */
+export function governanceFrom(v: VisuraData): Governance {
+  return {
+    organo: v.organo_amministrativo,
+    amministratori: v.numero_amministratori,
+    organoControllo: v.organo_controllo,
+    soci: v.numero_soci,
+    quotaSocioPrincipale: v.quota_socio_principale,
+  };
+}
+
+/** Persone suggerite per l'invito: restano nel browser di chi ha caricato la visura. */
+export function peopleFrom(v: VisuraData): { name: string; role: string }[] {
+  return (v.persone ?? [])
+    .filter((p) => p.nome?.trim())
+    .slice(0, 10)
+    .map((p) => ({ name: p.nome.trim().slice(0, 120), role: (p.ruolo ?? "").trim().slice(0, 80) }));
 }
 
 export type BilancioData = {

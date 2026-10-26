@@ -58,8 +58,26 @@ export function sanitizeResponses(input: unknown): Responses {
     for (const k of keys) f[k] = typeof fin[k] === "number" && Number.isFinite(fin[k]) ? (fin[k] as number) : null;
     out.financials = f;
   }
+  const uuid = (v: unknown) => (typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v) ? v : undefined);
   const docs = r.documents as Record<string, unknown> | undefined;
-  if (docs && typeof docs === "object") out.documents = { visura: docs.visura === true, bilancio: docs.bilancio === true };
+  if (docs && typeof docs === "object") {
+    const d = { visura: uuid(docs.visura), bilancio: uuid(docs.bilancio) };
+    if (d.visura || d.bilancio) out.documents = d;
+  }
+  const g = r.governance as Record<string, unknown> | undefined;
+  if (g && typeof g === "object") {
+    const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+    out.governance = {
+      organo: typeof g.organo === "string" ? g.organo.slice(0, 60) : null,
+      amministratori: num(g.amministratori),
+      organoControllo: typeof g.organoControllo === "boolean" ? g.organoControllo : null,
+      soci: num(g.soci),
+      quotaSocioPrincipale: num(g.quotaSocioPrincipale),
+    };
+  }
+  const ctx = r.context as Record<string, unknown> | undefined;
+  if (ctx && uuid(ctx.companyId)) out.context = { companyId: ctx.companyId as string, companyName: str(ctx.companyName, 160) };
+  // le persone suggerite dalla visura non vengono mai salvate
   return out;
 }
 

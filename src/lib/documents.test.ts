@@ -7,6 +7,8 @@ describe("lettura documenti", () => {
       ragione_sociale: "Alfa Meccanica S.r.l.", partita_iva: "IT00743110157", forma_giuridica: "S.r.l.",
       ateco_codice: "28.41", ateco_descrizione: "Macchine utensili", settore: "Macchinari e apparecchiature",
       regione: "Atlantide", comune_sede: "Napoli", anno_costituzione: 1987, addetti: 45,
+      organo_amministrativo: "amministratore unico", numero_amministratori: 1, organo_controllo: false,
+      numero_soci: 2, quota_socio_principale: 60, persone: [{ nome: "Mario Rossi", ruolo: "Amministratore unico" }],
     };
     expect(profileFrom("visura", v)).toEqual({
       "PR-10": "00743110157", "PR-11": "Alfa Meccanica S.r.l.", "PR-01": "Macchinari e apparecchiature", "PR-03": "20-49", "PR-09": "1987",

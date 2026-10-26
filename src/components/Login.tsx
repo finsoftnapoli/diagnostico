@@ -8,6 +8,10 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 /** Accesso con codice via email, per l'area riservata. */
 export default function Login() {
   const router = useRouter();
+  const [next] = useState(() => {
+    const n = new URLSearchParams(window.location.search).get("next") ?? "/area";
+    return n.startsWith("/") && !n.startsWith("//") ? n : "/area";
+  });
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
@@ -20,7 +24,7 @@ export default function Login() {
     const go = async () => {
       const { data } = await sb.auth.getUser();
       if (data.user) {
-        router.replace("/admin");
+        router.replace(next);
         router.refresh();
       }
     };
@@ -29,7 +33,7 @@ export default function Login() {
       if (event === "SIGNED_IN") void go();
     });
     return () => sub.subscription.unsubscribe();
-  }, [router]);
+  }, [router, next]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,17 +43,17 @@ export default function Login() {
     if (!sent) {
       const { error } = await sb.auth.signInWithOtp({
         email: email.trim(),
-        options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/accedi` },
+        options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/accedi?next=${encodeURIComponent(next)}` },
       });
       setBusy(false);
-      if (error) return setError("Non siamo riusciti a inviare il codice: controlla l'indirizzo o riprova tra un minuto.");
+      if (error) return setError("Non troviamo un accesso con questa email: se non hai ancora completato un diagnostico, inizia da lì. Altrimenti riprova tra un minuto.");
       setSent(true);
       return;
     }
     const { error } = await sb.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
     if (error) return setError("Codice non valido o scaduto.");
-    router.push("/admin");
+    router.push(next);
     router.refresh();
   }
 

@@ -12,7 +12,7 @@ import HumanCheck, { isHumanCheckEnabled } from "./HumanCheck";
 import { emptyResponses } from "@/lib/scoring";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import type { AreaCode, Choice, Financials, Responses } from "@/lib/types";
+import type { AreaCode, Choice, Financials, Governance, Responses } from "@/lib/types";
 import { isValidItalianVat, normalizeVat } from "@/lib/vat";
 
 type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
@@ -285,11 +285,18 @@ function Intro({ r, update }: SectionProps) {
   return (
     <div>
       <h1 className="text-3xl font-semibold text-navy">Prima di iniziare</h1>
+      {r.context && (
+        <p className="mt-4 rounded-lg border border-navy/30 bg-navy/5 px-4 py-3 text-sm">
+          Compili il diagnostico come collega per <strong>{r.context.companyName}</strong>. Il profilo dell&apos;azienda è
+          già compilato; le tue risposte individuali saranno visibili all&apos;amministratore dello spazio aziendale, che
+          potrà confrontarle con quelle degli altri colleghi.
+        </p>
+      )}
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {[
           { icon: Clock, t: "15 minuti", d: "Quattro sezioni. Puoi salvare e riprendere quando vuoi." },
           { icon: Radar, t: "Risultato immediato", d: "Profilo sugli 8 ambiti, confronto e tre priorità." },
-          { icon: ShieldCheck, t: "Dati protetti", d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri." },
+          { icon: ShieldCheck, t: "Dati protetti", d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri, salvo i colleghi che inviti tu." },
         ].map(({ icon: Icon, t, d }) => (
           <div key={t} className="rounded-xl border border-line p-4">
             <Icon className="size-5 text-navy" aria-hidden strokeWidth={1.75} />
@@ -369,7 +376,7 @@ function Profile({ r, update }: SectionProps) {
         Con la partita IVA possiamo completare il profilo con i dati pubblici dell&apos;azienda e confrontarti con aziende
         simili per settore e dimensione.
       </p>
-      <DocUpload r={r} update={update} />
+      {isSupabaseConfigured() && <DocUpload r={r} update={update} />}
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         {PROFILE_FIELDS.map((f) => (
           <label key={f.id} className="block text-sm">
@@ -609,18 +616,44 @@ function DocUpload({ r, update }: SectionProps) {
 
   async function upload(kind: "visura" | "bilancio", file: File | undefined) {
     if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-      setMsg((m) => ({ ...m, [kind]: "Il file supera i 4 MB: prova con una versione più leggera." }));
+    if (file.type && file.type !== "application/pdf") {
+      setMsg((m) => ({ ...m, [kind]: "Il file deve essere un PDF." }));
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setMsg((m) => ({ ...m, [kind]: "Il file supera i 20 MB: prova con una versione più leggera." }));
       return;
     }
     setBusy(kind);
-    setMsg((m) => ({ ...m, [kind]: "Lettura in corso, può richiedere fino a un minuto…" }));
+    setMsg((m) => ({ ...m, [kind]: "Caricamento…" }));
     try {
-      const fd = new FormData();
-      fd.append("tipo", kind);
-      fd.append("file", file);
-      const res = await fetch("/api/documenti", { method: "POST", body: fd });
-      const j = (await res.json()) as { error?: string; profile?: Record<string, string>; financials?: Financials };
+      // 1. caricamento diretto nell'archivio privato
+      const prep = await fetch("/api/documenti/caricamento", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tipo: kind, size: file.size }),
+      });
+      const p = (await prep.json()) as { error?: string; path?: string; token?: string };
+      if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
+      const { error: upErr } = await supabaseBrowser()
+        .storage.from("documenti")
+        .uploadToSignedUrl(p.path, p.token, file, { contentType: "application/pdf" });
+      if (upErr) throw new Error("Caricamento non riuscito, riprova");
+      // 2. lettura
+      setMsg((m) => ({ ...m, [kind]: "Lettura in corso, può richiedere fino a un minuto…" }));
+      const res = await fetch("/api/documenti", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tipo: kind, path: p.path }),
+      });
+      const j = (await res.json()) as {
+        error?: string;
+        documentId?: string;
+        profile?: Record<string, string>;
+        financials?: Financials;
+        governance?: Governance;
+        people?: { name: string; role: string }[];
+      };
       if (!res.ok) throw new Error(j.error ?? "Lettura non riuscita");
       const filled: string[] = [];
       const profile = { ...r.profile };
@@ -633,12 +666,15 @@ function DocUpload({ r, update }: SectionProps) {
       update({
         profile,
         ...(j.financials ? { financials: j.financials } : {}),
-        documents: { ...r.documents, [kind]: true },
+        ...(j.governance ? { governance: j.governance } : {}),
+        ...(j.people?.length ? { people: j.people } : {}),
+        documents: { ...r.documents, [kind]: j.documentId },
       });
       const parts: string[] = [];
       if (filled.length) parts.push(`compilati: ${filled.join(", ")}`);
       if (j.financials) parts.push(`letti i dati del bilancio${j.financials.year ? ` ${j.financials.year}` : ""}`);
-      setMsg((m) => ({ ...m, [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlla i campi qui sotto.` : "Letto: i campi erano già compilati." }));
+      if (j.governance?.organo) parts.push(`governance: ${j.governance.organo}`);
+      setMsg((m) => ({ ...m, [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlla i campi qui sotto.` : "Letto: i campi erano già compilati." }))
     } catch (e) {
       setMsg((m) => ({ ...m, [kind]: e instanceof Error ? e.message : "Lettura non riuscita" }));
     } finally {
@@ -652,12 +688,12 @@ function DocUpload({ r, update }: SectionProps) {
         <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Hai a portata di mano visura e bilancio?
       </p>
       <p className="mt-1 text-sm text-muted">
-        Caricali in PDF (facoltativo): compiliamo noi i campi e il report includerà i numeri chiave. I file non vengono
-        conservati: li leggiamo, estraiamo i dati dell&apos;azienda e li eliminiamo.
+        Caricali in PDF (facoltativo): compiliamo noi i campi e il report includerà numeri chiave e governance. I file
+        restano in un archivio privato e puoi cancellarli in qualsiasi momento dalla tua area personale.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {DOCS.map((d) => {
-          const done = r.documents?.[d.kind];
+          const done = !!r.documents?.[d.kind];
           return (
             <div key={d.kind}>
               <label

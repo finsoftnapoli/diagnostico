@@ -19,7 +19,7 @@ export default function AdminPage() {
 
 async function AdminList() {
   const { user, isStaff } = await currentUser();
-  if (!user) redirect("/accedi");
+  if (!user) redirect("/accedi?next=/admin");
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
   const rows = await listAssessments();
   return (

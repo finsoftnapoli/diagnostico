@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Banknote, CircleCheck, Footprints, Gauge, Info, Scale, Target, TriangleAlert, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, Banknote, CircleCheck, Landmark, Footprints, Gauge, Info, Scale, Target, TriangleAlert, TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
@@ -12,6 +12,9 @@ import { buildInsights, LEVEL_NAMES, levelLabel, type ThemeView } from "@/lib/in
 import { AREAS } from "@/lib/questionnaire";
 import { computeResult, relevanceLabel } from "@/lib/scoring";
 import type { AreaCode } from "@/lib/types";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import type { Governance } from "@/lib/types";
+import InviteColleagues from "./InviteColleagues";
 import RadarProfile from "./RadarProfile";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
@@ -131,6 +134,9 @@ export default function Report({ draft }: { draft: Draft }) {
 
       {/* Numeri del bilancio */}
       {r.financials && <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />}
+
+      {/* Governance dalla visura */}
+      {r.governance && <GovernanceBlock g={r.governance} strLevel={r.levels["STR-3"]} />}
 
       {/* Priorità e prossimi passi */}
       <section className="mt-14">
@@ -322,6 +328,9 @@ export default function Report({ draft }: { draft: Draft }) {
         </div>
       </section>
 
+      {/* Colleghi */}
+      {isSupabaseConfigured() && draft.savedId && !r.context && <InviteColleagues people={r.people ?? []} />}
+
       {/* Invito */}
       <section className="mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
         <h2 className="text-xl font-semibold">Vuoi trasformare le priorità in un piano?</h2>
@@ -463,6 +472,47 @@ function Numbers({ f, finScore }: { f: NonNullable<Draft["responses"]["financial
               </span>
             </li>
           )}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function GovernanceBlock({ g, strLevel }: { g: Governance; strLevel: number | undefined }) {
+  const facts: [string, string][] = [];
+  if (g.organo) facts.push(["Organo amministrativo", g.organo + (g.amministratori && g.amministratori > 1 ? ` (${g.amministratori} membri)` : "")]);
+  if (g.organoControllo !== null) facts.push(["Collegio sindacale o revisore", g.organoControllo ? "presente" : "assente"]);
+  if (g.soci) facts.push(["Soci", String(g.soci)]);
+  if (g.quotaSocioPrincipale !== null) facts.push(["Quota del socio principale", `${g.quotaSocioPrincipale.toLocaleString("it-IT")}%`]);
+  const notes: string[] = [];
+  if (g.organo === "amministratore unico")
+    notes.push("Amministratore unico: le decisioni sono concentrate in una persona. È efficiente, ma rende cruciali deleghe, continuità e un confronto esterno sulle scelte rilevanti.");
+  if (g.organoControllo === false) notes.push("Non risulta un organo di controllo: per le aziende in crescita un revisore o un advisory board rafforza credibilità con banche e investitori.");
+  if (g.quotaSocioPrincipale !== null && g.quotaSocioPrincipale >= 75) notes.push("Controllo molto concentrato: la pianificazione della successione e le regole tra soci pesano sulla continuità.");
+  if (strLevel !== undefined && strLevel >= 3 && g.organo === "amministratore unico" && g.organoControllo === false)
+    notes.push("Hai indicato una governance strutturata: con amministratore unico e senza organo di controllo, verifica che ci sia davvero una voce esterna indipendente.");
+  if (!facts.length) return null;
+  return (
+    <section className="mt-14">
+      <h2 className="text-2xl font-semibold text-navy flex items-center gap-2">
+        <Landmark className="size-6" aria-hidden strokeWidth={1.75} /> Governance secondo la visura
+      </h2>
+      <dl className="mt-5 grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {facts.map(([k, v]) => (
+          <div key={k} className="rounded-xl border border-line p-4">
+            <dt className="text-xs uppercase tracking-wide text-muted">{k}</dt>
+            <dd className="mt-1 font-semibold text-navy">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {notes.length > 0 && (
+        <ul className="mt-4 space-y-2 text-sm">
+          {notes.map((n) => (
+            <li key={n} className="flex gap-3">
+              <ArrowRight className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
+              <span>{n}</span>
+            </li>
+          ))}
         </ul>
       )}
     </section>

@@ -18,7 +18,7 @@ export default function DetailPage({ params }: PageProps<"/admin/[id]">) {
 async function Detail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { user, isStaff } = await currentUser();
-  if (!user) redirect("/accedi");
+  if (!user) redirect("/accedi?next=/admin");
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
   const r = await getAssessment(id);
   if (!r) notFound();

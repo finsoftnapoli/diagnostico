@@ -100,6 +100,40 @@ exception when insufficient_privilege then null;
 end $$;
 reset role;
 
+-- Documenti: ognuno vede solo i propri, nessuno li scrive direttamente
+reset role;
+insert into public.documents (kind, storage_path, user_id) values
+  ('visura', 'a/visura.pdf', '00000000-0000-0000-0000-00000000000a'),
+  ('bilancio', 'c/bilancio.pdf', '00000000-0000-0000-0000-00000000000c');
+insert into public.documents (kind, storage_path, created_at) values ('visura', 'orfano.pdf', now() - interval '40 days');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
+do $$ begin
+  assert (select count(*) from public.documents) = 1, 'il titolare Alfa vede solo i propri documenti';
+end $$;
+do $$ begin
+  insert into public.documents (kind, storage_path) values ('visura', 'x.pdf');
+  raise exception 'non doveva riuscire';
+exception when others then
+  if sqlerrm = 'non doveva riuscire' then raise; end if;
+end $$;
+do $$ begin
+  perform public.documents_to_purge();
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+-- i dati di un invito si leggono con il token, anche senza accesso
+reset role;
+select set_config('test.token', (select token::text from public.invitations limit 1), false);
+set role anon;
+do $$ begin
+  assert (select company_name from public.invitation_info(current_setting('test.token')::uuid)) = 'Alfa Meccanica', 'info invito leggibile con il token';
+end $$;
+reset role;
+do $$ begin
+  assert (select count(*) from public.documents_to_purge()) = 1, 'solo il documento orfano da 40 giorni va eliminato';
+end $$;
+
 -- Un utente anonimo non vede nulla
 reset role;
 set role anon;

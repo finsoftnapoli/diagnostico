@@ -31,6 +31,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Un servizio di {BRAND.owner}. Autovalutazione orientativa: non è una consulenza né un rating.
             </span>
             <span className="flex gap-4">
+              <Link href="/area" className="hover:underline">
+                Area personale
+              </Link>
               <Link href="/privacy" className="hover:underline">
                 Informativa privacy
               </Link>
