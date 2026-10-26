@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { computeModule, moduleIncomplete, sanitizeModuleResponses } from "./module-scoring";
-import { MODULE_QUESTIONS } from "./modules";
+import { MODULE_QUESTIONS, MODULE_SUBAREAS } from "./modules";
 
 describe("moduli di approfondimento", () => {
-  it("ha domande coerenti per tutti gli 8 ambiti", () => {
+  it("ha 8 sotto-ambiti con 2-3 domande ciascuno in tutti gli 8 ambiti", () => {
     for (const [area, qs] of Object.entries(MODULE_QUESTIONS)) {
-      expect(qs.length).toBeGreaterThanOrEqual(8);
+      const subs = MODULE_SUBAREAS[area as keyof typeof MODULE_SUBAREAS];
+      expect(subs).toHaveLength(8);
+      for (const s of subs) expect(qs.filter((q) => q.sub === s.code).length).toBeGreaterThanOrEqual(2);
+      for (const s of subs) expect(qs.filter((q) => q.sub === s.code).length).toBeLessThanOrEqual(3);
       expect(new Set(qs.map((q) => q.id)).size).toBe(qs.length);
       for (const q of qs) {
         expect(q.levels).toHaveLength(4);
@@ -30,13 +33,23 @@ describe("moduli di approfondimento", () => {
     expect(res.score).toBe(67);
     expect(res.themes.filter((t) => t.level === null)).toHaveLength(qs.filter((q) => q.na).length);
     // "non applicabile" non è ammesso dove non previsto
-    const bad = sanitizeModuleResponses("FIN", { levels: { "FIN-A01": 0 } });
-    expect(bad.levels["FIN-A01"]).toBeUndefined();
+    const bad = sanitizeModuleResponses("FIN", { levels: { "FIN-1.1": 0 } });
+    expect(bad.levels["FIN-1.1"]).toBeUndefined();
+  });
+
+  it("calcola i sotto-ambiti e il modulo come media dei sotto-ambiti", () => {
+    // FIN-1 (2 domande) tutto a livello 4, il resto a livello 1: un sotto-ambito su otto a 100
+    const levels: Record<string, number> = {};
+    for (const q of MODULE_QUESTIONS.FIN) levels[q.id] = q.sub === "FIN-1" ? 4 : 1;
+    const res = computeModule("FIN", sanitizeModuleResponses("FIN", { levels }));
+    expect(res.subs.find((s) => s.code === "FIN-1")?.score).toBe(100);
+    expect(res.subs.find((s) => s.code === "FIN-8")?.score).toBe(0);
+    expect(res.score).toBe(13);
   });
 
   it("segnala la possibile sovrastima", () => {
-    const r = sanitizeModuleResponses("FIN", { levels: { "FIN-A01": 4 }, checks: { "FIN-A01": "No" } });
-    const t = computeModule("FIN", r).themes.find((x) => x.id === "FIN-A01")!;
+    const r = sanitizeModuleResponses("FIN", { levels: { "FIN-1.1": 4 }, checks: { "FIN-1.1": "No" } });
+    const t = computeModule("FIN", r).themes.find((x) => x.id === "FIN-1.1")!;
     expect(t.flag).toContain("possibile sovrastima");
     expect(moduleIncomplete("FIN", r)).toContain("manca la risposta");
   });

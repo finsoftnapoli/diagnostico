@@ -5,21 +5,42 @@ import { AREA_SHORT } from "@/lib/areaIcons";
 import type { AreaResult } from "@/lib/scoring";
 import type { AreaCode } from "@/lib/types";
 
+/** Vertice generico dell'Ottogramma (per esempio i sotto-ambiti di un modulo). */
+export interface RadarItem {
+  label: string;
+  score: number | null;
+  ref?: number | null;
+  highlight?: boolean;
+}
+
 export default function RadarProfile({
   areas,
+  items,
   reference,
   referenceLabel,
+  fontSize = 12,
 }: {
-  areas: AreaResult[];
+  areas?: AreaResult[];
+  /** In alternativa agli ambiti del diagnostico: vertici con etichetta e riferimento propri. */
+  items?: RadarItem[];
   reference?: Record<AreaCode, number>;
   referenceLabel?: string;
+  fontSize?: number;
 }) {
-  const data = areas.map((a) => ({
-    area: AREA_SHORT[a.code],
-    score: a.score ?? 0,
-    ref: reference?.[a.code] ?? null,
-    priority: a.isPriority,
-  }));
+  const data = items
+    ? items.map((i) => ({
+        area: i.label,
+        score: i.score ?? 0,
+        ref: i.ref ?? null,
+        priority: !!i.highlight,
+      }))
+    : (areas ?? []).map((a) => ({
+        area: AREA_SHORT[a.code],
+        score: a.score ?? 0,
+        ref: reference?.[a.code] ?? null,
+        priority: a.isPriority,
+      }));
+  const hasRef = items ? items.some((i) => i.ref != null) : !!reference;
   return (
     <div className="w-full aspect-square max-w-[540px] mx-auto">
       <ResponsiveContainer width="100%" height="100%">
@@ -27,22 +48,34 @@ export default function RadarProfile({
           <PolarGrid stroke="#d9dee5" />
           <PolarAngleAxis
             dataKey="area"
-            tick={({ x, y, payload, textAnchor, index }) => (
-              <text
-                x={x}
-                y={y}
-                textAnchor={textAnchor}
-                dominantBaseline="central"
-                fontSize={12}
-                fontWeight={data[index]?.priority ? 700 : 400}
-                fill={data[index]?.priority ? "#0a2a4a" : "#5b6573"}
-              >
-                {payload.value}
-              </text>
-            )}
+            tick={({ x, y, payload, textAnchor, index }) => {
+              // etichette lunghe su due righe
+              const words = String(payload.value).split(" ");
+              const lines =
+                String(payload.value).length > 14 && words.length > 1
+                  ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")]
+                  : [String(payload.value)];
+              return (
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor={textAnchor}
+                  dominantBaseline="central"
+                  fontSize={fontSize}
+                  fontWeight={data[index]?.priority ? 700 : 400}
+                  fill={data[index]?.priority ? "#0a2a4a" : "#5b6573"}
+                >
+                  {lines.map((l, i) => (
+                    <tspan key={i} x={x} dy={i === 0 ? (lines.length > 1 ? -fontSize * 0.55 : 0) : fontSize * 1.1}>
+                      {l}
+                    </tspan>
+                  ))}
+                </text>
+              );
+            }}
           />
           <PolarRadiusAxis domain={[0, 100]} tickCount={5} tick={{ fontSize: 10, fill: "#8a93a0" }} axisLine={false} angle={67.5} />
-          {reference && (
+          {hasRef && (
             <Radar
               name={referenceLabel ?? "Riferimento"}
               dataKey="ref"
@@ -64,7 +97,7 @@ export default function RadarProfile({
             dot={{ r: 3, fill: "#0a2a4a" }}
             isAnimationActive={false}
           />
-          {reference && <Legend iconType="plainline" wrapperStyle={{ fontSize: 12, color: "#5b6573" }} />}
+          {hasRef && <Legend iconType="plainline" wrapperStyle={{ fontSize: 12, color: "#5b6573" }} />}
         </RadarChart>
       </ResponsiveContainer>
     </div>

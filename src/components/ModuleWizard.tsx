@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AreaIcon } from "@/lib/areaIcons";
 import type { ModuleResponses } from "@/lib/module-scoring";
-import { MODULE_QUESTIONS } from "@/lib/modules";
+import { MODULE_QUESTIONS, MODULE_SUBAREAS, type ModuleQuestion } from "@/lib/modules";
 import { AREAS } from "@/lib/questionnaire";
 import type { AreaCode } from "@/lib/types";
 
@@ -66,8 +66,8 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
           <p className="text-sm text-muted">Approfondimento</p>
           <h1 className="text-3xl font-semibold text-navy leading-tight">{a.name}</h1>
           <p className="mt-1 text-muted">
-            {qs.length} temi. Per ciascuno scegli la situazione più vicina alla realtà di oggi, non a quella desiderata. Le
-            risposte si salvano da sole: puoi interrompere e riprendere quando vuoi.
+            8 sotto-ambiti, {qs.length} domande. Per ciascuna scegli la situazione più vicina alla realtà di oggi, non a quella desiderata.
+            Le risposte si salvano da sole: puoi interrompere e riprendere quando vuoi.
           </p>
         </div>
       </div>
@@ -84,67 +84,22 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
         </span>
       </div>
 
-      <div className="mt-6 space-y-6">
-        {qs.map((q, qi) => (
-          <fieldset key={q.id} className="rounded-xl border border-line p-4 sm:p-5">
-            <legend className="sr-only">{q.text}</legend>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">
-              {qi + 1}/{qs.length} · {q.theme}
-            </p>
-            <p className="mt-1 font-semibold text-ink">{q.text}</p>
-            <div className="mt-3 space-y-2">
-              {q.levels.map((txt, i) => {
-                const lvl = i + 1;
-                const on = r.levels[q.id] === lvl;
-                return (
-                  <label
-                    key={lvl}
-                    className={`flex gap-3 items-start border rounded-lg px-3 py-3 cursor-pointer text-sm leading-snug transition ${
-                      on ? "border-navy bg-navy/5" : "border-line hover:border-navy-soft"
-                    }`}
-                  >
-                    <input type="radio" name={q.id} className="sr-only" checked={on} onChange={() => update({ levels: { ...r.levels, [q.id]: lvl } })} />
-                    <span className="shrink-0 flex gap-0.5 mt-1" aria-hidden>
-                      {[1, 2, 3, 4].map((k) => (
-                        <span key={k} className={`w-1.5 h-3.5 rounded-sm ${k <= lvl ? (on ? "bg-navy" : "bg-navy/35") : "bg-line"}`} />
-                      ))}
-                    </span>
-                    <span className={on ? "text-ink" : ""}>{txt}</span>
-                  </label>
-                );
-              })}
-              {q.na && (
-                <label className={`flex gap-3 items-center border rounded-lg px-3 py-2 cursor-pointer text-sm ${r.levels[q.id] === 0 ? "border-navy bg-navy/5" : "border-line border-dashed"}`}>
-                  <input type="radio" name={q.id} className="sr-only" checked={r.levels[q.id] === 0} onChange={() => update({ levels: { ...r.levels, [q.id]: 0 } })} />
-                  <span className="text-muted">Non riguarda la nostra azienda</span>
-                </label>
-              )}
+      <div className="mt-6 space-y-10">
+        {MODULE_SUBAREAS[area].map((sa, si) => (
+          <section key={sa.code} aria-labelledby={`sa-${sa.code}`}>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">Sotto-ambito {si + 1} di 8</p>
+            <h2 id={`sa-${sa.code}`} className="text-xl font-semibold text-navy">
+              {sa.name}
+            </h2>
+            <p className="text-sm text-muted">{sa.description}</p>
+            <div className="mt-4 space-y-5">
+              {qs
+                .filter((q) => q.sub === sa.code)
+                .map((q) => (
+                  <Question key={q.id} q={q} qi={qs.indexOf(q)} total={qs.length} r={r} update={update} />
+                ))}
             </div>
-            {q.check && r.levels[q.id] !== 0 && (
-              <div className="mt-4 rounded-lg bg-paper px-3 py-3">
-                <p className="text-sm">
-                  <span className="font-medium">Verifica rapida · </span>
-                  {q.check.text}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {q.check.options.map((o) => {
-                    const on = r.checks[q.id] === o;
-                    return (
-                      <button
-                        key={o}
-                        type="button"
-                        onClick={() => update({ checks: { ...r.checks, [q.id]: o } })}
-                        aria-pressed={on}
-                        className={`text-sm px-3 py-1.5 rounded-full border ${on ? "bg-navy text-white border-navy" : "bg-white border-line hover:border-navy-soft"}`}
-                      >
-                        {o}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </fieldset>
+          </section>
         ))}
 
         <label className="block rounded-xl border border-line p-4 sm:p-5">
@@ -166,7 +121,8 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
           disabled={sending || answered < qs.length}
           className="inline-flex items-center gap-2 bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-50"
         >
-          {sending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Invia per l&apos;analisi
+          {sending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Invia per
+          l&apos;analisi
         </button>
         <p className="text-sm text-muted">
           {answered < qs.length ? `Mancano ${qs.length - answered} risposte.` : "Dopo l'invio non potrai più modificare le risposte."}
@@ -174,5 +130,95 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
       </div>
       {error && <p className="mt-3 text-sm text-accent">{error}</p>}
     </div>
+  );
+}
+
+function Question({
+  q,
+  qi,
+  total,
+  r,
+  update,
+}: {
+  q: ModuleQuestion;
+  qi: number;
+  total: number;
+  r: ModuleResponses;
+  update: (p: Partial<ModuleResponses>) => void;
+}) {
+  return (
+    <fieldset className="rounded-xl border border-line p-4 sm:p-5">
+      <legend className="sr-only">{q.text}</legend>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">
+        {qi + 1}/{total} · {q.theme}
+      </p>
+      <p className="mt-1 font-semibold text-ink">{q.text}</p>
+      <div className="mt-3 space-y-2">
+        {q.levels.map((txt, i) => {
+          const lvl = i + 1;
+          const on = r.levels[q.id] === lvl;
+          return (
+            <label
+              key={lvl}
+              className={`flex gap-3 items-start border rounded-lg px-3 py-3 cursor-pointer text-sm leading-snug transition ${
+                on ? "border-navy bg-navy/5" : "border-line hover:border-navy-soft"
+              }`}
+            >
+              <input
+                type="radio"
+                name={q.id}
+                className="sr-only"
+                checked={on}
+                onChange={() => update({ levels: { ...r.levels, [q.id]: lvl } })}
+              />
+              <span className="shrink-0 flex gap-0.5 mt-1" aria-hidden>
+                {[1, 2, 3, 4].map((k) => (
+                  <span key={k} className={`w-1.5 h-3.5 rounded-sm ${k <= lvl ? (on ? "bg-navy" : "bg-navy/35") : "bg-line"}`} />
+                ))}
+              </span>
+              <span className={on ? "text-ink" : ""}>{txt}</span>
+            </label>
+          );
+        })}
+        {q.na && (
+          <label
+            className={`flex gap-3 items-center border rounded-lg px-3 py-2 cursor-pointer text-sm ${r.levels[q.id] === 0 ? "border-navy bg-navy/5" : "border-line border-dashed"}`}
+          >
+            <input
+              type="radio"
+              name={q.id}
+              className="sr-only"
+              checked={r.levels[q.id] === 0}
+              onChange={() => update({ levels: { ...r.levels, [q.id]: 0 } })}
+            />
+            <span className="text-muted">Non riguarda la nostra azienda</span>
+          </label>
+        )}
+      </div>
+      {q.check && r.levels[q.id] !== 0 && (
+        <div className="mt-4 rounded-lg bg-paper px-3 py-3">
+          <p className="text-sm">
+            <span className="font-medium">Verifica rapida · </span>
+            {q.check.text}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {q.check.options.map((o) => {
+              const on = r.checks[q.id] === o;
+              return (
+                <button
+                  key={o}
+                  type="button"
+                  onClick={() => update({ checks: { ...r.checks, [q.id]: o } })}
+                  aria-pressed={on}
+                  className={`text-sm px-3 py-1.5 rounded-full border ${on ? "bg-navy text-white border-navy" : "bg-white border-line hover:border-navy-soft"}`}
+                >
+                  {o}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </fieldset>
   );
 }

@@ -22,8 +22,8 @@ export const PRODUCTS: Record<Sku, Product> = {
     price: 100,
     invoiceText: "Modulo di approfondimento diagnostico",
     bullets: [
-      "Questionario di dettaglio sull'ambito, tema per tema",
-      "Punteggio per ciascun tema e confronto con il diagnostico",
+      "L'Ottogramma dell'ambito: 8 sotto-ambiti, 16-18 domande di dettaglio",
+      "Punteggio per sotto-ambito, subito, e confronto con il diagnostico",
       "Report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire, rivisto dai nostri esperti",
     ],
   },

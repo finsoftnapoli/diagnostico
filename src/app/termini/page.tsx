@@ -34,8 +34,8 @@ export default function Terms() {
       <S n="2" t="Servizi e prezzi">
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            <strong>{PRODUCTS.modulo.name}</strong>: {euro(PRODUCTS.modulo.price)} per ambito. Questionario di dettaglio sull&apos;ambito, punteggi
-            per tema e report scritto con piano di lavoro e indicatori, rivisto dai nostri esperti.
+            <strong>{PRODUCTS.modulo.name}</strong>: {euro(PRODUCTS.modulo.price)} per ambito. Questionario di dettaglio sull&apos;ambito in 8 sotto-ambiti,
+            punteggi per sotto-ambito e report scritto con piano di lavoro e indicatori, rivisto dai nostri esperti.
           </li>
           <li>
             <strong>{PRODUCTS.consulenza.name}</strong>: {euro(PRODUCTS.consulenza.price)} per un&apos;ora in videochiamata con un consulente

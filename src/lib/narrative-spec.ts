@@ -30,11 +30,11 @@ export const MODULE_SPEC: FieldSpec[] = [
   { key: "summary", label: "Sintesi", type: "text", rows: 8, max: 5000 },
   {
     key: "themes",
-    label: "Temi",
+    label: "Sotto-ambiti",
     type: "group",
     itemTitle: "theme",
     fields: [
-      { key: "theme", label: "Tema", type: "fixed" },
+      { key: "theme", label: "Sotto-ambito", type: "fixed" },
       { key: "diagnosis", label: "Diagnosi", type: "text", rows: 4, max: 2500 },
       { key: "actions", label: "Azioni (una per riga)", type: "list", max: 600 },
     ],

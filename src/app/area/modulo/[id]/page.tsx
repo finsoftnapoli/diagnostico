@@ -4,7 +4,8 @@ import { Suspense } from "react";
 import ModuleReport from "@/components/ModuleReport";
 import ModuleWizard from "@/components/ModuleWizard";
 import type { ModuleNarrative } from "@/lib/module-report";
-import { emptyModuleResponses, type ModuleResponses, type ThemeResult } from "@/lib/module-scoring";
+import { bandText, normativeBenchmark } from "@/config/benchmark";
+import { computeModule, emptyModuleResponses, type ModuleResponses } from "@/lib/module-scoring";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { AreaCode } from "@/lib/types";
 
@@ -31,7 +32,7 @@ async function Module({ params }: { params: Promise<{ id: string }> }) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const { data: m } = await sb
     .from("module_assessments")
-    .select("id, area, status, responses, score, theme_scores, report_status, report_narrative, company_id, companies(name)")
+    .select("id, area, status, responses, report_status, report_narrative, company_id, companies(name)")
     .eq("id", id)
     .maybeSingle();
   if (!m) notFound();
@@ -40,7 +41,7 @@ async function Module({ params }: { params: Promise<{ id: string }> }) {
     return <ModuleWizard id={m.id} area={area} initial={{ ...emptyModuleResponses(), ...(m.responses as ModuleResponses) }} />;
   const { data: diag } = await sb
     .from("assessments")
-    .select("area_scores(area, score)")
+    .select("profile, area_scores(area, score)")
     .eq("company_id", m.company_id)
     .eq("status", "completed")
     .order("completed_at", { ascending: false })
@@ -48,13 +49,16 @@ async function Module({ params }: { params: Promise<{ id: string }> }) {
     .maybeSingle();
   const diagnosticScore =
     (diag?.area_scores as { area: string; score: number | null }[] | undefined)?.find((s) => s.area === area)?.score ?? null;
+  // riferimento indicativo dell'ambito per la fascia di fatturato del diagnostico
+  const band = (diag?.profile as Record<string, string> | null)?.["PR-02"];
+  const reference = band ? { value: normativeBenchmark(band).values[area], label: `Riferimento aziende ${bandText(band)}` } : null;
   return (
     <ModuleReport
       area={area}
       company={(m.companies as unknown as { name: string } | null)?.name ?? ""}
-      score={m.score}
+      result={computeModule(area, { ...emptyModuleResponses(), ...(m.responses as ModuleResponses) })}
       diagnosticScore={diagnosticScore}
-      themes={(m.theme_scores as ThemeResult[]) ?? []}
+      reference={reference}
       narrative={m.report_status === "ready" ? (m.report_narrative as ModuleNarrative) : null}
       failed={m.report_status === "failed"}
     />

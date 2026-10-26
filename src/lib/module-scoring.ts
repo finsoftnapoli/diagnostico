@@ -1,6 +1,8 @@
-// Punteggio dei moduli di approfondimento: stesse regole del diagnostico (livello 1-4 → 0-100),
-// temi non applicabili esclusi dalla media, segnali di possibile sovrastima dalle domande di verifica.
-import { MODULE_QUESTIONS, type ModuleQuestion } from "./modules";
+// Punteggio dei moduli di approfondimento: stesse regole del diagnostico (livello 1-4 → 0-100).
+// Ogni modulo è un Ottogramma dell'ambito: punteggio di ciascuno degli 8 sotto-ambiti = media delle sue
+// domande applicabili; punteggio del modulo = media dei sotto-ambiti. Domande non applicabili escluse,
+// segnali di possibile sovrastima dalle domande di verifica.
+import { MODULE_QUESTIONS, MODULE_SUBAREAS, type ModuleQuestion } from "./modules";
 import { PARAMS } from "./scoring";
 import type { AreaCode } from "./types";
 
@@ -14,15 +16,27 @@ export interface ModuleResponses {
 
 export interface ThemeResult {
   id: string;
+  /** Sotto-ambito della domanda. */
+  sub?: string;
   theme: string;
   level: number | null; // null = non applicabile o senza risposta
   score: number | null;
   flag: string | null;
 }
 
+export interface SubareaResult {
+  code: string;
+  name: string;
+  short: string;
+  description: string;
+  /** null se tutte le domande del sotto-ambito sono non applicabili. */
+  score: number | null;
+}
+
 export interface ModuleResult {
   area: AreaCode;
   score: number | null;
+  subs: SubareaResult[];
   themes: ThemeResult[];
   answered: number;
   total: number;
@@ -67,16 +81,22 @@ export function computeModule(area: AreaCode, r: ModuleResponses): ModuleResult 
     const level = l && l >= 1 ? l : null;
     return {
       id: q.id,
+      sub: q.sub,
       theme: q.theme,
       level,
       score: level ? PARAMS.levelPoints[level - 1] : null,
       flag: level ? flagOf(q, level, r.checks[q.id]) : null,
     };
   });
-  const scored = themes.filter((t) => t.score !== null);
+  const mean = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+  const subs: SubareaResult[] = MODULE_SUBAREAS[area].map((sa) => ({
+    ...sa,
+    score: mean(themes.filter((t) => t.sub === sa.code && t.score !== null).map((t) => t.score as number)),
+  }));
   return {
     area,
-    score: scored.length ? Math.round(scored.reduce((s, t) => s + (t.score as number), 0) / scored.length) : null,
+    score: mean(subs.filter((x) => x.score !== null).map((x) => x.score as number)),
+    subs,
     themes,
     answered: qs.filter((q) => r.levels[q.id] !== undefined).length,
     total: qs.length,
