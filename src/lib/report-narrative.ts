@@ -1,7 +1,8 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { normativeBenchmark, type Benchmark } from "@/config/benchmark";
-import { financialKpis } from "./documents";
+import type { ReportInputs } from "./company-docs";
+import { financialKpis, type PlanSummary } from "./documents";
 import { buildInsights, levelLabel } from "./insights";
 import { AREAS } from "./questionnaire";
 import { computeResult } from "./scoring";
@@ -11,7 +12,24 @@ import type { Responses } from "./types";
 const MODEL = "claude-sonnet-5-5";
 
 /** Dati, già calcolati, da passare al modello: niente di nuovo viene inventato. */
-function buildInput(r: Responses, bench: Benchmark) {
+const planInput = (p: PlanSummary) => ({
+  titolo: p.titolo,
+  periodo: p.periodo,
+  sintesi: p.sintesi,
+  obiettivi: p.obiettivi,
+  iniziative: p.iniziative,
+  investimenti: p.investimenti,
+  rischi: p.rischi,
+  ambitiToccati: p.ambiti,
+});
+
+function buildInput(r0: Responses, bench: Benchmark, docs: ReportInputs | null) {
+  // un bilancio più recente o la governance dell'ultima visura sostituiscono quelli della compilazione
+  const r: Responses = {
+    ...r0,
+    ...(docs?.financials ? { financials: docs.financials } : {}),
+    ...(docs?.governance ? { governance: docs.governance } : {}),
+  };
   const res = computeResult(r);
   const ins = buildInsights(r, res, bench);
   const kpis = r.financials ? financialKpis(r.financials) : null;
@@ -53,6 +71,7 @@ function buildInput(r: Responses, bench: Benchmark) {
     sfideTesto: r.issuesText || null,
     bilancio: kpis
       ? {
+          esercizio: r.financials?.year ?? null,
           margineEbitdaPct: kpis.ebitdaMargin,
           margineNettoPct: kpis.netMargin,
           pfnSuEbitda: kpis.pfnOnEbitda,
@@ -62,6 +81,8 @@ function buildInput(r: Responses, bench: Benchmark) {
         }
       : null,
     governance: r.governance ?? null,
+    pianoAziendale: docs?.plan ? planInput(docs.plan) : null,
+    altriDocumenti: docs?.others?.length ? docs.others.map(planInput) : null,
   };
 }
 
@@ -73,6 +94,8 @@ REGOLE FERME:
 - Il riferimento di fascia è un valore indicativo di aziende ben gestite della stessa dimensione, non una media reale: trattalo come tale.
 - Non è una consulenza formale né un rating: è un'analisi orientativa. Non promettere risultati.
 - Collega gli ambiti deboli alle ambizioni e alle sfide dichiarate dall'azienda, usando i testi liberi quando ci sono.
+- Se c'è un piano aziendale (pianoAziendale), confronta i suoi obiettivi e le sue iniziative con la prontezza emersa dal diagnostico: dove il piano chiede capacità che oggi risultano deboli, dillo con chiarezza. Riporta i valori del piano solo come scritti nell'input.
+- Gli altri documenti (altriDocumenti) sono contesto: usali solo se pertinenti.
 
 STRUTTURA (rispetta lo schema):
 - executiveSummary: 2-3 paragrafi che inquadrano lo stato complessivo, l'equilibrio del profilo e il legame con ambizioni e sfide.
@@ -82,9 +105,9 @@ STRUTTURA (rispetta lo schema):
 - closing: un paragrafo che indica il prossimo passo e, con misura, il valore di un confronto con un esperto.`;
 
 /** Genera il report approfondito. Lancia un'eccezione se non riesce (il chiamante segna 'failed'). */
-export async function generateNarrative(r: Responses): Promise<ReportNarrative> {
+export async function generateNarrative(r: Responses, docs: ReportInputs | null = null): Promise<ReportNarrative> {
   const bench = normativeBenchmark(r.profile["PR-02"]);
-  const input = buildInput(r, bench);
+  const input = buildInput(r, bench, docs);
   const client = new Anthropic();
   const msg = await client.messages.create({
     model: MODEL,

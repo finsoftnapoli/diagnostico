@@ -20,7 +20,16 @@ import RadarProfile from "./RadarProfile";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
 
-export default function Report({ draft, narrative }: { draft: Draft; narrative?: ReportNarrative | null }) {
+export default function Report({
+  draft,
+  narrative,
+  sources = [],
+}: {
+  draft: Draft;
+  narrative?: ReportNarrative | null;
+  /** Documenti archiviati di cui il report approfondito ha tenuto conto. */
+  sources?: string[];
+}) {
   const r = draft.responses;
   const band = r.profile["PR-02"];
   const [bench, setBench] = useState<Benchmark>(() => normativeBenchmark(band));
@@ -61,7 +70,7 @@ export default function Report({ draft, narrative }: { draft: Draft; narrative?:
       </p>
       <h1 className="mt-1 text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
 
-      {narrative && <Narrative n={narrative} />}
+      {narrative && <Narrative n={narrative} sources={sources} />}
 
       {/* Indicatori */}
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -525,11 +534,12 @@ function GovernanceBlock({ g, strLevel }: { g: Governance; strLevel: number | un
 const AREA_NAME: Record<string, string> = Object.fromEntries(AREAS.map((a) => [a.code, a.name]));
 
 /** Analisi elaborata dall'AI a partire dai dati del diagnostico. */
-function Narrative({ n }: { n: ReportNarrative }) {
+function Narrative({ n, sources }: { n: ReportNarrative; sources: string[] }) {
   return (
     <section className="mt-8 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
       <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri analisti</p>
       <h2 className="mt-1 text-2xl font-semibold text-navy">Sintesi per la direzione</h2>
+      {sources.length > 0 && <p className="mt-1 text-sm text-muted">Tiene conto anche di: {sources.join(", ")}.</p>}
       <div className="mt-4 space-y-3 leading-relaxed">
         {n.executiveSummary.split(/\n\n+/).map((p) => (
           <p key={p.slice(0, 40)}>{p}</p>

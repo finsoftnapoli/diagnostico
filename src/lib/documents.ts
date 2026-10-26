@@ -6,6 +6,16 @@ import type { Financials, Governance } from "./types";
 import { isValidItalianVat, normalizeVat } from "./vat";
 
 export type DocKind = "visura" | "bilancio";
+/** Tutti i tipi di documento archiviabili; business plan e altri documenti solo dall'area personale. */
+export type AnyDocKind = DocKind | "business_plan" | "altro";
+export const DOC_KINDS: AnyDocKind[] = ["visura", "bilancio", "business_plan", "altro"];
+export const DOC_LABELS: Record<AnyDocKind, string> = {
+  visura: "Visura camerale",
+  bilancio: "Bilancio d'esercizio",
+  business_plan: "Business plan / piano industriale",
+  altro: "Altro documento aziendale",
+};
+export const isDocKind = (k: unknown): k is AnyDocKind => typeof k === "string" && (DOC_KINDS as string[]).includes(k);
 
 const options = (id: string) => PROFILE_FIELDS.find((f) => f.id === id)?.options ?? [];
 const nullable = (t: "string" | "number" | "integer") => ({ anyOf: [{ type: t }, { type: "null" }] });
@@ -76,7 +86,45 @@ export const BILANCIO_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-export const PROMPTS: Record<DocKind, string> = {
+const AREA_CODES = ["STR", "FIN", "MKT", "PER", "OPS", "DIG", "INN", "SOS"];
+
+/** Business plan e altri documenti: sintesi dei contenuti utili alla gestione, senza dati personali. */
+export const PLAN_SCHEMA = {
+  type: "object",
+  properties: {
+    titolo: nullable("string"),
+    ragione_sociale: nullable("string"),
+    anno_inizio: nullable("integer"),
+    anno_fine: nullable("integer"),
+    sintesi: { type: "string" },
+    obiettivi: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { indicatore: { type: "string" }, anno: nullable("integer"), valore: { type: "string" } },
+        required: ["indicatore", "anno", "valore"],
+        additionalProperties: false,
+      },
+    },
+    iniziative: { type: "array", items: { type: "string" } },
+    investimenti: nullable("string"),
+    rischi: { type: "array", items: { type: "string" } },
+    ambiti: { type: "array", items: { type: "string", enum: AREA_CODES } },
+  },
+  required: ["titolo", "ragione_sociale", "anno_inizio", "anno_fine", "sintesi", "obiettivi", "iniziative", "investimenti", "rischi", "ambiti"],
+  additionalProperties: false,
+} as const;
+
+const PLAN_RULES = `Regole:
+- Usa solo ciò che è scritto nel documento; se un dato manca usa null o un elenco vuoto. Non stimare e non aggiungere giudizi.
+- "sintesi": 3-5 frasi sui contenuti rilevanti per la gestione dell'azienda.
+- "obiettivi": fino a 10 obiettivi quantitativi (per esempio ricavi, EBITDA, addetti, quote di mercato), con il valore così come scritto.
+- "iniziative": fino a 8 iniziative o progetti principali, una frase breve ciascuna.
+- "rischi": fino a 5 rischi o ipotesi critiche dichiarati.
+- "ambiti": i codici degli ambiti di gestione toccati: STR strategia, FIN finanza e controllo, MKT mercato e clienti, PER persone e organizzazione, OPS operations, DIG digitale e dati, INN innovazione, SOS sostenibilità.
+- Non riportare mai nomi, contatti o altri dati di persone fisiche: indica eventualmente solo il ruolo.`;
+
+export const PROMPTS: Record<AnyDocKind, string> = {
   visura: `Il documento è una visura camerale di un'impresa italiana. Estrai i dati richiesti dallo schema.
 Regole:
 - Usa solo ciò che è scritto nel documento; se un dato manca usa null. Non stimare.
@@ -96,7 +144,58 @@ Regole:
 - "debiti_finanziari": debiti verso banche, altri finanziatori, obbligazioni e soci per finanziamenti (entro e oltre l'esercizio).
 - "dipendenti": numero medio dei dipendenti se indicato in nota integrativa.
 - Non riportare mai nomi o dati di persone fisiche.`,
+  business_plan: `Il documento è il business plan o piano industriale di un'impresa italiana. Estrai i dati richiesti dallo schema.
+"anno_inizio" e "anno_fine": il primo e l'ultimo anno del piano.
+${PLAN_RULES}`,
+  altro: `Il documento è un documento aziendale di un'impresa italiana (per esempio presentazione, organigramma, relazione, budget). Estrai i dati richiesti dallo schema; "titolo" è il tipo di documento in poche parole.
+${PLAN_RULES}`,
 };
+
+export interface PlanData {
+  titolo: string | null;
+  ragione_sociale: string | null;
+  anno_inizio: number | null;
+  anno_fine: number | null;
+  sintesi: string;
+  obiettivi: { indicatore: string; anno: number | null; valore: string }[];
+  iniziative: string[];
+  investimenti: string | null;
+  rischi: string[];
+  ambiti: string[];
+}
+
+/** Sintesi salvabile di un piano o documento: testi accorciati, ambiti validi. */
+export interface PlanSummary {
+  titolo: string | null;
+  periodo: string | null;
+  sintesi: string;
+  obiettivi: { indicatore: string; anno: number | null; valore: string }[];
+  iniziative: string[];
+  investimenti: string | null;
+  rischi: string[];
+  ambiti: string[];
+}
+
+const cut = (t: string | null | undefined, n: number) => (t ?? "").replace(/\s+/g, " ").trim().slice(0, n);
+const validYear = (y: number | null | undefined) => (y && y > 1900 && y < 2100 ? y : null);
+
+export function planSummaryFrom(d: PlanData): PlanSummary {
+  const from = validYear(d.anno_inizio);
+  const to = validYear(d.anno_fine);
+  return {
+    titolo: cut(d.titolo, 120) || null,
+    periodo: from && to && to !== from ? `${from}-${to}` : from ? String(from) : to ? String(to) : null,
+    sintesi: cut(d.sintesi, 1200),
+    obiettivi: (d.obiettivi ?? [])
+      .slice(0, 10)
+      .map((o) => ({ indicatore: cut(o.indicatore, 80), anno: validYear(o.anno), valore: cut(o.valore, 60) }))
+      .filter((o) => o.indicatore && o.valore),
+    iniziative: (d.iniziative ?? []).slice(0, 8).map((t) => cut(t, 200)).filter(Boolean),
+    investimenti: cut(d.investimenti, 300) || null,
+    rischi: (d.rischi ?? []).slice(0, 5).map((t) => cut(t, 200)).filter(Boolean),
+    ambiti: [...new Set((d.ambiti ?? []).filter((a) => AREA_CODES.includes(a)))],
+  };
+}
 
 export interface VisuraData {
   ragione_sociale: string | null;

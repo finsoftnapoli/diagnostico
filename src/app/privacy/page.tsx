@@ -60,7 +60,9 @@ export default function Privacy() {
             archivio privato e li leggiamo in modo automatico per estrarre i dati anagrafici, di bilancio e di governance
             dell&apos;azienda. Dei soci e degli amministratori indicati nella visura estraiamo solo nome e ruolo, che
             mostriamo esclusivamente a te per suggerirti chi invitare: non li salviamo nel nostro database e non li usiamo
-            per contattare queste persone.
+            per contattare queste persone. Dalla tua area personale puoi aggiungere altri documenti dell&apos;azienda
+            (visure e bilanci aggiornati, business plan, altri documenti): ne estraiamo una sintesi dei contenuti
+            gestionali, senza dati di persone, usata per i report approfonditi della tua azienda.
           </li>
           <li>
             <strong>Dati dei colleghi che inviti:</strong> nome, ruolo ed email delle persone che scegli di invitare, usati
@@ -123,7 +125,7 @@ export default function Privacy() {
           effetti giuridici o analogamente significativi su di te (art. 22 GDPR).
         </p>
         <p>
-          Per leggere i documenti caricati e, in futuro, per scrivere il commento del report usiamo il servizio Claude di
+          Per leggere i documenti caricati e per scrivere il report approfondito usiamo il servizio Claude di
           Anthropic, che opera come nostro fornitore. In base ai termini commerciali del fornitore, i dati inviati non sono
           usati per addestrare i suoi modelli. [Da verificare: periodo di conservazione presso il fornitore secondo i
           termini vigenti.]

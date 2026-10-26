@@ -1,4 +1,5 @@
 import "server-only";
+import type { InterestRow } from "@/components/InterestList";
 import { AREAS } from "./questionnaire";
 import { supabaseService } from "./supabase/server";
 
@@ -49,3 +50,15 @@ export const priorities = (r: AdminRow) =>
     .map((s) => AREAS.find((a) => a.code === s.area)?.name ?? s.area);
 
 export const scoreOf = (r: AdminRow, area: string) => r.area_scores.find((s) => s.area === area)?.score ?? null;
+
+export async function listInterests() {
+  const { data } = await supabaseService()
+    .from("interests")
+    .select("id, created_at, kind, area, contact_email, assessment_id, handled_at, companies(name)")
+    .order("created_at", { ascending: false })
+    .limit(300);
+  return (data ?? []).map((r) => ({
+    ...r,
+    company: (r.companies as unknown as { name: string } | null)?.name ?? null,
+  })) as unknown as InterestRow[];
+}

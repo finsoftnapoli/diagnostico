@@ -106,10 +106,18 @@ insert into public.documents (kind, storage_path, user_id) values
   ('visura', 'a/visura.pdf', '00000000-0000-0000-0000-00000000000a'),
   ('bilancio', 'c/bilancio.pdf', '00000000-0000-0000-0000-00000000000c');
 insert into public.documents (kind, storage_path, created_at) values ('visura', 'orfano.pdf', now() - interval '40 days');
+-- caricato dall'area personale 40 giorni fa senza compilazione collegata: resta
+insert into public.documents (kind, storage_path, user_id, created_at, period) values
+  ('business_plan', 'a/piano.pdf', '00000000-0000-0000-0000-00000000000a', now() - interval '40 days', 2027);
+do $$ begin
+  insert into public.documents (kind, storage_path) values ('contratto', 'y.pdf');
+  raise exception 'non doveva riuscire';
+exception when check_violation then null;
+end $$;
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 do $$ begin
-  assert (select count(*) from public.documents) = 1, 'il titolare Alfa vede solo i propri documenti';
+  assert (select count(*) from public.documents) = 2, 'il titolare Alfa vede solo i propri documenti';
 end $$;
 do $$ begin
   insert into public.documents (kind, storage_path) values ('visura', 'x.pdf');

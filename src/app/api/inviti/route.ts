@@ -24,6 +24,15 @@ export async function POST(request: Request) {
   if (!m) return NextResponse.json({ error: "Solo l'amministratore dello spazio aziendale può invitare colleghi" }, { status: 403 });
   const companyName = (m.companies as unknown as { name: string } | null)?.name ?? "la tua azienda";
 
+  // limite giornaliero di inviti per amministratore (protegge la reputazione del dominio di invio)
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const { count: sentToday } = await supabaseService()
+    .from("invitations")
+    .select("id", { count: "exact", head: true })
+    .eq("invited_by", user.id)
+    .gte("sent_at", since);
+  if ((sentToday ?? 0) >= 30) return NextResponse.json({ error: "Hai raggiunto il limite di inviti per oggi: riprova domani" }, { status: 429 });
+
   // un invito in sospeso per la stessa persona viene riutilizzato
   const { data: existing } = await sb
     .from("invitations")

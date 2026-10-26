@@ -56,3 +56,20 @@ ${BRAND.name} è un servizio di ${BRAND.owner}.`;
 <p style="color:#5b6573;font-size:13px">${esc(BRAND.name)} è un servizio di ${esc(BRAND.owner)}.</p>`;
   return { subject, text, html };
 }
+
+const KIND_TEXT: Record<string, string> = {
+  consulenza: "una sessione con un esperto",
+  approfondimento_priorita: "l'approfondimento delle 3 priorità",
+  approfondimento_ambito: "l'approfondimento di un ambito",
+};
+
+/** Avviso interno allo staff: nuova richiesta di approfondimento o consulenza. */
+export function interestNotificationEmail(p: { kind: string; area: string | null; company: string | null; email: string; link: string }) {
+  const what = `${KIND_TEXT[p.kind] ?? p.kind}${p.area ? ` (${p.area})` : ""}`;
+  const subject = `Nuova richiesta: ${what}${p.company ? ` · ${p.company}` : ""}`;
+  const text = `${p.email} ha richiesto ${what}${p.company ? ` per ${p.company}` : ""}.\n\nScheda: ${p.link}\n\nRispondendo a questa email scrivi direttamente al richiedente.`;
+  const html = `<p><strong>${esc(p.email)}</strong> ha richiesto ${esc(what)}${p.company ? ` per <strong>${esc(p.company)}</strong>` : ""}.</p>
+<p><a href="${esc(p.link)}">Apri la scheda</a></p>
+<p style="color:#5b6573;font-size:13px">Rispondendo a questa email scrivi direttamente al richiedente.</p>`;
+  return { subject, text, html };
+}

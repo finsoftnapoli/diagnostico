@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { listAssessments, priorities } from "@/lib/admin";
+import InterestList from "@/components/InterestList";
+import { listAssessments, listInterests, priorities } from "@/lib/admin";
+import { AREAS } from "@/lib/questionnaire";
 import { currentUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Area riservata" };
@@ -21,10 +23,11 @@ async function AdminList() {
   const { user, isStaff } = await currentUser();
   if (!user) redirect("/accedi?next=/admin");
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
-  const rows = await listAssessments();
+  const [rows, interests] = await Promise.all([listAssessments(), listInterests()]);
   return (
     <>
-      <div className="flex flex-wrap items-baseline justify-between gap-4">
+      <InterestList rows={interests} areaNames={Object.fromEntries(AREAS.map((a) => [a.code, a.name]))} />
+      <div className="mt-12 flex flex-wrap items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold text-navy">Compilazioni ({rows.length})</h1>
         <a href="/admin/export" download className="text-sm bg-navy text-white px-4 py-2 rounded">
           Scarica CSV

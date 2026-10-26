@@ -10,13 +10,17 @@ export async function GET(request: NextRequest) {
   const band = request.nextUrl.searchParams.get("fascia") ?? "";
   if (!REVENUE_BANDS.includes(band as (typeof REVENUE_BANDS)[number]) || !isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY)
     return NextResponse.json({ sample: 0, values: null });
-  const { data, error } = await supabaseService()
+  const { data: rows, error } = await supabaseService()
     .from("assessments")
-    .select("id, area_scores(area, score)")
+    .select("id, company_id, completed_at, area_scores(area, score)")
     .eq("status", "completed")
     .eq("profile->>PR-02", band)
+    .order("completed_at", { ascending: false })
     .limit(5000);
-  if (error || !data) return NextResponse.json({ sample: 0, values: null });
+  if (error || !rows) return NextResponse.json({ sample: 0, values: null });
+  // un'azienda conta una volta sola: la compilazione più recente (i colleghi non pesano doppio)
+  const seen = new Set<string>();
+  const data = rows.filter((r) => (seen.has(r.company_id as string) ? false : (seen.add(r.company_id as string), true)));
   const sample = data.length;
   if (sample < MIN_SAMPLE) return NextResponse.json({ sample, values: null });
   const values: Record<string, number> = {};

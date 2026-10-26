@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import DocumentList, { type DocRow } from "@/components/DocumentList";
 import TeamView from "@/components/TeamView";
 import { BRAND } from "@/config/brand";
+import type { PlanSummary } from "@/lib/documents";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { latestByMember, type MemberResult } from "@/lib/team";
 import type { AreaCode } from "@/lib/types";
@@ -38,26 +39,36 @@ async function AreaContent() {
   if (!user) redirect("/accedi?next=/area");
   const sb = await supabaseServer();
 
-  const [{ data: mine }, { data: docs }, { data: adminOf }] = await Promise.all([
+  const [{ data: mine }, { data: docs }, { data: memberships }] = await Promise.all([
     sb
       .from("assessments")
       .select("id, user_id, company_id, respondent_email, completed_at, overall_score, companies(name)")
       .eq("user_id", user.id)
       .eq("status", "completed")
       .order("completed_at", { ascending: false }),
-    sb.from("documents").select("id, kind, created_at, size_bytes, companies(name)").eq("user_id", user.id).order("created_at", { ascending: false }),
-    sb.from("company_members").select("company_id, companies(name)").eq("user_id", user.id).eq("role", "admin"),
+    sb
+      .from("documents")
+      .select("id, kind, created_at, size_bytes, period, label, extracted, companies(name)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    sb.from("company_members").select("company_id, role, companies(name)").eq("user_id", user.id),
   ]);
+  const memberOf = (memberships ?? []).map((m) => ({
+    id: m.company_id as string,
+    role: m.role as string,
+    name: (m.companies as unknown as { name: string } | null)?.name ?? "",
+  }));
+  const adminOf = memberOf.filter((m) => m.role === "admin");
 
   const teams = await Promise.all(
-    (adminOf ?? []).map(async (c) => {
+    adminOf.map(async (c) => {
       const [{ data: rows }, { data: invites }] = await Promise.all([
         sb
           .from("assessments")
           .select("id, user_id, company_id, respondent_email, completed_at, overall_score, companies(name), area_scores(area, score), answers(question_id, level)")
-          .eq("company_id", c.company_id)
+          .eq("company_id", c.id)
           .eq("status", "completed"),
-        sb.from("invitations").select("id, email, invitee_name, status, sent_at, expires_at").eq("company_id", c.company_id).order("created_at", { ascending: false }),
+        sb.from("invitations").select("id, email, invitee_name, status, sent_at, expires_at").eq("company_id", c.id).order("created_at", { ascending: false }),
       ]);
       const latest = latestByMember(((rows ?? []) as unknown as AssessmentRow[]).map((r) => ({ ...r, userId: r.user_id, completedAt: r.completed_at })));
       const members: MemberResult[] = latest.map((r) => ({
@@ -67,7 +78,7 @@ async function AreaContent() {
         scores: Object.fromEntries((r.area_scores ?? []).map((s) => [s.area, s.score])) as Partial<Record<AreaCode, number | null>>,
         levels: Object.fromEntries((r.answers ?? []).map((a) => [a.question_id, a.level])),
       }));
-      return { companyId: c.company_id, name: (c.companies as unknown as { name: string } | null)?.name ?? "", members, invites: invites ?? [] };
+      return { companyId: c.id, name: c.name, members, invites: invites ?? [] };
     }),
   );
 
@@ -77,6 +88,9 @@ async function AreaContent() {
     created_at: d.created_at,
     size_bytes: d.size_bytes,
     company: (d.companies as unknown as { name: string } | null)?.name ?? null,
+    period: d.period,
+    label: d.label,
+    plan: (d.extracted as { plan?: PlanSummary } | null)?.plan ?? null,
   }));
 
   return (
@@ -161,12 +175,14 @@ async function AreaContent() {
       <section className="mt-12">
         <h2 className="text-xl font-semibold text-navy">I tuoi documenti</h2>
         <p className="mt-1 text-sm text-muted">
-          Visure e bilanci che hai caricato. Restano in un archivio privato per 24 mesi dall&apos;ultimo accesso; puoi
-          eliminarli in qualsiasi momento.
+          Visure, bilanci, business plan e altri documenti della tua azienda. Caricando un bilancio più recente o il piano
+          aziendale, il prossimo report approfondito ne terrà conto. Restano in un archivio privato per 24 mesi
+          dall&apos;ultimo accesso; puoi eliminarli in qualsiasi momento.
         </p>
-        <div className="mt-4">
-          <DocumentList docs={docRows} />
-        </div>
+        {!memberOf.length && (
+          <p className="mt-3 text-sm text-muted">Potrai aggiungere documenti dopo aver completato il primo diagnostico.</p>
+        )}
+        <DocumentList docs={docRows} companies={memberOf.map(({ id, name }) => ({ id, name }))} />
       </section>
     </>
   );
