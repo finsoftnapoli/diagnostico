@@ -21,6 +21,11 @@ export default function Privacy() {
         presenti nei documenti (soci, amministratori) non vengono estratti né salvati. Per la lettura usiamo il servizio
         Claude di Anthropic, che non utilizza questi dati per addestrare i propri modelli.
       </p>
+      <h2 className="mt-8 font-semibold">Verifica di sicurezza</h2>
+      <p className="mt-2 text-muted">
+        Per proteggere il servizio da accessi automatici usiamo Cloudflare Turnstile, che verifica che chi compila sia una
+        persona senza raccogliere dati per finalità pubblicitarie.
+      </p>
     </div>
   );
 }

@@ -3,11 +3,12 @@
 import { ArrowLeft, ArrowRight, Check as CheckIcon, Clock, FileText, Info, Radar, ShieldCheck, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/draft";
 import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "@/lib/questionnaire";
 import { MIN_TEXT } from "@/lib/sanitize";
+import HumanCheck, { isHumanCheckEnabled } from "./HumanCheck";
 import { emptyResponses } from "@/lib/scoring";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -45,6 +46,7 @@ export default function Wizard() {
     (initial?.step ?? 0) > 0 ? "Abbiamo ripreso da dove eri rimasto." : null,
   );
   const [error, setError] = useState<string | null>(null);
+  const [human, setHuman] = useState(() => !isHumanCheckEnabled());
   const topRef = useRef<HTMLDivElement>(null);
 
   // salvataggio automatico a ogni modifica
@@ -79,7 +81,11 @@ export default function Wizard() {
   const update = (patch: Partial<Responses>) => setR((prev) => ({ ...prev, ...patch }));
   const cur = STEPS[step];
   const progress = Math.round((step / (STEPS.length - 1)) * 100);
-  const missing = useMemo(() => validate(cur, r), [cur, r]);
+  const missing = useMemo(
+    () => (cur.kind === "intro" && !human ? "Attendi la verifica di sicurezza." : validate(cur, r)),
+    [cur, r, human],
+  );
+  const onHuman = useCallback(() => setHuman(true), []);
 
   function go(delta: number) {
     if (delta > 0 && missing) {
@@ -119,7 +125,12 @@ export default function Wizard() {
       )}
 
       <div className="mt-8">
-        {cur.kind === "intro" && <Intro r={r} update={update} />}
+        {cur.kind === "intro" && (
+          <>
+            <Intro r={r} update={update} />
+            <HumanCheck onVerified={onHuman} />
+          </>
+        )}
         {cur.kind === "profile" && <Profile r={r} update={update} />}
         {cur.kind === "objectives" && (
           <Ranked

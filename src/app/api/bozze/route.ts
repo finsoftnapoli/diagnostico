@@ -1,10 +1,12 @@
 // Salva una bozza del questionario e restituisce l'id da inserire nel link di ripresa.
 import { NextResponse } from "next/server";
+import { isHuman } from "@/lib/human";
 import { QUESTIONNAIRE_VERSION } from "@/lib/questionnaire";
 import { sanitizeResponses } from "@/lib/sanitize";
 import { supabaseService } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
+  if (!isHuman(request)) return NextResponse.json({ error: "Verifica di sicurezza scaduta: ricarica la pagina" }, { status: 403 });
   let body: { email?: unknown; step?: unknown; responses?: unknown };
   try {
     const raw = await request.text();

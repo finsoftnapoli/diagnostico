@@ -2,6 +2,7 @@
 // Il file non viene salvato: si elabora in memoria e si scarta.
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { isHuman } from "@/lib/human";
 import {
   BILANCIO_SCHEMA,
   financialsFrom,
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
   if (!process.env.ANTHROPIC_API_KEY)
     return NextResponse.json({ error: "Lettura dei documenti non ancora attiva" }, { status: 503 });
 
+  if (!isHuman(request)) return NextResponse.json({ error: "Verifica di sicurezza scaduta: ricarica la pagina" }, { status: 403 });
   let form: FormData;
   try {
     form = await request.formData();

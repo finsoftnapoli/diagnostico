@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BRAND } from "@/config/brand";
+import { AreaIcon } from "@/lib/areaIcons";
 import { AREAS } from "@/lib/questionnaire";
 
 export default function Home() {
@@ -43,9 +44,14 @@ export default function Home() {
           <h2 className="text-2xl font-semibold text-navy">Gli 8 ambiti</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {AREAS.map((a) => (
-              <div key={a.code} className="bg-white border border-line rounded p-4">
-                <h3 className="font-semibold">{a.name}</h3>
-                <p className="mt-1 text-sm text-muted">{a.description}</p>
+              <div key={a.code} className="bg-white border border-line rounded-xl p-4 flex gap-4">
+                <span className="shrink-0 size-11 rounded-xl bg-navy text-white flex items-center justify-center">
+                  <AreaIcon code={a.code} className="size-5" />
+                </span>
+                <div>
+                  <h3 className="font-semibold">{a.name}</h3>
+                  <p className="mt-1 text-sm text-muted">{a.description}</p>
+                </div>
               </div>
             ))}
           </div>
