@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check as CheckIcon, Clock, Info, Radar, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check as CheckIcon, Clock, FileText, Info, Radar, ShieldCheck, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,7 +11,7 @@ import { MIN_TEXT } from "@/lib/sanitize";
 import { emptyResponses } from "@/lib/scoring";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import type { AreaCode, Choice, Responses } from "@/lib/types";
+import type { AreaCode, Choice, Financials, Responses } from "@/lib/types";
 import { isValidItalianVat, normalizeVat } from "@/lib/vat";
 
 type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
@@ -358,6 +358,7 @@ function Profile({ r, update }: SectionProps) {
         Con la partita IVA possiamo completare il profilo con i dati pubblici dell&apos;azienda e confrontarti con aziende
         simili per settore e dimensione.
       </p>
+      <DocUpload r={r} update={update} />
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         {PROFILE_FIELDS.map((f) => (
           <label key={f.id} className="block text-sm">
@@ -577,6 +578,100 @@ function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
             </div>
           </fieldset>
         ))}
+      </div>
+    </div>
+  );
+}
+
+const DOCS = [
+  { kind: "visura" as const, label: "Visura camerale", hint: "Precompila i dati dell'azienda" },
+  { kind: "bilancio" as const, label: "Ultimo bilancio", hint: "Aggiunge al report i numeri chiave" },
+];
+
+/** Caricamento facoltativo di visura e bilancio (PDF) per precompilare il profilo. */
+function DocUpload({ r, update }: SectionProps) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Record<string, string>>({});
+
+  async function upload(kind: "visura" | "bilancio", file: File | undefined) {
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      setMsg((m) => ({ ...m, [kind]: "Il file supera i 4 MB: prova con una versione più leggera." }));
+      return;
+    }
+    setBusy(kind);
+    setMsg((m) => ({ ...m, [kind]: "Lettura in corso, può richiedere fino a un minuto…" }));
+    try {
+      const fd = new FormData();
+      fd.append("tipo", kind);
+      fd.append("file", file);
+      const res = await fetch("/api/documenti", { method: "POST", body: fd });
+      const j = (await res.json()) as { error?: string; profile?: Record<string, string>; financials?: Financials };
+      if (!res.ok) throw new Error(j.error ?? "Lettura non riuscita");
+      const filled: string[] = [];
+      const profile = { ...r.profile };
+      for (const [k, v] of Object.entries(j.profile ?? {})) {
+        if (!profile[k]?.trim()) {
+          profile[k] = v;
+          filled.push(PROFILE_FIELDS.find((f) => f.id === k)?.label.toLowerCase() ?? k);
+        }
+      }
+      update({
+        profile,
+        ...(j.financials ? { financials: j.financials } : {}),
+        documents: { ...r.documents, [kind]: true },
+      });
+      const parts: string[] = [];
+      if (filled.length) parts.push(`compilati: ${filled.join(", ")}`);
+      if (j.financials) parts.push(`letti i dati del bilancio${j.financials.year ? ` ${j.financials.year}` : ""}`);
+      setMsg((m) => ({ ...m, [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlla i campi qui sotto.` : "Letto: i campi erano già compilati." }));
+    } catch (e) {
+      setMsg((m) => ({ ...m, [kind]: e instanceof Error ? e.message : "Lettura non riuscita" }));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-xl border border-dashed border-navy/40 bg-paper p-4 sm:p-5">
+      <p className="font-semibold flex items-center gap-2">
+        <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Hai a portata di mano visura e bilancio?
+      </p>
+      <p className="mt-1 text-sm text-muted">
+        Caricali in PDF (facoltativo): compiliamo noi i campi e il report includerà i numeri chiave. I file non vengono
+        conservati: li leggiamo, estraiamo i dati dell&apos;azienda e li eliminiamo.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {DOCS.map((d) => {
+          const done = r.documents?.[d.kind];
+          return (
+            <div key={d.kind}>
+              <label
+                className={`flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer ${
+                  busy === d.kind ? "opacity-60 pointer-events-none" : "hover:border-navy-soft"
+                } ${done ? "border-navy" : "border-line"}`}
+              >
+                <span className={`size-9 rounded-lg flex items-center justify-center ${done ? "bg-navy text-white" : "bg-paper text-navy"}`}>
+                  {done ? <CheckIcon className="size-4" aria-hidden /> : <Upload className="size-4" aria-hidden />}
+                </span>
+                <span className="text-sm">
+                  <span className="font-medium block">{d.label}</span>
+                  <span className="text-muted">{busy === d.kind ? "Lettura in corso…" : done ? "Caricato · sostituisci" : d.hint}</span>
+                </span>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  className="sr-only"
+                  onChange={(e) => {
+                    void upload(d.kind, e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {msg[d.kind] && <p className="mt-1.5 text-xs text-muted">{msg[d.kind]}</p>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

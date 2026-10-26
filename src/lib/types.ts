@@ -55,4 +55,27 @@ export interface Responses {
   checks: Record<string, string>; // id domanda -> risposta di controllo
   importance: Partial<Record<AreaCode, number>>; // 1-3
   consents: { service: boolean; benchmark: boolean; marketing: boolean };
+  /** Dati dell'ultimo bilancio caricato (facoltativo). */
+  financials?: Financials;
+  /** Documenti letti per precompilare il profilo. */
+  documents?: { visura?: boolean; bilancio?: boolean };
+}
+
+/** Valori in euro dell'esercizio più recente; null se non presenti nel documento. */
+export interface Financials {
+  year: number | null;
+  employees: number | null;
+  ricavi: number | null;
+  valore_produzione: number | null;
+  ebitda: number | null;
+  ebit: number | null;
+  utile_netto: number | null;
+  costo_personale: number | null;
+  patrimonio_netto: number | null;
+  totale_attivo: number | null;
+  debiti_finanziari: number | null;
+  disponibilita_liquide: number | null;
+  crediti_commerciali: number | null;
+  debiti_fornitori: number | null;
+  rimanenze: number | null;
 }

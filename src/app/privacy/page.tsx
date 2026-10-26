@@ -14,6 +14,13 @@ export default function Privacy() {
         <li>Elaborare statistiche e confronti aggregati e anonimi tra aziende (facoltativo).</li>
         <li>Inviare comunicazioni su servizi e iniziative (facoltativo).</li>
       </ul>
+      <h2 className="mt-8 font-semibold">Documenti caricati</h2>
+      <p className="mt-2 text-muted">
+        Visura camerale e bilancio, se caricati, sono letti in modo automatico per estrarre i dati dell&apos;azienda
+        (dati anagrafici e di bilancio) e poi eliminati: i file non vengono conservati. I dati di persone fisiche
+        presenti nei documenti (soci, amministratori) non vengono estratti né salvati. Per la lettura usiamo il servizio
+        Claude di Anthropic, che non utilizza questi dati per addestrare i propri modelli.
+      </p>
     </div>
   );
 }

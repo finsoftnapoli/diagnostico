@@ -11,6 +11,7 @@ Fase 1 in corso. Funziona già:
 - motore di punteggio e priorità, verificato contro il foglio Excel della banca delle domande v0.3 (rilevanza ricavata da obiettivi, criticità e testi);
 - report con indicatori, confronto con il riferimento di fascia (`src/config/benchmark.ts`), prontezza per le ambizioni, cause delle sfide e prossimi passi (`src/lib/insights.ts`);
 - salvataggio della bozza e ripresa via email (`/api/bozze`), verifica della partita IVA (`/api/piva`);
+- lettura di visura e bilancio in PDF con Claude Sonnet 5.5 (`/api/documenti`, `src/lib/documents.ts`): precompila il profilo e aggiunge al report i numeri chiave; i file non vengono conservati;
 - pagina dei risultati con radar, tre priorità e avvisi di possibile sovrastima;
 - schema del database Supabase con regole di accesso, provato in locale;
 - conferma dell'email con codice prima dei risultati e salvataggio nel database (`/api/compilazioni`);

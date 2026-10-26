@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowRight, CircleCheck, Footprints, Gauge, Info, Scale, Target, TriangleAlert, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, Banknote, CircleCheck, Footprints, Gauge, Info, Scale, Target, TriangleAlert, TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
 import { MIN_SAMPLE, normativeBenchmark, type Benchmark } from "@/config/benchmark";
 import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
 import type { Draft } from "@/lib/draft";
+import { financialKpis } from "@/lib/documents";
 import { buildInsights, LEVEL_NAMES, levelLabel, type ThemeView } from "@/lib/insights";
 import { AREAS } from "@/lib/questionnaire";
 import { computeResult, relevanceLabel } from "@/lib/scoring";
@@ -127,6 +128,9 @@ export default function Report({ draft }: { draft: Draft }) {
           </div>
         </div>
       </section>
+
+      {/* Numeri del bilancio */}
+      {r.financials && <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />}
 
       {/* Priorità e prossimi passi */}
       <section className="mt-14">
@@ -405,5 +409,62 @@ function Step({ t }: { t: ThemeView }) {
       )}
       {t.sizeNote && <p className="mt-1 text-xs text-muted">Per la tua dimensione: {t.sizeNote}</p>}
     </li>
+  );
+}
+
+const eur = (v: number | null) =>
+  v === null
+    ? "—"
+    : Math.abs(v) >= 1_000_000
+      ? `${(v / 1_000_000).toLocaleString("it-IT", { maximumFractionDigits: 1 })} mln €`
+      : `${Math.round(v / 1000).toLocaleString("it-IT")} mila €`;
+
+function Numbers({ f, finScore }: { f: NonNullable<Draft["responses"]["financials"]>; finScore: number | null }) {
+  const k = financialKpis(f);
+  const tiles: [string, string, string][] = [
+    ["Ricavi", eur(f.ricavi ?? f.valore_produzione), k.revenuePerEmployee ? `${eur(k.revenuePerEmployee)} per addetto` : ""],
+    ["EBITDA", eur(f.ebitda), k.ebitdaMargin !== null ? `${k.ebitdaMargin.toLocaleString("it-IT")}% dei ricavi` : ""],
+    ["Utile netto", eur(f.utile_netto), k.netMargin !== null ? `${k.netMargin.toLocaleString("it-IT")}% dei ricavi` : ""],
+    ["Posizione finanziaria netta", eur(k.pfn), k.pfnOnEbitda !== null ? `${k.pfnOnEbitda.toLocaleString("it-IT")} volte l'EBITDA` : k.pfn !== null && k.pfn < 0 ? "cassa netta" : ""],
+    ["Patrimonio netto", eur(f.patrimonio_netto), k.equityRatio !== null ? `${k.equityRatio.toLocaleString("it-IT")}% dell'attivo` : ""],
+    ["Giorni di incasso", k.dso !== null ? `${k.dso}` : "—", k.dio !== null ? `magazzino ${k.dio} giorni di ricavi` : ""],
+  ];
+  return (
+    <section className="mt-14">
+      <h2 className="text-2xl font-semibold text-navy flex items-center gap-2">
+        <Banknote className="size-6" aria-hidden strokeWidth={1.75} /> I numeri dell&apos;ultimo bilancio{f.year ? ` (${f.year})` : ""}
+      </h2>
+      <p className="mt-1 text-sm text-muted">Dati letti dal bilancio che hai caricato. Le soglie di lettura sono generali e vanno adattate al settore.</p>
+      <div className="mt-6 grid gap-3 grid-cols-2 lg:grid-cols-3">
+        {tiles.map(([label, value, sub]) => (
+          <div key={label} className="rounded-xl border border-line p-4">
+            <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+            <p className="mt-1 text-xl font-semibold text-navy tabular-nums">{value}</p>
+            {sub && <p className="text-sm text-muted">{sub}</p>}
+          </div>
+        ))}
+      </div>
+      {(k.notes.length > 0 || finScore !== null) && (
+        <ul className="mt-5 space-y-2 text-sm">
+          {k.notes.map((n) => (
+            <li key={n} className="flex gap-3">
+              <ArrowRight className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
+              <span>{n}</span>
+            </li>
+          ))}
+          {finScore !== null && (
+            <li className="flex gap-3">
+              <ArrowRight className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
+              <span>
+                Il punteggio di Finanza e controllo è {finScore} su 100:{" "}
+                {finScore < 50
+                  ? "con strumenti di pianificazione e controllo più strutturati questi numeri si potrebbero governare in anticipo, non solo leggere a consuntivo."
+                  : "gli strumenti di controllo ci sono: il passo successivo è usarli per guidare le scelte su prezzi, investimenti e finanziamenti."}
+              </span>
+            </li>
+          )}
+        </ul>
+      )}
+    </section>
   );
 }

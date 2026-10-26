@@ -47,6 +47,19 @@ export function sanitizeResponses(input: unknown): Responses {
   }
   const c = (r.consents ?? {}) as Record<string, unknown>;
   out.consents = { service: c.service === true, benchmark: c.benchmark === true, marketing: c.marketing === true };
+  const fin = r.financials as Record<string, unknown> | undefined;
+  if (fin && typeof fin === "object") {
+    const keys = [
+      "year", "employees", "ricavi", "valore_produzione", "ebitda", "ebit", "utile_netto", "costo_personale",
+      "patrimonio_netto", "totale_attivo", "debiti_finanziari", "disponibilita_liquide", "crediti_commerciali",
+      "debiti_fornitori", "rimanenze",
+    ] as const;
+    const f = {} as Record<(typeof keys)[number], number | null>;
+    for (const k of keys) f[k] = typeof fin[k] === "number" && Number.isFinite(fin[k]) ? (fin[k] as number) : null;
+    out.financials = f;
+  }
+  const docs = r.documents as Record<string, unknown> | undefined;
+  if (docs && typeof docs === "object") out.documents = { visura: docs.visura === true, bilancio: docs.bilancio === true };
   return out;
 }
 
