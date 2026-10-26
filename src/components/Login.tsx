@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 /** Accesso con codice via email, per l'area riservata. */
@@ -13,13 +14,33 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ritorno dal link nell'email (stesso browser): il client legge la sessione e si va all'area riservata
+  useEffect(() => {
+    const sb = supabaseBrowser();
+    const go = async () => {
+      const { data } = await sb.auth.getUser();
+      if (data.user) {
+        router.replace("/admin");
+        router.refresh();
+      }
+    };
+    void go();
+    const { data: sub } = sb.auth.onAuthStateChange((event: AuthChangeEvent) => {
+      if (event === "SIGNED_IN") void go();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [router]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setBusy(true);
     const sb = supabaseBrowser();
     if (!sent) {
-      const { error } = await sb.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false } });
+      const { error } = await sb.auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/accedi` },
+      });
       setBusy(false);
       if (error) return setError("Non siamo riusciti a inviare il codice: controlla l'indirizzo o riprova tra un minuto.");
       setSent(true);
@@ -42,12 +63,12 @@ export default function Login() {
         </label>
         {sent && (
           <label className="block text-sm">
-            <span className="font-medium">Codice ricevuto via email</span>
+            <span className="font-medium">Codice ricevuto via email (oppure apri il link nell&apos;email da questo browser)</span>
             <input required inputMode="numeric" autoComplete="one-time-code" className="mt-1 w-full border border-line rounded px-3 py-2" value={code} onChange={(e) => setCode(e.target.value)} />
           </label>
         )}
         <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded disabled:opacity-60">
-          {busy ? "Attendere…" : sent ? "Accedi" : "Inviami il codice"}
+          {busy ? "Attendere…" : sent ? "Accedi" : "Inviami l'email di accesso"}
         </button>
       </form>
       {error && <p role="alert" className="mt-4 text-sm text-accent">{error}</p>}

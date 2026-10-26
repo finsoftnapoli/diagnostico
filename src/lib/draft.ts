@@ -14,6 +14,8 @@ export interface Draft {
   completedAt?: string;
   /** Id della compilazione salvata nel database. */
   savedId?: string;
+  /** Dati inseriti prima di confermare l'email, per completare il salvataggio dopo il link. */
+  pending?: { email: string; company: string };
 }
 
 export function loadDraft(): Draft | null {
@@ -52,6 +54,19 @@ export function markSaved(id: string): Draft | null {
   const d = loadDraft();
   if (!d) return null;
   const next = { ...d, savedId: id };
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* archiviazione non disponibile */
+  }
+  return next;
+}
+
+/** Aggiorna campi della bozza senza toccare le risposte. */
+export function patchDraft(patch: Partial<Pick<Draft, "pending" | "savedId">>): Draft | null {
+  const d = loadDraft();
+  if (!d) return null;
+  const next = { ...d, ...patch };
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
