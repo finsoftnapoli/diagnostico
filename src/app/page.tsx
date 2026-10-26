@@ -13,8 +13,9 @@ export default function Home() {
             Dove è solida la tua azienda, e dove conviene intervenire per primo.
           </h1>
           <p className="mt-6 text-lg text-white/85 max-w-2xl">
-            Un diagnostico gratuito su 8 ambiti di gestione. In circa 15 minuti ricevi il profilo della tua azienda e le
-            tre priorità su cui lavorare, calcolate con regole trasparenti a partire dai tuoi obiettivi.
+            Un diagnostico gratuito su 8 ambiti di gestione. Al termine ricevi subito l&apos;Ottogramma della tua azienda,
+            con il confronto rispetto ad aziende simili e le evidenze chiave; a seguire, un report approfondito elaborato
+            dai nostri analisti, con l&apos;analisi delle aree di priorità.
           </p>
           <Link
             href="/diagnostico"
@@ -22,13 +23,13 @@ export default function Home() {
           >
             Inizia il diagnostico
           </Link>
-          <p className="mt-3 text-sm text-white/70">Gratuito · circa 15 minuti · puoi interrompere e riprendere</p>
+          <p className="mt-3 text-sm text-white/70">Gratuito · puoi interrompere e riprendere in qualsiasi momento</p>
         </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-16 grid gap-10 sm:grid-cols-3">
         {[
-          ["Cosa ricevi", "Un profilo a radar sugli 8 ambiti, le tre priorità con il motivo e gli eventuali punti in cui la tua valutazione potrebbe essere ottimista."],
+          ["Cosa ricevi", "Subito l'Ottogramma: il profilo a radar sugli 8 ambiti, il confronto con aziende simili e le evidenze chiave. Entro 48 ore, un report approfondito con l'analisi delle priorità."],
           ["Come funziona", "Per ogni tema scegli la situazione più vicina alla tua azienda tra quattro descrizioni concrete. Il punteggio non dipende da un algoritmo opaco: le regole sono dichiarate."],
           ["Chi c'è dietro", `${BRAND.owner}, società di consulenza di strategia e creazione di valore. Se vuoi, puoi approfondire i risultati con un consulente esperto.`],
         ].map(([t, d]) => (

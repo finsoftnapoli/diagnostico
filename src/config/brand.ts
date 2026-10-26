@@ -4,7 +4,7 @@ export const BRAND = {
   name: "Diagnostico d'impresa", // nome provvisorio
   /** Nome del report e del grafico a radar: segno distintivo del servizio. */
   reportName: "Ottogramma",
-  tagline: "Il profilo di gestione della tua azienda in 15 minuti",
+  tagline: "Il profilo di gestione della tua azienda, con un report approfondito dai nostri analisti",
   owner: "Finsoft",
   ownerLegal: "Finsoft S.r.l.",
   ownerAddress: "[sede legale da completare]",

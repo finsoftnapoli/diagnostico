@@ -103,8 +103,8 @@ export default function Invite() {
         <>
           <p className="mt-4 text-muted">
             {info.name ? `${info.name}, sei` : "Sei"} stato invitato a compilare il diagnostico gestionale di{" "}
-            <strong className="text-ink">{info.company}</strong> su {BRAND.name}. Bastano circa 15 minuti: le risposte dei
-            diversi responsabili permettono di confrontare le visioni del management.
+            <strong className="text-ink">{info.company}</strong> su {BRAND.name}. Le risposte dei diversi responsabili
+            permettono di confrontare le visioni del management.
           </p>
           <p className="mt-3 text-sm text-muted">
             Per iniziare confermiamo il tuo indirizzo <strong className="text-ink">{info.email}</strong>: ti inviamo un

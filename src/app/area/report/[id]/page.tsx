@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import Ottogramma from "@/components/Ottogramma";
 import Report from "@/components/Report";
+import type { ReportNarrative } from "@/lib/report";
 import { QUESTIONNAIRE_VERSION } from "@/lib/questionnaire";
 import { emptyResponses } from "@/lib/scoring";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -21,7 +23,7 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
   const { data: auth } = await sb.auth.getUser();
   if (!auth.user) redirect(`/accedi?next=/area/report/${id}`);
   // la regola di accesso restituisce la compilazione solo al suo autore, all'amministratore o allo staff
-  const { data } = await sb.from("assessments").select("id, responses, completed_at, user_id").eq("id", id).maybeSingle();
+  const { data } = await sb.from("assessments").select("id, responses, completed_at, user_id, report_status, report_narrative").eq("id", id).maybeSingle();
   if (!data) notFound();
   const draft = {
     version: QUESTIONNAIRE_VERSION,
@@ -38,7 +40,14 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
           ← Area personale
         </Link>
       </div>
-      <Report draft={draft} />
+      {data.report_status === "ready" && data.report_narrative ? (
+        <Report draft={draft} narrative={data.report_narrative as ReportNarrative} />
+      ) : (
+        <Ottogramma
+          draft={draft}
+          reportStatus={(data.report_status as "pending" | "failed" | undefined) ?? "pending"}
+        />
+      )}
     </>
   );
 }

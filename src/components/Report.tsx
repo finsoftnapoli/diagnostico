@@ -14,12 +14,13 @@ import { computeResult, relevanceLabel } from "@/lib/scoring";
 import type { AreaCode } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
+import type { ReportNarrative } from "@/lib/report";
 import InviteColleagues from "./InviteColleagues";
 import RadarProfile from "./RadarProfile";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
 
-export default function Report({ draft }: { draft: Draft }) {
+export default function Report({ draft, narrative }: { draft: Draft; narrative?: ReportNarrative | null }) {
   const r = draft.responses;
   const band = r.profile["PR-02"];
   const [bench, setBench] = useState<Benchmark>(() => normativeBenchmark(band));
@@ -59,6 +60,8 @@ export default function Report({ draft }: { draft: Draft }) {
         {r.profile["PR-01"] ? ` · ${r.profile["PR-01"]}` : ""}
       </p>
       <h1 className="mt-1 text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
+
+      {narrative && <Narrative n={narrative} />}
 
       {/* Indicatori */}
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -515,6 +518,61 @@ function GovernanceBlock({ g, strLevel }: { g: Governance; strLevel: number | un
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+const AREA_NAME: Record<string, string> = Object.fromEntries(AREAS.map((a) => [a.code, a.name]));
+
+/** Analisi elaborata dall'AI a partire dai dati del diagnostico. */
+function Narrative({ n }: { n: ReportNarrative }) {
+  return (
+    <section className="mt-8 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
+      <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri analisti</p>
+      <h2 className="mt-1 text-2xl font-semibold text-navy">Sintesi per la direzione</h2>
+      <div className="mt-4 space-y-3 leading-relaxed">
+        {n.executiveSummary.split(/\n\n+/).map((p) => (
+          <p key={p.slice(0, 40)}>{p}</p>
+        ))}
+      </div>
+      {n.crossCutting && (
+        <>
+          <h3 className="mt-6 font-semibold text-navy">Lettura d&apos;insieme</h3>
+          <p className="mt-2 leading-relaxed">{n.crossCutting}</p>
+        </>
+      )}
+      {n.priorities.length > 0 && (
+        <>
+          <h3 className="mt-6 font-semibold text-navy">Le priorità nel dettaglio</h3>
+          <div className="mt-3 space-y-4">
+            {n.priorities.map((p) => (
+              <div key={p.area} className="rounded-lg bg-white border border-line p-4">
+                <p className="text-xs uppercase tracking-wide text-muted">{AREA_NAME[p.area] ?? p.area}</p>
+                <p className="mt-1 font-semibold">{p.title}</p>
+                <p className="mt-2 text-sm leading-relaxed">{p.diagnosis}</p>
+                {p.actions.length > 0 && (
+                  <ul className="mt-2 text-sm list-disc pl-5 space-y-1">
+                    {p.actions.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {n.quickWins.length > 0 && (
+        <>
+          <h3 className="mt-6 font-semibold text-navy">Interventi rapidi</h3>
+          <ul className="mt-2 text-sm list-disc pl-5 space-y-1">
+            {n.quickWins.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {n.closing && <p className="mt-6 leading-relaxed">{n.closing}</p>}
     </section>
   );
 }

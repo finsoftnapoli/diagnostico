@@ -6,7 +6,7 @@ import { loadDraft, saveDraft, type Draft } from "@/lib/draft";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Responses } from "@/lib/types";
-import Report from "./Report";
+import Ottogramma from "./Ottogramma";
 import SaveGate from "./SaveGate";
 
 export default function ResultsView() {
@@ -21,7 +21,24 @@ export default function ResultsView() {
   }
   // con il database collegato, i risultati si vedono dopo aver confermato l'email
   if (isSupabaseConfigured() && !complete.savedId) return <SaveGate draft={complete} onSaved={setDraft} />;
-  return <Report draft={complete} />;
+  return <Immediate draft={complete} />;
+}
+
+/** Vista immediata: Ottogramma leggero; il report approfondito arriva in differita. */
+function Immediate({ draft }: { draft: Draft }) {
+  const [status, setStatus] = useState<"none" | "pending" | "ready" | "failed">(
+    draft.savedId && isSupabaseConfigured() ? "pending" : "none",
+  );
+  useEffect(() => {
+    if (!draft.savedId || !isSupabaseConfigured()) return;
+    fetch(`/api/stato-report?id=${draft.savedId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: { status?: "none" | "pending" | "ready" | "failed" } | null) => {
+        if (j?.status && j.status !== "none") setStatus(j.status);
+      })
+      .catch(() => {});
+  }, [draft.savedId]);
+  return <Ottogramma draft={draft} reportStatus={status} reportHref={draft.savedId ? `/area/report/${draft.savedId}` : undefined} />;
 }
 
 function Empty() {

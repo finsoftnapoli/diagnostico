@@ -25,7 +25,7 @@ export function invitationEmail(p: { inviter: string; company: string; name?: st
   const text = `${greeting}
 
 ${p.inviter} ti ha invitato a compilare il diagnostico gestionale di ${p.company} su ${BRAND.name}.
-Bastano circa 15 minuti: le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato.
+Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato.
 Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.
 
 Compila il diagnostico: ${p.link}
@@ -34,8 +34,25 @@ L'invito scade il ${date}. Se non conosci il mittente, puoi ignorare questa emai
 ${BRAND.name} è un servizio di ${BRAND.owner}.`;
   const html = `<p>${esc(greeting)}</p>
 <p><strong>${esc(p.inviter)}</strong> ti ha invitato a compilare il diagnostico gestionale di <strong>${esc(p.company)}</strong> su ${esc(BRAND.name)}.</p>
-<p>Bastano circa 15 minuti: le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato. Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.</p>
+<p>Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato. Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.</p>
 <p><a href="${esc(p.link)}" style="display:inline-block;background:#0a2a4a;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">Compila il diagnostico</a></p>
 <p style="color:#5b6573;font-size:13px">L'invito scade il ${esc(date)}. Se non conosci il mittente, puoi ignorare questa email.<br>${esc(BRAND.name)} è un servizio di ${esc(BRAND.owner)}.</p>`;
+  return { subject, text, html };
+}
+
+/** Email: il report approfondito è pronto. */
+export function reportReadyEmail(p: { company: string; link: string }) {
+  const subject = `Il report approfondito di ${p.company} è pronto`;
+  const text = `Buongiorno,
+
+il report approfondito del diagnostico di ${p.company} è pronto. Oltre all'Ottogramma che hai già visto, trovi l'analisi delle aree di priorità, gli interventi suggeriti e le osservazioni dei nostri analisti.
+
+Apri il report: ${p.link}
+
+${BRAND.name} è un servizio di ${BRAND.owner}.`;
+  const html = `<p>Buongiorno,</p>
+<p>il report approfondito del diagnostico di <strong>${esc(p.company)}</strong> è pronto. Oltre all'Ottogramma che hai già visto, trovi l'analisi delle aree di priorità, gli interventi suggeriti e le osservazioni dei nostri analisti.</p>
+<p><a href="${esc(p.link)}" style="display:inline-block;background:#0a2a4a;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">Apri il report</a></p>
+<p style="color:#5b6573;font-size:13px">${esc(BRAND.name)} è un servizio di ${esc(BRAND.owner)}.</p>`;
   return { subject, text, html };
 }

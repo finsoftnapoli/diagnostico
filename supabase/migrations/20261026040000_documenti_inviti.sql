@@ -5,7 +5,7 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('documenti', 'documenti', false, 20971520, array['application/pdf'])
 on conflict (id) do nothing;
 
-create table public.documents (
+create table if not exists public.documents (
   id uuid primary key default gen_random_uuid(),
   kind text not null check (kind in ('visura', 'bilancio')),
   storage_path text not null unique,
@@ -18,20 +18,21 @@ create table public.documents (
   created_at timestamptz not null default now(),
   linked_at timestamptz
 );
-create index on public.documents (user_id);
-create index on public.documents (company_id);
+create index if not exists documents_user_id_idx on public.documents (user_id);
+create index if not exists documents_company_id_idx on public.documents (company_id);
 
 alter table public.documents enable row level security;
 -- ognuno vede i propri documenti; lo staff tutti. Inserimenti e cancellazioni solo dal server.
+drop policy if exists documents_select on public.documents;
 create policy documents_select on public.documents for select to authenticated
   using (user_id = auth.uid() or public.is_staff());
 grant select on public.documents to authenticated;
 revoke insert, update, delete on public.documents from anon, authenticated;
 
 -- Inviti: nome e ruolo indicati da chi invita, data di invio dell'email.
-alter table public.invitations add column invitee_name text;
-alter table public.invitations add column invitee_role text;
-alter table public.invitations add column sent_at timestamptz;
+alter table public.invitations add column if not exists invitee_name text;
+alter table public.invitations add column if not exists invitee_role text;
+alter table public.invitations add column if not exists sent_at timestamptz;
 
 -- Documenti da eliminare: mai collegati a una compilazione dopo 30 giorni,
 -- oppure di utenti che non accedono da 24 mesi.
