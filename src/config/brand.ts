@@ -6,7 +6,12 @@ export const BRAND = {
   reportName: "Ottogramma",
   tagline: "Il profilo di gestione della tua azienda in 15 minuti",
   owner: "Finsoft",
-  ownerLegal: "Finsoft (dati societari da completare)",
-  contactEmail: "info@example.com", // da sostituire con la casella del nuovo dominio
+  ownerLegal: "Finsoft S.r.l.",
+  ownerAddress: "[sede legale da completare]",
+  ownerVat: "[partita IVA da completare]",
+  ownerPec: "[PEC da completare]",
+  contactEmail: "info@finsoft.biz", // provvisorio: poi la casella del dominio del servizio
   questionnaireVersion: "0.4",
+  /** Versione dell'informativa: registrata con ogni consenso. Cambiarla a ogni modifica sostanziale. */
+  privacyVersion: "bozza-2026-10-26",
 } as const;

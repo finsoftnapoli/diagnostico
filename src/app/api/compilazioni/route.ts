@@ -7,7 +7,7 @@ import { computeResult } from "@/lib/scoring";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
 
 const ENGINE_VERSION = `motore-${QUESTIONNAIRE_VERSION}`;
-const POLICY_VERSION = "provvisoria-2026-10";
+const POLICY_VERSION = BRAND.privacyVersion;
 
 export async function POST(request: Request) {
   const { data: auth } = await (await supabaseServer()).auth.getUser();
