@@ -8,7 +8,7 @@ export default function Home() {
     <div>
       <section className="bg-navy text-white">
         <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
-          <p className="text-sm uppercase tracking-widest text-white/70">Per aziende da 2 a 100 milioni di fatturato</p>
+          <p className="text-sm uppercase tracking-widest text-white/70">Per imprese fino a 100 milioni di fatturato</p>
           <h1 className="mt-4 text-3xl sm:text-5xl font-semibold leading-tight max-w-3xl">
             Dove è solida la tua azienda, e dove conviene intervenire per primo.
           </h1>

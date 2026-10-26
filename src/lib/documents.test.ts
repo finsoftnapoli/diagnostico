@@ -15,7 +15,10 @@ describe("lettura documenti", () => {
 
   it("ricava la fascia di fatturato dal bilancio", () => {
     expect(revenueBand(7_800_000)).toBe("€5-10M");
-    expect(revenueBand(1_200_000)).toBe("Fuori da queste fasce");
+    expect(revenueBand(1_200_000)).toBe("€1-2M");
+    expect(revenueBand(5_000_000)).toBe("€5-10M");
+    expect(revenueBand(800_000)).toBe("Meno di €1M");
+    expect(revenueBand(140_000_000)).toBe("€100M e oltre");
     expect(employeeBand(9)).toBe("Meno di 10");
   });
 

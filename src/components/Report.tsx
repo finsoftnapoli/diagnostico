@@ -4,7 +4,7 @@ import { ArrowRight, Banknote, CircleCheck, Footprints, Gauge, Info, Scale, Targ
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
-import { MIN_SAMPLE, normativeBenchmark, type Benchmark } from "@/config/benchmark";
+import { bandText, MIN_SAMPLE, normativeBenchmark, type Benchmark } from "@/config/benchmark";
 import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
 import type { Draft } from "@/lib/draft";
 import { financialKpis } from "@/lib/documents";
@@ -30,8 +30,8 @@ export default function Report({ draft }: { draft: Draft }) {
         if (j?.values && j.sample >= MIN_SAMPLE)
           setBench({
             kind: "mediana",
-            label: `Mediana aziende ${band}`,
-            note: `Mediana di ${j.sample} aziende con fatturato ${band} che hanno compilato il diagnostico.`,
+            label: `Mediana aziende ${bandText(band)}`,
+            note: `Mediana di ${j.sample} aziende con fatturato ${bandText(band)} che hanno compilato il diagnostico.`,
             sample: j.sample,
             values: j.values,
           });
@@ -52,7 +52,7 @@ export default function Report({ draft }: { draft: Draft }) {
       <p className="text-sm text-muted">
         {BRAND.reportName}
         {date ? ` · ${date}` : ""}
-        {band ? ` · fatturato ${band}` : ""}
+        {band ? ` · fatturato ${bandText(band)}` : ""}
         {r.profile["PR-01"] ? ` · ${r.profile["PR-01"]}` : ""}
       </p>
       <h1 className="mt-1 text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>

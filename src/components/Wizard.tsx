@@ -400,6 +400,9 @@ function Profile({ r, update }: SectionProps) {
               />
             )}
             {f.id === "PR-10" && vatInfo && <span className="mt-1 block text-xs text-muted">{vatInfo}</span>}
+            {f.id === "PR-02" && (
+              <span className="mt-1 block text-xs text-muted">Sui valori di confine vale la fascia superiore (con €5M esatti, €5-10M).</span>
+            )}
           </label>
         ))}
       </div>

@@ -1,8 +1,8 @@
-// Generato da scripts/genera_domande.py (banca delle domande v0.3). Non modificare a mano:
+// Generato da scripts/genera_domande.py (banca delle domande v0.4). Non modificare a mano:
 // cambiare scripts/content.py e rigenerare.
 import type { Area, Question, Choice, ProfileField } from "./types";
 
-export const QUESTIONNAIRE_VERSION = "0.3";
+export const QUESTIONNAIRE_VERSION = "0.4";
 
 export const AREAS: Area[] = [
   {
@@ -43,7 +43,7 @@ export const AREAS: Area[] = [
   {
     "code": "SOS",
     "name": "Sostenibilità",
-    "description": "Consapevolezza e gestione dei temi ambientali, sociali e di governance, anche rispetto alle richieste di clienti e banche"
+    "description": "Consapevolezza e gestione degli impatti ambientali e sociali, anche rispetto alle richieste di clienti, banche e filiera"
   }
 ];
 
@@ -82,7 +82,7 @@ export const QUESTIONS: Question[] = [
     "levels": [
       "Quasi tutte le decisioni, anche operative, passano dal titolare.",
       "Alcune decisioni operative sono delegate, ma i confini non sono chiari e spesso si torna al titolare.",
-      "Deleghe e responsabilità sono definite per area; il titolare interviene sulle decisioni rilevanti.",
+      "Ogni area ha un responsabile con un'autonomia decisionale definita; il titolare interviene solo sulle decisioni rilevanti.",
       "La direzione si riunisce con regolarità su un ordine del giorno, le decisioni sono documentate e le deleghe hanno limiti chiari, anche di spesa."
     ],
     "check": {
@@ -226,9 +226,9 @@ export const QUESTIONS: Question[] = [
       "text": "Quanto pesano i primi 5 clienti sul fatturato?",
       "options": [
         "Meno del 20%",
-        "20-40%",
-        "40-60%",
-        "Oltre 60%"
+        "20-39%",
+        "40-59%",
+        "60% o più"
       ],
       "flag": null
     },
@@ -328,9 +328,9 @@ export const QUESTIONS: Question[] = [
       "text": "Qual è stato il turnover volontario nell'ultimo anno?",
       "options": [
         "Meno del 5%",
-        "5-10%",
-        "10-20%",
-        "Oltre 20%",
+        "5-9%",
+        "10-19%",
+        "20% o più",
         "Non lo sappiamo"
       ],
       "flag": {
@@ -357,8 +357,8 @@ export const QUESTIONS: Question[] = [
       "text": "Quale quota dei dipendenti ha un colloquio di valutazione almeno annuale?",
       "options": [
         "Nessuno",
-        "Solo i responsabili",
-        "Oltre metà",
+        "Meno della metà",
+        "Metà o più, non tutti",
         "Tutti"
       ],
       "flag": {
@@ -385,9 +385,9 @@ export const QUESTIONS: Question[] = [
       "text": "Che quota degli ordini viene consegnata nei tempi promessi?",
       "options": [
         "Meno del 70%",
-        "70-85%",
-        "85-95%",
-        "Oltre 95%",
+        "70-84%",
+        "85-94%",
+        "95% o più",
         "Non lo misuriamo"
       ],
       "flag": {
@@ -487,15 +487,15 @@ export const QUESTIONS: Question[] = [
     "check": {
       "text": "Entro quanti giorni dalla fine del mese avete i dati principali?",
       "options": [
-        "Oltre 30",
-        "15-30",
+        "Più di 30",
+        "16-30",
         "5-15",
         "Meno di 5"
       ],
       "flag": {
         "minLevel": 3,
         "answers": [
-          "Oltre 30"
+          "Più di 30"
         ]
       }
     },
@@ -543,9 +543,9 @@ export const QUESTIONS: Question[] = [
       "text": "Che quota del fatturato viene da prodotti o servizi introdotti negli ultimi 3 anni?",
       "options": [
         "Meno del 5%",
-        "5-15%",
-        "15-30%",
-        "Oltre 30%",
+        "5-14%",
+        "15-29%",
+        "30% o più",
         "Non lo sappiamo"
       ],
       "flag": {
@@ -613,7 +613,7 @@ export const QUESTIONS: Question[] = [
     "id": "SOS-1",
     "area": "SOS",
     "theme": "Priorità e obiettivi di sostenibilità",
-    "text": "Come affrontate i temi di sostenibilità ambientale, sociale e di governance?",
+    "text": "Come affrontate i temi di sostenibilità ambientale e sociale?",
     "levels": [
       "Il tema non è stato affrontato.",
       "Ci sono iniziative isolate (per esempio di risparmio energetico), senza obiettivi.",
@@ -912,12 +912,14 @@ export const PROFILE_FIELDS: ProfileField[] = [
     "label": "Fatturato dell'ultimo esercizio",
     "type": "select",
     "options": [
+      "Meno di €1M",
+      "€1-2M",
       "€2-5M",
       "€5-10M",
       "€10-25M",
       "€25-50M",
       "€50-100M",
-      "Fuori da queste fasce"
+      "€100M e oltre"
     ],
     "required": true,
     "purpose": "Benchmark e adattamento dei livelli alla fascia"
@@ -986,9 +988,9 @@ export const PROFILE_FIELDS: ProfileField[] = [
     "options": [
       "Nessuna",
       "Meno del 10%",
-      "10-30%",
+      "10-29%",
       "30-50%",
-      "Oltre 50%"
+      "Più del 50%"
     ],
     "required": true,
     "purpose": "Contesto del report"
@@ -998,10 +1000,10 @@ export const PROFILE_FIELDS: ProfileField[] = [
     "label": "Assetto di controllo",
     "type": "select",
     "options": [
-      "Familiare con gestione familiare",
-      "Familiare con manager esterni",
-      "Non familiare",
-      "Parte di un gruppo"
+      "Controllo familiare, gestione familiare",
+      "Controllo familiare, con manager esterni alla famiglia",
+      "Controllo di soci non familiari (fondi, manager, soci finanziari)",
+      "Controllata da un gruppo industriale o estero"
     ],
     "required": true,
     "purpose": "Contesto e lettura dell'ambito Strategia e governance"

@@ -8,5 +8,5 @@ export const BRAND = {
   owner: "Finsoft",
   ownerLegal: "Finsoft (dati societari da completare)",
   contactEmail: "info@example.com", // da sostituire con la casella del nuovo dominio
-  questionnaireVersion: "0.3",
+  questionnaireVersion: "0.4",
 } as const;

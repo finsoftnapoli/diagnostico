@@ -102,13 +102,16 @@ export type BilancioData = {
 /** Fascia di fatturato del profilo a partire dai ricavi in euro. */
 export function revenueBand(ricavi: number | null): string | null {
   if (ricavi === null || !Number.isFinite(ricavi) || ricavi <= 0) return null;
+  // limite inferiore incluso, superiore escluso: con €5M esatti si è in €5-10M
   const m = ricavi / 1_000_000;
-  if (m < 2 || m > 100) return "Fuori da queste fasce";
+  if (m < 1) return "Meno di €1M";
+  if (m < 2) return "€1-2M";
   if (m < 5) return "€2-5M";
   if (m < 10) return "€5-10M";
   if (m < 25) return "€10-25M";
   if (m < 50) return "€25-50M";
-  return "€50-100M";
+  if (m < 100) return "€50-100M";
+  return "€100M e oltre";
 }
 
 /** Fascia di addetti del profilo. */

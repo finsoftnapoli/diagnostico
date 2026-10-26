@@ -69,8 +69,8 @@ const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
 
 /** Fascia di fatturato → chiave usata nelle note di adattamento delle domande. */
 function sizeKey(band: string | undefined): string | null {
-  if (band === "€2-5M" || band === "€5-10M") return "€2-10M";
-  if (band === "€50-100M") return "€50-100M";
+  if (band === "Meno di €1M" || band === "€1-2M" || band === "€2-5M" || band === "€5-10M") return "€2-10M";
+  if (band === "€50-100M" || band === "€100M e oltre") return "€50-100M";
   return null;
 }
 
