@@ -144,6 +144,11 @@ export default function Services({ data }: { data: ServicesData }) {
         <h2 className="text-xl font-semibold text-navy flex items-center gap-2">
           <FileText className="size-5" aria-hidden strokeWidth={1.75} /> Dati di fatturazione
         </h2>
+        {!billing && (
+          <p className={`mt-1 text-sm ${error ? "text-accent" : "text-muted"}`}>
+            Servono per la fattura: inseriscili prima del primo acquisto.
+          </p>
+        )}
         {editBilling ? (
           <BillingForm
             companyId={data.company.id}
