@@ -103,7 +103,7 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
         ))}
 
         <label className="block rounded-xl border border-line p-4 sm:p-5">
-          <span className="font-semibold text-ink">Qualcosa da aggiungere per il nostro analista? (facoltativo)</span>
+          <span className="font-semibold text-ink">Qualcosa da aggiungere per il nostro esperto? (facoltativo)</span>
           <span className="block text-sm text-muted">Progetti in corso, vincoli, domande specifiche sull&apos;ambito.</span>
           <textarea
             value={r.notes ?? ""}

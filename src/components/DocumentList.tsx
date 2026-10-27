@@ -152,7 +152,7 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
       setMsg({
         text: j.read
           ? "Documento archiviato e letto: ne terremo conto nei prossimi report."
-          : "Documento archiviato. Non siamo riusciti a leggerne il contenuto (forse è una scansione): resta comunque a disposizione dei nostri analisti.",
+          : "Documento archiviato. Non siamo riusciti a leggerne il contenuto (forse è una scansione): resta comunque a disposizione dei nostri esperti.",
         ok: true,
       });
       setFile(null);
@@ -235,7 +235,7 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
       </div>
       {msg && <p className={`mt-3 text-sm ${msg.ok ? "text-muted" : "text-accent"}`}>{msg.text}</p>}
       <p className="mt-3 text-xs text-muted">
-        I documenti restano in un archivio privato, visibili solo a te e ai nostri analisti, e sono usati per i tuoi report e,
+        I documenti restano in un archivio privato, visibili solo a te e ai nostri esperti, e sono usati per i tuoi report e,
         in forma anonima e aggregata, per i confronti tra aziende. Non salviamo nomi di persone.
       </p>
     </div>

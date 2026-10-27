@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import InterestList from "@/components/InterestList";
-import { listAssessments, listInterests, listToReview, priorities } from "@/lib/admin";
-import { AREAS } from "@/lib/questionnaire";
+import { listAssessments, listToReview, priorities } from "@/lib/admin";
 import { currentUser } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Area riservata" };
@@ -25,12 +23,16 @@ async function AdminList() {
   const { user, isStaff } = await currentUser();
   if (!user) redirect("/accedi?next=/admin");
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
-  const [rows, interests, toReview] = await Promise.all([listAssessments(), listInterests(), listToReview()]);
+  const [rows, toReview] = await Promise.all([listAssessments(), listToReview()]);
   return (
     <>
       <nav className="mb-8 flex flex-wrap gap-4 text-sm">
-        <Link href="/admin/agenda" className="underline text-navy-soft">Agenda consulenze</Link>
-        <Link href="/admin/ordini" className="underline text-navy-soft">Ordini e fatture</Link>
+        <Link href="/admin/agenda" className="underline text-navy-soft">
+          Agenda consulenze
+        </Link>
+        <Link href="/admin/ordini" className="underline text-navy-soft">
+          Ordini e fatture
+        </Link>
       </nav>
       <section className="mb-12">
         <h2 className="text-xl font-semibold text-navy">Report da rivedere ({toReview.length})</h2>
@@ -52,10 +54,9 @@ async function AdminList() {
           </ul>
         )}
       </section>
-      <InterestList rows={interests} areaNames={Object.fromEntries(AREAS.map((a) => [a.code, a.name]))} />
       <div className="mt-12 flex flex-wrap items-baseline justify-between gap-4">
         <h1 className="text-2xl font-semibold text-navy">Compilazioni ({rows.length})</h1>
-        <a href="/admin/export" download className="text-sm bg-navy text-white px-4 py-2 rounded">
+        <a href="/admin/export" download className="text-sm bg-navy text-white px-4 py-2 rounded-lg">
           Scarica CSV
         </a>
       </div>

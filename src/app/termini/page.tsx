@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BRAND } from "@/config/brand";
 import { BUNDLE_HOURS, euro, PRODUCTS, VAT_RATE } from "@/config/offers";
 
-export const metadata: Metadata = { title: "Condizioni di vendita" };
+export const metadata: Metadata = { title: "Condizioni di vendita", description: "Condizioni generali di vendita degli approfondimenti per ambito, delle consulenze e del percorso completo.", alternates: { canonical: "/termini" } };
 
 // BOZZA da sottoporre a revisione legale prima dell'apertura al pubblico.
 const UPDATED = "26 ottobre 2026";
@@ -60,8 +60,8 @@ export default function Terms() {
 
       <S n="4" t="Attivazione e consegna">
         <p>
-          Gli approfondimenti si attivano subito dopo il pagamento e si compilano dall&apos;area personale. Il report scritto è consegnato entro 2
-          giorni lavorativi dall&apos;invio del questionario completo, dopo la revisione dei nostri esperti. Moduli e ore di consulenza restano
+          Gli approfondimenti si attivano subito dopo il pagamento e si compilano dall&apos;area personale. Il report scritto è consegnato entro 48
+          ore dall&apos;invio del questionario completo, dopo la revisione dei nostri esperti. Moduli e ore di consulenza restano
           disponibili nell&apos;area personale dell&apos;azienda per 12 mesi dall&apos;acquisto. [Da confermare.]
         </p>
       </S>

@@ -63,15 +63,15 @@ export default function Login() {
       <form onSubmit={submit} className="mt-6 space-y-4">
         <label className="block text-sm">
           <span className="font-medium">Email</span>
-          <input type="email" required disabled={sent} className="mt-1 w-full border border-line rounded px-3 py-2" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="email" required disabled={sent} className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         {sent && (
           <label className="block text-sm">
             <span className="font-medium">Codice ricevuto via email (oppure apri il link nell&apos;email da questo browser)</span>
-            <input required inputMode="numeric" autoComplete="one-time-code" className="mt-1 w-full border border-line rounded px-3 py-2" value={code} onChange={(e) => setCode(e.target.value)} />
+            <input required inputMode="numeric" autoComplete="one-time-code" className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={code} onChange={(e) => setCode(e.target.value)} />
           </label>
         )}
-        <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded disabled:opacity-60">
+        <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60">
           {busy ? "Attendere…" : sent ? "Accedi" : "Inviami l'email di accesso"}
         </button>
       </form>

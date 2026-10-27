@@ -73,7 +73,7 @@ export function reportReadyEmail(p: { company: string; link: string; module?: st
   const subject = p.module ? `Approfondimento ${areaName(p.module)} di ${p.company}: il report è pronto` : `Il report approfondito di ${p.company} è pronto`;
   const body = p.module
     ? `Trovi la lettura di ciascun tema, il piano di lavoro con le priorità nel tempo e gli indicatori da seguire.`
-    : `Oltre all'Ottogramma che hai già visto, trovi l'analisi delle aree di priorità, gli interventi suggeriti e le osservazioni dei nostri analisti.`;
+    : `Oltre all'Ottogramma che hai già visto, trovi l'analisi delle aree di priorità, gli interventi suggeriti e le osservazioni dei nostri esperti.`;
   const text = `Buongiorno,
 
 ${what} di ${p.company} è pronto. ${body}
@@ -96,19 +96,3 @@ export function reviewDigestEmail(p: { count: number; link: string }) {
   return { subject, text, html };
 }
 
-const KIND_TEXT: Record<string, string> = {
-  consulenza: "una sessione con un esperto",
-  approfondimento_priorita: "l'approfondimento delle 3 priorità",
-  approfondimento_ambito: "l'approfondimento di un ambito",
-};
-
-/** Avviso interno allo staff: nuova richiesta di approfondimento o consulenza. */
-export function interestNotificationEmail(p: { kind: string; area: string | null; company: string | null; email: string; link: string }) {
-  const what = `${KIND_TEXT[p.kind] ?? p.kind}${p.area ? ` (${p.area})` : ""}`;
-  const subject = `Nuova richiesta: ${what}${p.company ? ` · ${p.company}` : ""}`;
-  const text = `${p.email} ha richiesto ${what}${p.company ? ` per ${p.company}` : ""}.\n\nScheda: ${p.link}\n\nRispondendo a questa email scrivi direttamente al richiedente.`;
-  const html = `<p><strong>${esc(p.email)}</strong> ha richiesto ${esc(what)}${p.company ? ` per <strong>${esc(p.company)}</strong>` : ""}.</p>
-<p><a href="${esc(p.link)}">Apri la scheda</a></p>
-<p style="color:#5b6573;font-size:13px">Rispondendo a questa email scrivi direttamente al richiedente.</p>`;
-  return { subject, text, html };
-}

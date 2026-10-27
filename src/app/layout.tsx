@@ -3,11 +3,17 @@ import Link from "next/link";
 import { Suspense } from "react";
 import HeaderAction from "@/components/HeaderAction";
 import { BRAND } from "@/config/brand";
+import { siteUrl } from "@/config/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: BRAND.name,
+  metadataBase: new URL(siteUrl()),
+  title: { default: `Diagnostico aziendale gratuito per PMI · ${BRAND.name}`, template: `%s · ${BRAND.name}` },
   description: BRAND.tagline,
+  applicationName: BRAND.name,
+  openGraph: { type: "website", locale: "it_IT", siteName: BRAND.name },
+  twitter: { card: "summary_large_image" },
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -19,9 +25,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/" className="font-semibold tracking-tight text-navy">
               {BRAND.name}
             </Link>
-            <Suspense fallback={null}>
-              <HeaderAction />
-            </Suspense>
+            <nav aria-label="Principale" className="flex items-center gap-5 text-sm">
+              <Link href="/ambiti" className="hidden sm:inline text-muted hover:text-navy">
+                Gli 8 ambiti
+              </Link>
+              <Link href="/metodo" className="hidden sm:inline text-muted hover:text-navy">
+                Metodo
+              </Link>
+              <Link href="/area" className="hidden sm:inline text-muted hover:text-navy">
+                Area personale
+              </Link>
+              <Suspense fallback={null}>
+                <HeaderAction />
+              </Suspense>
+            </nav>
           </div>
         </header>
         <main className="flex-1">{children}</main>
@@ -31,6 +48,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Un servizio di {BRAND.owner}. Autovalutazione orientativa: non è una consulenza né un rating.
             </span>
             <span className="flex flex-wrap gap-x-4 gap-y-1">
+              <Link href="/ambiti" className="hover:underline">
+                Gli 8 ambiti
+              </Link>
+              <Link href="/metodo" className="hover:underline">
+                Metodo
+              </Link>
               <Link href="/area" className="hover:underline">
                 Area personale
               </Link>

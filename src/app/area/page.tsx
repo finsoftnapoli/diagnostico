@@ -29,6 +29,7 @@ type AssessmentRow = {
   respondent_email: string | null;
   completed_at: string;
   overall_score: number | null;
+  report_status?: string;
   companies: { name: string } | null;
   area_scores?: { area: string; score: number | null }[];
   answers?: { question_id: string; level: number }[];
@@ -42,7 +43,7 @@ async function AreaContent() {
   const [{ data: mine }, { data: docs }, { data: memberships }] = await Promise.all([
     sb
       .from("assessments")
-      .select("id, user_id, company_id, respondent_email, completed_at, overall_score, companies(name)")
+      .select("id, user_id, company_id, respondent_email, completed_at, overall_score, report_status, companies(name)")
       .eq("user_id", user.id)
       .eq("status", "completed")
       .order("completed_at", { ascending: false }),
@@ -133,9 +134,14 @@ async function AreaContent() {
                   <strong>{a.companies?.name}</strong>
                   <span className="text-muted"> · {new Date(a.completed_at).toLocaleDateString("it-IT")} · punteggio {a.overall_score}</span>
                 </span>
-                <Link href={`/area/report/${a.id}`} className="underline text-navy-soft">
-                  Apri il report
-                </Link>
+                <span className="flex items-center gap-3">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${a.report_status === "ready" ? "bg-navy text-white" : "bg-paper text-muted"}`}>
+                    {a.report_status === "ready" ? "Report approfondito pronto" : "Report approfondito in preparazione"}
+                  </span>
+                  <Link href={`/area/report/${a.id}`} className="underline text-navy-soft">
+                    Apri
+                  </Link>
+                </span>
               </li>
             ))}
           </ul>

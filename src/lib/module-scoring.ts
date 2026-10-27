@@ -10,7 +10,7 @@ export interface ModuleResponses {
   /** Livello 1-4; 0 = non applicabile (solo dove ammesso). */
   levels: Record<string, number>;
   checks: Record<string, string>;
-  /** Note libere dell'utente per l'analista (facoltative). */
+  /** Note libere dell'utente per l'esperto (facoltative). */
   notes?: string;
 }
 

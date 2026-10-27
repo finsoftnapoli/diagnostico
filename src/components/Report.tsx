@@ -550,7 +550,7 @@ const AREA_NAME: Record<string, string> = Object.fromEntries(AREAS.map((a) => [a
 function Narrative({ n, sources }: { n: ReportNarrative; sources: string[] }) {
   return (
     <section className="mt-8 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
-      <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri analisti</p>
+      <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri esperti</p>
       <h2 className="mt-1 text-2xl font-semibold text-navy">Sintesi per la direzione</h2>
       {sources.length > 0 && <p className="mt-1 text-sm text-muted">Tiene conto anche di: {sources.join(", ")}.</p>}
       <div className="mt-4 space-y-3 leading-relaxed">

@@ -295,7 +295,7 @@ function Intro({ r, update }: SectionProps) {
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {[
           { icon: Radar, t: "Subito l'Ottogramma", d: "Profilo sugli 8 ambiti, confronto con aziende simili ed evidenze chiave." },
-          { icon: FileText, t: "Report approfondito", d: "Entro 48 ore, l'analisi delle priorità elaborata dai nostri analisti." },
+          { icon: FileText, t: "Report approfondito", d: "Entro 48 ore, l'analisi delle priorità rivista dai nostri esperti." },
           { icon: ShieldCheck, t: "Dati protetti", d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri, salvo i colleghi che inviti tu." },
         ].map(({ icon: Icon, t, d }) => (
           <div key={t} className="rounded-xl border border-line p-4">

@@ -101,8 +101,8 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       {phase === "email" && (
         <form onSubmit={sendLink} className="mt-6 space-y-4">
           <p className="text-muted">
-            Indica la tua email aziendale: ti inviamo un messaggio per confermarla. Così salviamo il profilo e potrai
-            ritrovarlo, confrontarlo nel tempo e invitare i colleghi.
+            Indica la tua email aziendale: ti inviamo un messaggio per confermarla. Così salviamo il profilo, ti inviamo il
+            report approfondito entro 48 ore e potrai ritrovarlo, confrontarlo nel tempo e invitare i colleghi.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Email</span>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BRAND } from "@/config/brand";
 
-export const metadata: Metadata = { title: "Informativa privacy" };
+export const metadata: Metadata = { title: "Informativa privacy", description: "Come trattiamo i dati personali e aziendali raccolti dal diagnostico, dai documenti caricati e dagli acquisti.", alternates: { canonical: "/privacy" } };
 
 // BOZZA da sottoporre a revisione legale prima dell'apertura al pubblico.
 // I punti tra parentesi quadre vanno completati o verificati.
@@ -69,6 +69,12 @@ export default function Privacy() {
             solo per inviare l&apos;invito e, se lo accettano, per collegare le loro risposte allo spazio della tua azienda.
           </li>
           <li>
+            <strong>Dati di acquisto e prenotazione:</strong> dati di fatturazione dell&apos;azienda (ragione sociale,
+            partita IVA, sede, codice destinatario o PEC), ordini e fatture, risposte ai moduli di approfondimento e,
+            per le consulenze, data e ora prenotate e i temi che indichi. I dati della carta di pagamento sono trattati
+            solo da Stripe e non arrivano a noi.
+          </li>
+          <li>
             <strong>Dati tecnici:</strong> indirizzo IP, tipo di browser, data e ora delle richieste, dati necessari alla
             verifica di sicurezza contro gli accessi automatici e ai cookie tecnici descritti al punto 9.
           </li>
@@ -94,7 +100,7 @@ export default function Privacy() {
                 b="Esecuzione del servizio che richiedi (art. 6.1.b) per chi invita; per chi è invitato, l'accettazione dell'invito e del servizio. Chi è invitato viene informato, prima di compilare, che le sue risposte individuali saranno visibili all'amministratore."
               />
               <Row
-                a="Rispondere alle tue richieste, per esempio di partecipare al programma pilota o di parlare con un consulente."
+                a="Rispondere alle tue richieste, per esempio di essere ricontattato da un consulente."
                 b="Misure precontrattuali su tua richiesta (art. 6.1.b)."
               />
               <Row
@@ -129,8 +135,9 @@ export default function Privacy() {
           effetti giuridici o analogamente significativi su di te (art. 22 GDPR).
         </p>
         <p>
-          Per leggere i documenti caricati e per scrivere il report approfondito usiamo il servizio Claude di
-          Anthropic, che opera come nostro fornitore. In base ai termini commerciali del fornitore, i dati inviati non sono
+          Per leggere i documenti caricati e per scrivere la prima stesura dei report approfonditi usiamo il servizio
+          Claude di Anthropic, che opera come nostro fornitore: riceve i punteggi già calcolati e le informazioni che hai
+          fornito, e ogni report è rivisto da un nostro esperto prima dell&apos;invio. In base ai termini commerciali del fornitore, i dati inviati non sono
           usati per addestrare i suoi modelli. [Da verificare: periodo di conservazione presso il fornitore secondo i
           termini vigenti.]
         </p>
@@ -150,7 +157,7 @@ export default function Privacy() {
           da fornitori che ci supportano nella gestione del servizio, nominati responsabili del trattamento (art. 28 GDPR):
         </p>
         <ul className="mt-2 list-disc pl-5 space-y-1">
-          <li>Supabase: database e accesso, con server nell&apos;Unione europea (Francoforte);</li>
+          <li>Supabase: database, archivio dei documenti e accesso, con server nell&apos;Unione europea (Francoforte) [durante la fase di prova il database è a Londra, Regno Unito, paese con decisione di adeguatezza: va spostato prima dell&apos;apertura al pubblico];</li>
           <li>Vercel: hosting del sito, con elaborazione nell&apos;Unione europea (Francoforte);</li>
           <li>Anthropic: lettura dei documenti e testi del report;</li>
           <li>Resend: invio delle email del servizio;</li>
@@ -187,7 +194,7 @@ export default function Privacy() {
           </li>
           <li>Dati per le comunicazioni: fino alla revoca del consenso e comunque non oltre 24 mesi dall&apos;ultimo contatto.</li>
           <li>Registro dei consensi: per il tempo necessario a dimostrare il consenso raccolto.</li>
-          <li>Dati di fatturazione: 10 anni, come previsto dalla legge.</li>
+          
           <li>Dati anonimi e aggregati: possono essere conservati senza limiti, perché non riferibili a persone.</li>
         </ul>
       </Section>

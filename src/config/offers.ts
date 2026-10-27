@@ -15,11 +15,16 @@ export interface Product {
   bullets: string[];
 }
 
+const PRICE = { modulo: 100, consulenza: 200, bundle: 500 } as const;
+/** Ore di consulenza incluse nel percorso completo. */
+export const BUNDLE_HOURS = 2;
+const BUNDLE_SAVING = 8 * PRICE.modulo + BUNDLE_HOURS * PRICE.consulenza - PRICE.bundle;
+
 export const PRODUCTS: Record<Sku, Product> = {
   modulo: {
     sku: "modulo",
     name: "Approfondimento per ambito",
-    price: 100,
+    price: PRICE.modulo,
     invoiceText: "Modulo di approfondimento diagnostico",
     bullets: [
       "L'Ottogramma dell'ambito: 8 sotto-ambiti, 16-18 domande di dettaglio",
@@ -30,7 +35,7 @@ export const PRODUCTS: Record<Sku, Product> = {
   consulenza: {
     sku: "consulenza",
     name: "Consulenza senior da remoto",
-    price: 200,
+    price: PRICE.consulenza,
     invoiceText: "Consulenza direzionale da remoto (1 ora)",
     bullets: [
       "Un'ora in videochiamata con un consulente senior",
@@ -41,18 +46,16 @@ export const PRODUCTS: Record<Sku, Product> = {
   bundle: {
     sku: "bundle",
     name: "Percorso completo",
-    price: 500,
+    price: PRICE.bundle,
     invoiceText: "Percorso diagnostico completo: 8 moduli di approfondimento e 2 ore di consulenza",
     bullets: [
       "Tutti gli 8 approfondimenti per ambito",
       "2 ore di consulenza senior da remoto, anche in due sessioni",
-      "Risparmi €700 rispetto ai singoli servizi acquistati separatamente",
+      `Risparmi €${BUNDLE_SAVING} rispetto ai singoli servizi acquistati separatamente`,
     ],
   },
 };
 
-/** Ore di consulenza incluse nel percorso completo. */
-export const BUNDLE_HOURS = 2;
 /** Durata di una sessione di consulenza prenotabile. */
 export const SESSION_MIN = 60;
 

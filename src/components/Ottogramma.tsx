@@ -143,7 +143,7 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
       <div className="mt-6 rounded-xl border border-navy bg-navy/5 p-4 flex flex-wrap items-center gap-3">
         <p className="flex-1 text-sm">
           <strong className="text-navy">Il tuo report approfondito è pronto.</strong> Analisi delle priorità, interventi
-          suggeriti e osservazioni dei nostri analisti.
+          suggeriti e osservazioni dei nostri esperti.
         </p>
         <Link href={href} className="inline-flex items-center gap-1.5 bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg">
           Apri il report <ArrowRight className="size-4" aria-hidden />
@@ -160,7 +160,7 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
     <div className="mt-6 rounded-xl border border-line bg-paper p-4 flex items-start gap-3">
       <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
       <p className="text-sm">
-        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> I nostri analisti stanno preparando
+        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> I nostri esperti stanno preparando
         l&apos;analisi delle aree di priorità con gli interventi suggeriti: lo riceverai via email entro 48 ore e lo
         ritroverai nella tua area personale.
       </p>
