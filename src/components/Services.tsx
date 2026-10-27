@@ -12,7 +12,7 @@ import { AREAS } from "@/lib/questionnaire";
 import type { AreaCode } from "@/lib/types";
 
 export interface ServicesData {
-  company: { id: string; name: string };
+  company: { id: string; name: string; vat: string | null };
   companies: { id: string; name: string }[];
   paymentsActive: boolean;
   result: "ok" | "annullato" | null;
@@ -21,12 +21,21 @@ export interface ServicesData {
   priorities: AreaCode[];
   modules: { entitlementId: string; area: AreaCode; moduleId: string | null; status: string; score: number | null }[];
   hours: number;
-  bookings: { id: string; startsAt: string; duration: number; url: string | null; topic: string | null; mine: boolean; cancellable: boolean }[];
+  bookings: {
+    id: string;
+    startsAt: string;
+    duration: number;
+    url: string | null;
+    topic: string | null;
+    mine: boolean;
+    cancellable: boolean;
+  }[];
   slots: { id: string; startsAt: string; duration: number }[];
   orders: { id: string; date: string; items: string[]; totalCents: number; invoice: string | null; status: string }[];
 }
 
-const day = (iso: string) => new Date(iso).toLocaleDateString("it-IT", { timeZone: "Europe/Rome", weekday: "long", day: "numeric", month: "long" });
+const day = (iso: string) =>
+  new Date(iso).toLocaleDateString("it-IT", { timeZone: "Europe/Rome", weekday: "long", day: "numeric", month: "long" });
 const hour = (iso: string) => new Date(iso).toLocaleTimeString("it-IT", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit" });
 const dayKey = (iso: string) => new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Europe/Rome" });
 
@@ -42,7 +51,9 @@ export default function Services({ data }: { data: ServicesData }) {
   // ritorno dal pagamento: l'attivazione arriva da Stripe dopo pochi secondi
   useEffect(() => {
     if (data.result === "annullato" && data.cancelledOrder)
-      void fetch(`/api/acquisti?ordine=${data.cancelledOrder}`, { method: "DELETE" }).then(() => router.replace(`/area/servizi?azienda=${data.company.id}`));
+      void fetch(`/api/acquisti?ordine=${data.cancelledOrder}`, { method: "DELETE" }).then(() =>
+        router.replace(`/area/servizi?azienda=${data.company.id}`),
+      );
     if (data.result === "ok") {
       const t = setTimeout(() => router.refresh(), 4000);
       return () => clearTimeout(t);
@@ -98,8 +109,8 @@ export default function Services({ data }: { data: ServicesData }) {
         <div className="mt-6 rounded-xl border border-navy bg-navy/5 p-4 text-sm flex gap-3">
           <Check className="size-5 text-navy shrink-0" aria-hidden />
           <p>
-            <strong className="text-navy">Pagamento ricevuto, grazie.</strong> I servizi si attivano in pochi secondi; riceverai una email di conferma e
-            la fattura elettronica tramite il Sistema di Interscambio.
+            <strong className="text-navy">Pagamento ricevuto, grazie.</strong> I servizi si attivano in pochi secondi; riceverai una email
+            di conferma e la fattura elettronica tramite il Sistema di Interscambio.
           </p>
         </div>
       )}
@@ -136,7 +147,7 @@ export default function Services({ data }: { data: ServicesData }) {
         {editBilling ? (
           <BillingForm
             companyId={data.company.id}
-            initial={billing ?? { ...EMPTY_BILLING, denominazione: data.company.name }}
+            initial={billing ?? { ...EMPTY_BILLING, denominazione: data.company.name, vat_number: data.company.vat ?? "" }}
             onSaved={(b) => {
               setBilling(b);
               setEditBilling(false);
@@ -153,7 +164,11 @@ export default function Services({ data }: { data: ServicesData }) {
                 {billing.address}, {billing.cap} {billing.city} ({billing.province})
                 <br />
                 <span className="text-muted">
-                  {billing.sdi_code ? `Codice destinatario ${billing.sdi_code}` : billing.pec ? `PEC ${billing.pec}` : "Fattura nel cassetto fiscale (codice 0000000)"}
+                  {billing.sdi_code
+                    ? `Codice destinatario ${billing.sdi_code}`
+                    : billing.pec
+                      ? `PEC ${billing.pec}`
+                      : "Fattura nel cassetto fiscale (codice 0000000)"}
                 </span>
               </p>
               <button onClick={() => setEditBilling(true)} className="underline text-navy-soft">
@@ -184,7 +199,8 @@ export default function Services({ data }: { data: ServicesData }) {
       )}
 
       <p className="mt-10 text-xs text-muted">
-        Prezzi IVA esclusa; al pagamento si aggiunge l&apos;IVA al {VAT_RATE}%. Servizi riservati a imprese e professionisti con partita IVA.{" "}
+        Prezzi IVA esclusa; al pagamento si aggiunge l&apos;IVA al {VAT_RATE}%. Servizi riservati a imprese e professionisti con partita
+        IVA.{" "}
         <Link href="/termini" className="underline">
           Condizioni di vendita
         </Link>
@@ -211,8 +227,8 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
         <Layers className="size-5" aria-hidden strokeWidth={1.75} /> Approfondimenti per ambito
       </h2>
       <p className="mt-1 text-sm text-muted max-w-3xl">
-        L&apos;Ottogramma dell&apos;ambito: 8 sotto-ambiti con punteggi immediati e un report con piano di lavoro e indicatori
-        rivisto dai nostri esperti. {euro(p.price)} + IVA per ambito.
+        L&apos;Ottogramma dell&apos;ambito: 8 sotto-ambiti con punteggi immediati e un report con piano di lavoro e indicatori rivisto dai
+        nostri esperti. {euro(p.price)} + IVA per ambito.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {ordered.map((c) => {
@@ -225,7 +241,13 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
                   <AreaIcon code={c} className="size-4 text-navy" /> {AREA_SHORT[c]}
                 </span>
                 <span className="text-muted">
-                  {m.status === "pronto" ? `Report pronto · ${m.score}/100` : m.status === "in analisi" ? "Inviato, in analisi" : m.status === "in corso" ? "In compilazione" : "Attivo"}
+                  {m.status === "pronto"
+                    ? `Report pronto · ${m.score}/100`
+                    : m.status === "in analisi"
+                      ? "Inviato, in analisi"
+                      : m.status === "in corso"
+                        ? "In compilazione"
+                        : "Attivo"}
                 </span>
                 <ModuleButton m={m} />
               </div>
@@ -239,7 +261,8 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
               className={`rounded-xl border p-3 text-sm text-left flex flex-col gap-2 ${on ? "border-navy bg-navy/5" : prio ? "border-navy/50" : "border-line hover:border-navy-soft"}`}
             >
               <span className="flex items-center gap-2 font-medium">
-                {on ? <Check className="size-4 text-navy" aria-hidden /> : <AreaIcon code={c} className="size-4 text-navy" />} {AREA_SHORT[c]}
+                {on ? <Check className="size-4 text-navy" aria-hidden /> : <AreaIcon code={c} className="size-4 text-navy" />}{" "}
+                {AREA_SHORT[c]}
               </span>
               <span className="text-muted">{prio ? "Tra le tue priorità" : "Disponibile"}</span>
             </button>
@@ -268,8 +291,8 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
             </p>
             {owned.size > 0 && (
               <p className="mt-1 text-sm text-muted">
-                Hai già {owned.size === 1 ? "1 approfondimento attivo" : `${owned.size} approfondimenti attivi`}: con il percorso si attivano gli altri e le 2 ore
-                di consulenza, allo stesso prezzo.
+                Hai già {owned.size === 1 ? "1 approfondimento attivo" : `${owned.size} approfondimenti attivi`}: con il percorso si
+                attivano gli altri e le 2 ore di consulenza, allo stesso prezzo.
               </p>
             )}
             <ul className="mt-2 text-sm space-y-1">
@@ -306,7 +329,11 @@ function ModuleButton({ m }: { m: ServicesData["modules"][number] }) {
     <button
       onClick={async () => {
         setBusy(true);
-        const res = await fetch("/api/moduli", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ entitlementId: m.entitlementId }) });
+        const res = await fetch("/api/moduli", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ entitlementId: m.entitlementId }),
+        });
         const j = (await res.json().catch(() => ({}))) as { id?: string };
         if (j.id) router.push(`/area/modulo/${j.id}`);
         else setBusy(false);
@@ -375,9 +402,7 @@ function Consulting({
         Un&apos;ora in videochiamata con un nostro consulente senior sul tuo diagnostico. {euro(p.price)} + IVA, da pagare al momento della
         prenotazione.{" "}
         {data.hours > 0 && (
-          <strong className="text-navy">
-            Hai {data.hours === 1 ? "1 ora disponibile" : `${data.hours} ore disponibili`}.
-          </strong>
+          <strong className="text-navy">Hai {data.hours === 1 ? "1 ora disponibile" : `${data.hours} ore disponibili`}.</strong>
         )}
       </p>
 
@@ -438,12 +463,23 @@ function Consulting({
             <div className="mt-4 rounded-xl bg-paper p-4">
               <label className="block text-sm">
                 <span className="font-medium">Su cosa vuoi concentrarti? (facoltativo)</span>
-                <textarea value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={1000} rows={3} className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2" />
+                <textarea
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  maxLength={1000}
+                  rows={3}
+                  className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2"
+                />
               </label>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 {data.hours >= 1 ? (
-                  <button onClick={bookWithHours} disabled={booking} className="inline-flex items-center gap-2 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-60">
-                    {booking ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Prenota con le tue ore
+                  <button
+                    onClick={bookWithHours}
+                    disabled={booking}
+                    className="inline-flex items-center gap-2 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-60"
+                  >
+                    {booking ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Prenota
+                    con le tue ore
                   </button>
                 ) : (
                   <>
@@ -452,8 +488,8 @@ function Consulting({
                       disabled={!!busy}
                       className="inline-flex items-center gap-2 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-60"
                     >
-                      {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <CreditCard className="size-4" aria-hidden />} Prenota e paga ·{" "}
-                      {euro(withVat(p.price))} IVA inclusa
+                      {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <CreditCard className="size-4" aria-hidden />}{" "}
+                      Prenota e paga · {euro(withVat(p.price))} IVA inclusa
                     </button>
                     <span className="text-xs text-muted">L&apos;orario resta riservato per 30 minuti durante il pagamento.</span>
                   </>
@@ -487,7 +523,11 @@ function BillingForm({
   async function save() {
     setBusy(true);
     setMsg(null);
-    const res = await fetch("/api/fatturazione", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ companyId, billing: b }) });
+    const res = await fetch("/api/fatturazione", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ companyId, billing: b }),
+    });
     const j = (await res.json().catch(() => ({}))) as { error?: string; fields?: Record<string, string>; billing?: Billing };
     setBusy(false);
     if (!res.ok || !j.billing) {
@@ -525,9 +565,15 @@ function BillingForm({
         {field("sdi_code", "Codice destinatario SDI", { cls: "sm:col-span-2", max: 7, placeholder: "7 caratteri" })}
         {field("pec", "oppure PEC", { cls: "sm:col-span-4" })}
       </div>
-      <p className="mt-2 text-xs text-muted">Senza codice destinatario né PEC la fattura sarà disponibile nel cassetto fiscale dell&apos;azienda.</p>
+      <p className="mt-2 text-xs text-muted">
+        Senza codice destinatario né PEC la fattura sarà disponibile nel cassetto fiscale dell&apos;azienda.
+      </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button onClick={save} disabled={busy} className="bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-60">
+        <button
+          onClick={save}
+          disabled={busy}
+          className="bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-60"
+        >
           {busy ? "Salvataggio…" : "Salva i dati"}
         </button>
         {onCancel && (

@@ -46,10 +46,14 @@ async function load(sp: Record<string, string | string[] | undefined>): Promise<
   const sb = await supabaseServer();
   const { data: auth } = await sb.auth.getUser();
   if (!auth.user) redirect("/accedi?next=/area/servizi");
-  const { data: memberships } = await sb.from("company_members").select("company_id, role, companies(name)").eq("user_id", auth.user.id);
+  const { data: memberships } = await sb
+    .from("company_members")
+    .select("company_id, role, companies(name, vat_number)")
+    .eq("user_id", auth.user.id);
   const companies = (memberships ?? []).map((m) => ({
     id: m.company_id as string,
     name: (m.companies as unknown as { name: string } | null)?.name ?? "",
+    vat: (m.companies as unknown as { vat_number: string | null } | null)?.vat_number?.replace(/^IT/i, "") ?? null,
   }));
   if (!companies.length) return null;
   const wanted = typeof sp.azienda === "string" ? sp.azienda : null;
@@ -60,7 +64,11 @@ async function load(sp: Record<string, string | string[] | undefined>): Promise<
   const minStart = new Date(Date.now() + 12 * 3600 * 1000).toISOString();
   const nowIso = new Date().toISOString();
   const [billing, ents, modules, bookings, slots, orders, diag, credit] = await Promise.all([
-    db.from("billing_profiles").select("denominazione, vat_number, tax_code, address, cap, city, province, sdi_code, pec").eq("company_id", company.id).maybeSingle(),
+    db
+      .from("billing_profiles")
+      .select("denominazione, vat_number, tax_code, address, cap, city, province, sdi_code, pec")
+      .eq("company_id", company.id)
+      .maybeSingle(),
     db.from("entitlements").select("id, kind, area, quantity, used, created_at").eq("company_id", company.id).order("created_at"),
     db.from("module_assessments").select("id, entitlement_id, status, report_status, score").eq("company_id", company.id),
     db
@@ -122,7 +130,15 @@ async function load(sp: Record<string, string | string[] | undefined>): Promise<
     bookings: (bookings.data ?? [])
       .map((b) => {
         const s = b.expert_slots as unknown as { starts_at: string; duration_min: number; meeting_url: string | null };
-        return { id: b.id as string, startsAt: s.starts_at, duration: s.duration_min, url: s.meeting_url ?? process.env.DEFAULT_MEETING_URL ?? null, topic: b.topic as string | null, mine: b.user_id === auth.user!.id, cancellable: b.user_id === auth.user!.id && new Date(s.starts_at).getTime() - Date.now() > 24 * 3600 * 1000 };
+        return {
+          id: b.id as string,
+          startsAt: s.starts_at,
+          duration: s.duration_min,
+          url: s.meeting_url ?? process.env.DEFAULT_MEETING_URL ?? null,
+          topic: b.topic as string | null,
+          mine: b.user_id === auth.user!.id,
+          cancellable: b.user_id === auth.user!.id && new Date(s.starts_at).getTime() - Date.now() > 24 * 3600 * 1000,
+        };
       })
       .filter((b) => new Date(b.startsAt).getTime() > Date.now() - 2 * 3600 * 1000)
       .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
