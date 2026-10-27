@@ -11,7 +11,7 @@ import { AreaIcon } from "@/lib/areaIcons";
 import { AREAS } from "@/lib/questionnaire";
 
 const TITLE = `Diagnostico aziendale gratuito per PMI · ${BRAND.name}`;
-const DESCRIPTION = `Check-up gratuito della tua azienda su 8 ambiti di gestione: strategia, finanza, vendite, persone, operations, digitale, innovazione e sostenibilità. Subito l'${BRAND.reportName} con il confronto con aziende simili, entro 48 ore il report con le priorità.`;
+const DESCRIPTION = `Check-up gratuito della tua azienda su 8 ambiti di gestione: strategia, finanza, vendite, persone, operations, digitale, innovazione e sostenibilità. Subito l'${BRAND.reportName} con il confronto con aziende simili, entro 2 giorni lavorativi il report con le priorità.`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -24,7 +24,7 @@ const STEPS = [
   ["Racconta l'azienda", "Settore, dimensione, ambizioni per i prossimi anni e sfide di oggi. Se hai visura e bilancio in PDF, li leggiamo noi e compiliamo i dati."],
   ["Rispondi su 8 ambiti", "Per ogni tema scegli tra quattro descrizioni concrete quella più vicina alla situazione di oggi. Le risposte si salvano mentre compili."],
   [`Ricevi l'${BRAND.reportName}`, "Il profilo a radar della tua azienda, il confronto con aziende della stessa fascia di fatturato e le evidenze chiave, subito."],
-  ["Leggi il report approfondito", "Entro 48 ore, per email: le tre priorità, le cause delle sfide e gli interventi suggeriti, rivisti da un nostro esperto."],
+  ["Leggi il report approfondito", "Entro 2 giorni lavorativi, per email: le tre priorità, le cause delle sfide e gli interventi suggeriti, validati da un nostro esperto."],
 ];
 
 export default function Home() {
@@ -77,8 +77,8 @@ export default function Home() {
           </h1>
           <p className="mt-6 text-lg text-white/85 max-w-2xl">
             Un check-up della gestione su 8 ambiti, pensato per imprese fino a 100 milioni di fatturato. Subito
-            l&apos;{BRAND.reportName}, il profilo della tua azienda a confronto con aziende simili; entro 48 ore un report
-            approfondito con le priorità, rivisto dai nostri esperti.
+            l&apos;{BRAND.reportName}, il profilo della tua azienda a confronto con aziende simili; entro 2 giorni lavorativi un report
+            approfondito con le priorità, curato dai nostri esperti.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link href="/diagnostico" className="inline-flex items-center gap-2 bg-white text-navy font-semibold px-6 py-3 rounded-lg hover:bg-paper">
@@ -108,7 +108,7 @@ export default function Home() {
             },
             {
               icon: FileText,
-              t: "Il report approfondito, entro 48 ore",
+              t: "Il report approfondito, entro 2 giorni lavorativi",
               d: "Le tre priorità collegate alle tue ambizioni e alle tue sfide, con gli interventi da cui partire e, se carichi il bilancio, i numeri chiave.",
             },
           ].map(({ icon: Icon, t, d }) => (
@@ -134,10 +134,10 @@ export default function Home() {
             ))}
           </ol>
           <p className="mt-6 text-sm text-muted max-w-3xl">
-            I punteggi derivano da regole dichiarate, non da un algoritmo opaco: l&apos;intelligenza artificiale scrive solo la prima stesura
-            del report, a partire dai numeri già calcolati.{" "}
+            Il diagnostico applica la nostra metodologia proprietaria, costruita sull&apos;esperienza di consulenza di direzione: algoritmi e
+            sistemi di analisi trasformano le risposte in indicazioni concrete per la tua azienda, validate dai nostri esperti.{" "}
             <Link href="/metodo" className="underline text-navy-soft">
-              Leggi il metodo
+              Il nostro metodo
             </Link>
             .
           </p>

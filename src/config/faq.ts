@@ -1,7 +1,6 @@
 // Domande frequenti: mostrate nella pagina iniziale e pubblicate come dati strutturati per i motori di ricerca.
 // Tenerle coerenti con prezzi (offers.ts), tempi e metodo descritti nel resto del sito.
 import { BRAND } from "./brand";
-import { MIN_SAMPLE } from "./benchmark";
 import { BUNDLE_HOURS, euro, PRODUCTS } from "./offers";
 
 export const FAQ: { q: string; a: string }[] = [
@@ -15,19 +14,19 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Cosa ricevo alla fine?",
-    a: `Subito l'${BRAND.reportName}: il profilo a radar sugli 8 ambiti, il confronto con aziende della tua fascia di fatturato e le evidenze chiave. Entro 48 ore ricevi per email il report approfondito, con l'analisi delle priorità e gli interventi suggeriti, rivisto da un nostro esperto.`,
+    a: `Subito l'${BRAND.reportName}: il profilo a radar sugli 8 ambiti, il confronto con aziende della tua fascia di fatturato e le evidenze chiave. Entro 2 giorni lavorativi ricevi per email il report approfondito, con l'analisi delle priorità e gli interventi suggeriti, validato da un nostro esperto.`,
   },
   {
-    q: "Come viene calcolato il punteggio?",
-    a: "Per ogni tema scegli tra quattro descrizioni concrete della situazione di oggi; ogni livello corrisponde a un punteggio da 0 a 100. Le priorità combinano il divario dal livello più alto con il legame con le ambizioni e le sfide che hai indicato. Le regole sono dichiarate nella pagina sul metodo.",
+    q: "Come nascono punteggi e priorità?",
+    a: "Da una metodologia proprietaria sviluppata dai nostri consulenti. Per ogni tema scegli tra quattro descrizioni concrete della situazione di oggi; i nostri algoritmi trasformano le risposte nel profilo dell'azienda e in priorità coerenti con le ambizioni e le sfide che hai indicato.",
   },
   {
     q: "Con quali aziende mi confronto?",
-    a: `Con aziende della stessa fascia di fatturato. Finché nel tuo segmento non ci sono almeno ${MIN_SAMPLE} aziende, il confronto usa un riferimento indicativo definito dai nostri esperti, ed è dichiarato come tale; poi la mediana delle aziende reali.`,
+    a: "Con aziende della stessa fascia di fatturato, sulla base dei riferimenti definiti dai nostri esperti e dei dati delle aziende che hanno compilato il diagnostico, sempre in forma anonima e aggregata.",
   },
   {
-    q: "Che ruolo ha l'intelligenza artificiale?",
-    a: "Nessun punteggio è calcolato dall'intelligenza artificiale. L'AI legge i documenti che carichi e scrive la prima stesura del report a partire dai punteggi già calcolati e dalle tue risposte; ogni report è rivisto da un nostro esperto prima dell'invio.",
+    q: "Chi prepara il report approfondito?",
+    a: "Il report nasce dai nostri sistemi di analisi, che leggono insieme le risposte, i documenti che carichi e il confronto con aziende simili; un nostro esperto lo valida prima dell'invio. Se vuoi discuterlo, puoi prenotare un'ora con un consulente senior.",
   },
   {
     q: "I dati della mia azienda restano riservati?",

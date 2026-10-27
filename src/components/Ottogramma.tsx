@@ -130,8 +130,7 @@ export default function Ottogramma({
 
       <p className="mt-10 text-xs text-muted flex gap-2 max-w-3xl">
         <Info className="size-4 shrink-0" aria-hidden />
-        Autovalutazione orientativa basata sulle risposte fornite: non è una consulenza né un rating. I punteggi derivano da
-        regole dichiarate; le risposte sono usate anche, in forma anonima e aggregata, per confronti tra aziende e ricerca.
+        Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}: non è una consulenza né un rating; le risposte sono usate anche, in forma anonima e aggregata, per confronti tra aziende e ricerca.
       </p>
     </div>
   );
@@ -161,7 +160,7 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
       <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
       <p className="text-sm">
         <strong className="text-navy">Il report approfondito è in elaborazione.</strong> I nostri esperti stanno preparando
-        l&apos;analisi delle aree di priorità con gli interventi suggeriti: lo riceverai via email entro 48 ore e lo
+        l&apos;analisi delle aree di priorità con gli interventi suggeriti: lo riceverai via email entro 2 giorni lavorativi e lo
         ritroverai nella tua area personale.
       </p>
     </div>

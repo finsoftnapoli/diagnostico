@@ -128,18 +128,14 @@ export default function Privacy() {
         </div>
       </Section>
 
-      <Section n="4" title="Il punteggio e l'uso dell'intelligenza artificiale">
+      <Section n="4" title="Come elaboriamo il profilo e i report">
         <p>
-          Il profilo e le priorità sono calcolati con regole dichiarate a partire dalle risposte che fornisci. Si tratta di
-          un&apos;autovalutazione orientativa: non è una consulenza, non è un rating e non produce decisioni che abbiano
-          effetti giuridici o analogamente significativi su di te (art. 22 GDPR).
-        </p>
-        <p>
-          Per leggere i documenti caricati e per scrivere la prima stesura dei report approfonditi usiamo il servizio
-          Claude di Anthropic, che opera come nostro fornitore: riceve i punteggi già calcolati e le informazioni che hai
-          fornito, e ogni report è rivisto da un nostro esperto prima dell&apos;invio. In base ai termini commerciali del fornitore, i dati inviati non sono
-          usati per addestrare i suoi modelli. [Da verificare: periodo di conservazione presso il fornitore secondo i
-          termini vigenti.]
+          Profilo, priorità e report sono elaborati con metodologie e sistemi proprietari a partire dalle informazioni che
+          fornisci, anche con strumenti di intelligenza artificiale di fornitori esterni (indicati al punto 6), e ogni
+          report è validato da un nostro esperto prima dell&apos;invio. Si tratta di un&apos;autovalutazione orientativa:
+          non è una consulenza, non è un rating e non produce decisioni che abbiano effetti giuridici o analogamente
+          significativi su di te (art. 22 GDPR). I fornitori non usano i dati che ricevono per addestrare i propri
+          modelli. [Da verificare nei termini vigenti, insieme ai tempi di conservazione presso il fornitore.]
         </p>
       </Section>
 
@@ -159,7 +155,7 @@ export default function Privacy() {
         <ul className="mt-2 list-disc pl-5 space-y-1">
           <li>Supabase: database, archivio dei documenti e accesso, con server nell&apos;Unione europea (Francoforte) [durante la fase di prova il database è a Londra, Regno Unito, paese con decisione di adeguatezza: va spostato prima dell&apos;apertura al pubblico];</li>
           <li>Vercel: hosting del sito, con elaborazione nell&apos;Unione europea (Francoforte);</li>
-          <li>Anthropic: lettura dei documenti e testi del report;</li>
+          <li>Anthropic: strumenti di intelligenza artificiale per l&apos;analisi dei documenti e dei report;</li>
           <li>Resend: invio delle email del servizio;</li>
           <li>Stripe: pagamenti online (i dati della carta sono trattati solo da Stripe e non arrivano a noi);</li>
           <li>Aruba: emissione e trasmissione delle fatture elettroniche al Sistema di Interscambio;</li>

@@ -235,7 +235,7 @@ export default function ModuleReport({
             ) : (
               <>
                 <strong className="text-navy">L&apos;analisi è in preparazione.</strong> I nostri esperti stanno preparando la lettura per
-                sotto-ambito, il piano di lavoro e gli indicatori: la riceverai via email entro 48 ore.
+                sotto-ambito, il piano di lavoro e gli indicatori: la riceverai via email entro 2 giorni lavorativi.
               </>
             )}
           </p>

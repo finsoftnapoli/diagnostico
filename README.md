@@ -13,7 +13,7 @@ In prova su Vercel con database Supabase di test. Funziona:
 
 | Area | Cosa c'è |
 |---|---|
-| Sito pubblico | Pagina iniziale, 8 pagine degli ambiti (`/ambiti/...`), metodo (`/metodo`), informativa privacy e condizioni di vendita in bozza, sitemap, robots, dati strutturati, anteprima social |
+| Sito pubblico | Pagina iniziale, 8 pagine degli ambiti (`/ambiti/...`), il nostro metodo (`/metodo`), informativa privacy e condizioni di vendita in bozza, sitemap, robots, dati strutturati, anteprima social |
 | Diagnostico gratuito | Questionario in 5 sezioni (consensi, profilo, ambizioni, 24 domande, sfide) con salvataggio automatico e "salva e continua più tardi" via email; verifica anti-bot Cloudflare Turnstile; partita IVA verificata su VIES |
 | Documenti | Visura e bilancio in PDF letti con Claude durante il questionario (precompilano il profilo); dall'area personale anche bilanci e visure aggiornati, business plan e altri documenti, usati nei report successivi |
 | Risultati | Ottogramma subito dopo la conferma dell'email: punteggi, confronto di fascia, evidenze chiave, offerte; report approfondito scritto dall'AI in differita, rivisto e approvato dallo staff, poi inviato per email; PDF dalla stampa del browser |
@@ -117,5 +117,6 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
   fatture li scrive solo il server.
 - Ogni modifica al motore di punteggio passa da `npm test`; ogni compilazione registra la versione del questionario.
 - Nomi di soci e amministratori letti dalla visura restano nel browser di chi carica il documento: mai nel database.
-- I testi rivolti agli utenti parlano di "esperti" (chi rivede i report e fa le consulenze) e di "Ottogramma" (il profilo);
-  i tempi promessi sono "entro 48 ore" per i report.
+- I testi rivolti agli utenti parlano di "esperti" (chi valida i report e fa le consulenze), di "Ottogramma" (il profilo) e
+  di "metodologia, algoritmi e sistemi proprietari": nessun dettaglio pubblico su formule o uso dell'AI, salvo il minimo
+  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono "entro 2 giorni lavorativi".

@@ -379,9 +379,9 @@ export default function Report({
       </div>
       <p className="mt-6 text-xs text-muted flex gap-2 max-w-3xl">
         <Info className="size-4 shrink-0" aria-hidden />
-        Autovalutazione orientativa basata sulle risposte fornite: non è una consulenza né un rating. I punteggi derivano
-        da regole dichiarate; le risposte sono usate anche, in forma anonima e aggregata, per confronti tra aziende e
-        finalità di ricerca.
+        Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}:
+        non è una consulenza né un rating. Le risposte sono usate anche, in forma anonima e aggregata, per confronti tra
+        aziende e finalità di ricerca.
       </p>
     </div>
   );
