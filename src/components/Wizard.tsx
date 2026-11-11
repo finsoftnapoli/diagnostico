@@ -15,6 +15,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode, Choice, Financials, Governance, Responses } from "@/lib/types";
 import { isValidItalianVat, normalizeVat } from "@/lib/vat";
 import FileDrop from "@/components/FileDrop";
+import { acceptFor, docFormat } from "@/lib/doc-format";
 
 type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
 
@@ -615,22 +616,19 @@ function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
 
 const DOCS = [
   { kind: "visura" as const, label: "Visura camerale", hint: "Precompila i dati dell'azienda" },
-  { kind: "bilancio" as const, label: "Ultimo bilancio", hint: "Aggiunge al report i numeri chiave" },
+  { kind: "bilancio" as const, label: "Ultimo bilancio", hint: "PDF o XBRL: aggiunge al report i numeri chiave" },
 ];
 
-/** Caricamento facoltativo di visura e bilancio (PDF) per precompilare il profilo. */
+/** Caricamento facoltativo di visura (PDF) e bilancio (PDF o XBRL) per precompilare il profilo. */
 function DocUpload({ r, update }: SectionProps) {
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, string>>({});
 
   async function upload(kind: "visura" | "bilancio", file: File | undefined) {
     if (!file) return;
-    if (file.type && file.type !== "application/pdf") {
-      setMsg((m) => ({ ...m, [kind]: "Il file deve essere un PDF." }));
-      return;
-    }
-    if (file.size > 20 * 1024 * 1024) {
-      setMsg((m) => ({ ...m, [kind]: "Il file supera i 20 MB: prova con una versione più leggera." }));
+    const fmt = docFormat(file, kind);
+    if ("error" in fmt) {
+      setMsg((m) => ({ ...m, [kind]: fmt.error }));
       return;
     }
     setBusy(kind);
@@ -640,16 +638,19 @@ function DocUpload({ r, update }: SectionProps) {
       const prep = await fetch("/api/documenti/caricamento", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ tipo: kind, size: file.size }),
+        body: JSON.stringify({ tipo: kind, size: file.size, formato: fmt.formato }),
       });
       const p = (await prep.json().catch(() => ({}))) as { error?: string; path?: string; token?: string };
       if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
       const { error: upErr } = await supabaseBrowser()
         .storage.from("documenti")
-        .uploadToSignedUrl(p.path, p.token, file, { contentType: "application/pdf" });
+        .uploadToSignedUrl(p.path, p.token, file, { contentType: fmt.contentType });
       if (upErr) throw new Error("Caricamento non riuscito, riprova");
       // 2. lettura
-      setMsg((m) => ({ ...m, [kind]: "Lettura in corso, può richiedere fino a un minuto…" }));
+      setMsg((m) => ({
+        ...m,
+        [kind]: fmt.formato === "xbrl" ? "Lettura in corso…" : "Lettura in corso, può richiedere fino a un minuto…",
+      }));
       const res = await fetch("/api/documenti", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -700,8 +701,9 @@ function DocUpload({ r, update }: SectionProps) {
         <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Hai a portata di mano visura e bilancio?
       </p>
       <p className="mt-1 text-sm text-muted">
-        Caricali in PDF (facoltativo), con un clic o trascinandoli nei riquadri: compiliamo noi i campi e il report includerà numeri chiave
-        e governance. I file restano in un archivio privato e puoi cancellarli in qualsiasi momento dalla tua area personale.
+        Caricali con un clic o trascinandoli nei riquadri (facoltativo): la visura in PDF, il bilancio in PDF o nel formato XBRL del
+        Registro Imprese. Compiliamo noi i campi e il report includerà numeri chiave e governance. I file restano in un archivio privato e
+        puoi cancellarli in qualsiasi momento dalla tua area personale.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {DOCS.map((d) => {
@@ -709,6 +711,7 @@ function DocUpload({ r, update }: SectionProps) {
           return (
             <div key={d.kind}>
               <FileDrop
+                accept={acceptFor(d.kind)}
                 onFile={(f) => void upload(d.kind, f)}
                 disabled={busy !== null}
                 activeClassName="border-navy ring-2 ring-navy/30 bg-paper"

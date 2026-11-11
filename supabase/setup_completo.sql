@@ -1,5 +1,5 @@
 -- Configurazione completa del database: tutte le migrazioni in ordine, rieseguibili senza errori.
--- Generato da supabase/migrations: per un nuovo progetto basta incollarlo una volta nel SQL Editor.
+-- Generato da scripts/genera_setup.sh: per un nuovo progetto basta incollarlo una volta nel SQL Editor.
 
 -- ===== 20261026000000_init.sql =====
 -- Schema iniziale del diagnostico (fase 1, già predisposto per più utenti per azienda).
@@ -677,3 +677,9 @@ alter table public.orders add column if not exists terms_accepted_at timestamptz
 -- alla videochiamata (che arriva solo a chi prenota).
 revoke select on public.expert_slots from authenticated;
 grant select (id, starts_at, duration_min, status) on public.expert_slots to authenticated;
+
+-- ===== 20261112000000_bilancio_xbrl.sql =====
+-- Bilancio anche in formato XBRL (il file depositato al Registro Imprese): l'archivio privato accetta file XML.
+update storage.buckets
+set allowed_mime_types = array['application/pdf', 'application/xml']
+where id = 'documenti';

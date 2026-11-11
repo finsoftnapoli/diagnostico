@@ -217,4 +217,9 @@ do $$ begin
 exception when insufficient_privilege then null;
 end $$;
 reset role;
+-- l'archivio accetta il bilancio XBRL oltre ai PDF
+do $$ begin
+  assert (select allowed_mime_types @> array['application/pdf', 'application/xml'] from storage.buckets where id = 'documenti'),
+    'archivio documenti: PDF e XML ammessi';
+end $$;
 select 'TUTTI I CONTROLLI SUPERATI' as esito;

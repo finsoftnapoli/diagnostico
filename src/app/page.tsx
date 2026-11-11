@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const STEPS = [
-  ["Racconta l'azienda", "Settore, dimensione, ambizioni per i prossimi anni e sfide di oggi. Se hai visura e bilancio in PDF, li leggiamo noi e compiliamo i dati."],
+  ["Racconta l'azienda", "Settore, dimensione, ambizioni per i prossimi anni e sfide di oggi. Se hai visura e bilancio, in PDF o nel formato XBRL del Registro Imprese, li leggiamo noi e compiliamo i dati."],
   ["Rispondi su 8 ambiti", "Per ogni tema scegli tra quattro descrizioni concrete quella più vicina alla situazione di oggi. Le risposte si salvano mentre compili."],
   [`Ricevi l'${BRAND.reportName}`, "Il profilo a radar della tua azienda, il confronto con aziende della stessa fascia di fatturato e le evidenze chiave, subito."],
   ["Leggi il report approfondito", "Entro 2 giorni lavorativi, per email: le tre priorità, le cause delle sfide e gli interventi suggeriti, validati da un nostro esperto."],
@@ -182,7 +182,7 @@ export default function Home() {
             <Gauge className="size-6 text-navy" aria-hidden strokeWidth={1.75} />
             <h2 className="mt-3 text-xl font-semibold text-navy">I numeri della tua azienda</h2>
             <p className="mt-2 text-muted leading-relaxed">
-              Carica visura e bilancio in PDF: compiliamo i dati dell&apos;azienda e il report aggiunge marginalità, indebitamento, giorni di
+              Carica la visura e il bilancio, in PDF o nel formato XBRL depositato al Registro Imprese: compiliamo i dati dell&apos;azienda e il report aggiunge marginalità, indebitamento, giorni di
               incasso e governance. Più avanti puoi aggiungere bilanci aggiornati e il business plan.
             </p>
           </div>

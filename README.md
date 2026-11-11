@@ -15,7 +15,7 @@ In prova su Vercel con database Supabase di test. Funziona:
 |---|---|
 | Sito pubblico | Pagina iniziale, 8 pagine degli ambiti (`/ambiti/...`), il nostro metodo (`/metodo`), informativa privacy e condizioni di vendita in bozza, sitemap, robots, dati strutturati, anteprima social |
 | Diagnostico gratuito | Questionario in 5 sezioni (consensi, profilo, ambizioni, 24 domande, sfide) con salvataggio automatico e "salva e continua più tardi" via email; verifica anti-bot Cloudflare Turnstile; partita IVA verificata su VIES |
-| Documenti | Visura e bilancio in PDF letti con Claude durante il questionario (precompilano il profilo); dall'area personale anche bilanci e visure aggiornati, business plan e altri documenti, usati nei report successivi |
+| Documenti | Visura e bilancio in PDF letti con Claude durante il questionario (precompilano il profilo), anche trascinando il file; bilancio anche in XBRL (il file del Registro Imprese), letto direttamente senza AI; dall'area personale anche bilanci e visure aggiornati, business plan e altri documenti, usati nei report successivi |
 | Risultati | Ottogramma subito dopo la conferma dell'email: punteggi, confronto di fascia, evidenze chiave, offerte; report approfondito scritto dall'AI in differita, rivisto e approvato dallo staff, poi inviato per email; PDF dalla stampa del browser |
 | Più manager | Inviti ai colleghi (suggeriti dalla visura), spazio aziendale con confronto delle visioni nell'area personale |
 | Vendite | Dati di fatturazione, acquisto con Stripe Checkout, attivazione di moduli e ore di consulenza, fattura elettronica FatturaPA (invio ad Aruba o coda da caricare a mano), prenotazione delle consulenze sugli orari dell'esperto con invito di calendario |
@@ -80,7 +80,7 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 | `src/lib/scoring.ts`, `module-scoring.ts` | Motori di punteggio e priorità |
 | `src/lib/insights.ts` | Evidenze, prontezza per le ambizioni, cause delle sfide, prossimi passi |
 | `src/lib/report-narrative.ts`, `module-report.ts`, `report-jobs.ts`, `narrative-spec.ts` | Report scritti dall'AI, coda di generazione e revisione |
-| `src/lib/documents.ts`, `company-docs.ts` | Lettura dei documenti e loro uso nei report |
+| `src/lib/documents.ts`, `xbrl.ts`, `doc-format.ts`, `company-docs.ts` | Lettura dei documenti (PDF con Claude, bilancio XBRL con la tassonomia itcc-ci), formati accettati, uso nei report |
 | `src/lib/commerce.ts`, `billing.ts`, `invoice.ts`, `aruba.ts`, `stripe.ts`, `ics.ts` | Ordini, fatture elettroniche, pagamenti, prenotazioni |
 | `src/app/` | Pagine e API (vedi i flussi) |
 | `supabase/migrations/` | Schema del database e regole di accesso, rieseguibili; `supabase/setup_completo.sql` le riunisce (`scripts/genera_setup.sh`) |

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { DOC_KINDS, DOC_LABELS, type AnyDocKind, type PlanSummary } from "@/lib/documents";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import FileDrop from "@/components/FileDrop";
+import { acceptFor, docFormat } from "@/lib/doc-format";
 
 export interface DocRow {
   id: string;
@@ -21,7 +22,7 @@ const kindLabel = (k: string) => DOC_LABELS[k as AnyDocKind] ?? "Documento";
 
 const HINTS: Record<AnyDocKind, string> = {
   visura: "Aggiorna governance e dati dell'azienda.",
-  bilancio: "Un esercizio più recente aggiorna i numeri chiave del prossimo report.",
+  bilancio: "In PDF o nel formato XBRL del Registro Imprese: un esercizio più recente aggiorna i numeri chiave del prossimo report.",
   business_plan: "Ne ricaviamo obiettivi e iniziative, da confrontare con il diagnostico.",
   altro: "Per esempio presentazione aziendale, organigramma, budget.",
 };
@@ -115,24 +116,30 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
 
   async function submit() {
     if (!file) return setMsg({ text: "Scegli il file da caricare.", ok: false });
-    if ((file.type && file.type !== "application/pdf") || !file.name.toLowerCase().endsWith(".pdf"))
-      return setMsg({ text: "Il file deve essere un PDF: da Word, Excel o PowerPoint usa «Salva come PDF».", ok: false });
-    if (file.size > 20 * 1024 * 1024) return setMsg({ text: "Il file supera i 20 MB: prova con una versione più leggera.", ok: false });
+    const fmt = docFormat(file, kind);
+    if ("error" in fmt)
+      return setMsg({
+        text:
+          fmt.error === "Il file deve essere un PDF."
+            ? "Il file deve essere un PDF: da Word, Excel o PowerPoint usa «Salva come PDF»."
+            : fmt.error,
+        ok: false,
+      });
     setBusy(true);
     setMsg({ text: "Caricamento…", ok: true });
     try {
       const prep = await fetch("/api/documenti/caricamento", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ tipo: kind, size: file.size, companyId }),
+        body: JSON.stringify({ tipo: kind, size: file.size, companyId, formato: fmt.formato }),
       });
       const p = (await prep.json().catch(() => ({}))) as { error?: string; path?: string; token?: string };
       if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
       const { error: upErr } = await supabaseBrowser()
         .storage.from("documenti")
-        .uploadToSignedUrl(p.path, p.token, file, { contentType: "application/pdf" });
+        .uploadToSignedUrl(p.path, p.token, file, { contentType: fmt.contentType });
       if (upErr) throw new Error("Caricamento non riuscito, riprova");
-      setMsg({ text: "Lettura in corso, può richiedere fino a un minuto…", ok: true });
+      setMsg({ text: fmt.formato === "xbrl" ? "Lettura in corso…" : "Lettura in corso, può richiedere fino a un minuto…", ok: true });
       const res = await fetch("/api/documenti", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -226,7 +233,14 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
           />
         </label>
         <FileDrop
-          onFile={(f) => f && setFile(f)}
+          accept={acceptFor(kind)}
+          onFile={(f) => {
+            if (!f) return;
+            setFile(f);
+            setMsg(null);
+            // un file XBRL è sempre un bilancio
+            if (/\.(xbrl|xml)$/i.test(f.name)) setKind("bilancio");
+          }}
           disabled={busy}
           activeClassName="border-navy ring-2 ring-navy/30 bg-paper"
           className={`sm:col-span-2 flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer transition ${
@@ -237,8 +251,8 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
             <Upload className="size-4" aria-hidden />
           </span>
           <span className="text-sm">
-            <span className="font-medium block">{file ? file.name : "Scegli il file PDF o trascinalo qui"}</span>
-            <span className="text-muted">Fino a 20 MB</span>
+            <span className="font-medium block">{file ? file.name : "Scegli il file o trascinalo qui"}</span>
+            <span className="text-muted">{kind === "bilancio" ? "PDF o XBRL, fino a 20 MB" : "PDF, fino a 20 MB"}</span>
           </span>
         </FileDrop>
       </div>

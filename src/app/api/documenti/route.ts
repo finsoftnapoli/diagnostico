@@ -1,4 +1,4 @@
-// Legge un PDF già caricato nell'archivio privato con Claude.
+// Legge un documento già caricato nell'archivio privato: i PDF con Claude, il bilancio XBRL direttamente.
 // - Durante la compilazione (visura, bilancio): restituisce i dati per precompilare il profilo.
 // - Dall'area personale (anche business plan e altri documenti): archivia il documento per l'azienda.
 // Il file resta nell'archivio privato; nel database solo dati dell'azienda, mai nomi di persone.
@@ -24,6 +24,7 @@ import { isHuman } from "@/lib/human";
 import { companyOfMember } from "@/lib/supabase/membership";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
 import { normalizeVat } from "@/lib/vat";
+import { parseXbrl, xmlText } from "@/lib/xbrl";
 
 export const maxDuration = 60;
 const MODEL = "claude-sonnet-5-5";
@@ -60,11 +61,13 @@ async function extract(kind: AnyDocKind, pdf: Buffer): Promise<unknown> {
 const json = (body: object, status = 200) => NextResponse.json(body, { status });
 
 export async function POST(request: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: "Lettura dei documenti non ancora attiva" }, 503);
   const body = (await request.json().catch(() => ({}))) as { tipo?: unknown; path?: unknown; companyId?: unknown; label?: unknown };
   const tipo = body.tipo;
   const path = typeof body.path === "string" ? body.path : "";
   if (!isDocKind(tipo)) return json({ error: "Tipo di documento non valido" }, 400);
+  const xbrl = tipo === "bilancio" && path.endsWith(".xbrl");
+  if (!xbrl && !process.env.ANTHROPIC_API_KEY) return json({ error: "Lettura dei documenti non ancora attiva" }, 503);
+  const ext = tipo === "bilancio" ? "(pdf|xbrl)" : "pdf";
 
   // modalità e controlli di accesso
   const area = typeof body.companyId === "string" ? body.companyId : null;
@@ -77,19 +80,29 @@ export async function POST(request: Request) {
     userId = auth.user.id;
     company = await companyOfMember(userId, area);
     if (!company) return json({ error: "Azienda non trovata" }, 404);
-    if (!new RegExp(`^aziende/${company.id}/\\d{4}-\\d{2}-\\d{2}/${UUID}-${tipo}\\.pdf$`).test(path))
+    if (!new RegExp(`^aziende/${company.id}/\\d{4}-\\d{2}-\\d{2}/${UUID}-${tipo}\\.${ext}$`).test(path))
       return json({ error: "Documento non valido" }, 400);
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-    const { count } = await db.from("documents").select("id", { count: "exact", head: true }).eq("user_id", userId).gte("created_at", since);
+    const { count } = await db
+      .from("documents")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", since);
     if ((count ?? 0) >= DAILY_LIMIT) return json({ error: "Hai raggiunto il limite di documenti per oggi: riprova domani" }, 429);
   } else {
     if (!isHuman(request)) return json({ error: "Verifica di sicurezza scaduta: ricarica la pagina" }, 403);
     if (tipo !== "visura" && tipo !== "bilancio") return json({ error: "Tipo di documento non valido" }, 400);
-    if (!new RegExp(`^in-attesa/\\d{4}-\\d{2}-\\d{2}/${UUID}-${tipo}\\.pdf$`).test(path)) return json({ error: "Documento non valido" }, 400);
+    if (!new RegExp(`^in-attesa/\\d{4}-\\d{2}-\\d{2}/${UUID}-${tipo}\\.${ext}$`).test(path))
+      return json({ error: "Documento non valido" }, 400);
     // freno di sicurezza sui costi: troppi documenti anonimi nell'ultima ora
     const hourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
-    const { count } = await db.from("documents").select("id", { count: "exact", head: true }).is("user_id", null).gte("created_at", hourAgo);
-    if ((count ?? 0) >= ANON_HOURLY_LIMIT) return json({ error: "Servizio di lettura momentaneamente occupato: compila i campi a mano o riprova più tardi" }, 429);
+    const { count } = await db
+      .from("documents")
+      .select("id", { count: "exact", head: true })
+      .is("user_id", null)
+      .gte("created_at", hourAgo);
+    if ((count ?? 0) >= ANON_HOURLY_LIMIT)
+      return json({ error: "Servizio di lettura momentaneamente occupato: compila i campi a mano o riprova più tardi" }, 429);
   }
 
   const { data: blob, error: dlError } = await db.storage.from("documenti").download(path);
@@ -97,22 +110,28 @@ export async function POST(request: Request) {
   const bytes = Buffer.from(await blob.arrayBuffer());
   // un file non archiviato non deve restare nell'archivio
   const discard = () => db.storage.from("documenti").remove([path]);
-  if (bytes.subarray(0, 5).toString() !== "%PDF-") {
+  let data: unknown;
+  if (xbrl) {
+    data = parseXbrl(xmlText(bytes));
+    if (!data) {
+      await discard();
+      return json({ error: "Il file non è un bilancio XBRL leggibile: scarica dal Registro Imprese il file .xbrl o carica il PDF." }, 422);
+    }
+  } else if (bytes.subarray(0, 5).toString() !== "%PDF-") {
     await discard();
     return json({ error: "Il file deve essere un PDF" }, 415);
-  }
-
-  let data: unknown;
-  try {
-    data = await extract(tipo, bytes);
-  } catch (err) {
-    console.error("Lettura documento non riuscita:", err instanceof Error ? err.message : err);
-    // dall'area personale business plan e altri documenti si archiviano anche senza lettura
-    if (!(area && (tipo === "business_plan" || tipo === "altro"))) {
-      await discard();
-      return json({ error: "Non siamo riusciti a leggere il documento. Riprova o compila i campi a mano." }, 502);
+  } else {
+    try {
+      data = await extract(tipo, bytes);
+    } catch (err) {
+      console.error("Lettura documento non riuscita:", err instanceof Error ? err.message : err);
+      // dall'area personale business plan e altri documenti si archiviano anche senza lettura
+      if (!(area && (tipo === "business_plan" || tipo === "altro"))) {
+        await discard();
+        return json({ error: "Non siamo riusciti a leggere il documento. Riprova o compila i campi a mano." }, 502);
+      }
+      data = null;
     }
-    data = null;
   }
 
   // dati salvabili (mai nomi di persone)
@@ -137,7 +156,10 @@ export async function POST(request: Request) {
     // dall'area personale, un documento di un'altra azienda non si archivia
     if (company?.vat && profile["PR-10"] && normalizeVat(company.vat) !== profile["PR-10"]) {
       await discard();
-      return json({ error: `Il documento riguarda un'altra azienda (partita IVA ${profile["PR-10"]}): caricalo per l'azienda giusta.` }, 422);
+      return json(
+        { error: `Il documento riguarda un'altra azienda (partita IVA ${profile["PR-10"]}): caricalo per l'azienda giusta.` },
+        422,
+      );
     }
     extracted = { profile, financials, governance };
   } else if (data) {
