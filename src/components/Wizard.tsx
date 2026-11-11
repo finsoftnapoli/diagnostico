@@ -14,6 +14,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode, Choice, Financials, Governance, Responses } from "@/lib/types";
 import { isValidItalianVat, normalizeVat } from "@/lib/vat";
+import FileDrop from "@/components/FileDrop";
 
 type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
 
@@ -32,7 +33,6 @@ const SECTIONS: { kind: Step["kind"]; label: string }[] = [
   { kind: "issues", label: "Sfide" },
 ];
 
-
 export default function Wizard() {
   const router = useRouter();
   // Il componente gira solo nel browser (vedi ClientOnly), quindi la bozza si legge all'avvio.
@@ -42,9 +42,7 @@ export default function Wizard() {
   });
   const [r, setR] = useState<Responses>(() => initial?.responses ?? emptyResponses());
   const [step, setStep] = useState(() => initial?.step ?? 0);
-  const [notice, setNotice] = useState<string | null>(() =>
-    (initial?.step ?? 0) > 0 ? "Abbiamo ripreso da dove eri rimasto." : null,
-  );
+  const [notice, setNotice] = useState<string | null>(() => ((initial?.step ?? 0) > 0 ? "Abbiamo ripreso da dove eri rimasto." : null));
   const [error, setError] = useState<string | null>(null);
   const [human, setHuman] = useState(() => !isHumanCheckEnabled());
   const topRef = useRef<HTMLDivElement>(null);
@@ -81,10 +79,7 @@ export default function Wizard() {
   const update = (patch: Partial<Responses>) => setR((prev) => ({ ...prev, ...patch }));
   const cur = STEPS[step];
   const progress = Math.round((step / (STEPS.length - 1)) * 100);
-  const missing = useMemo(
-    () => (cur.kind === "intro" && !human ? "Attendi la verifica di sicurezza." : validate(cur, r)),
-    [cur, r, human],
-  );
+  const missing = useMemo(() => (cur.kind === "intro" && !human ? "Attendi la verifica di sicurezza." : validate(cur, r)), [cur, r, human]);
   const onHuman = useCallback(() => setHuman(true), []);
 
   function go(delta: number) {
@@ -175,7 +170,10 @@ export default function Wizard() {
 
       <div className="mt-10 flex justify-between gap-4">
         {step > 0 ? (
-          <button onClick={() => go(-1)} className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper inline-flex items-center gap-2">
+          <button
+            onClick={() => go(-1)}
+            className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper inline-flex items-center gap-2"
+          >
             <ArrowLeft className="size-4" aria-hidden /> Indietro
           </button>
         ) : (
@@ -210,7 +208,10 @@ function Progress({ step, r, progress }: { step: number; r: Responses; progress:
           const firstIdx = STEPS.findIndex((x) => x.kind === s.kind);
           const done = step > firstIdx && !active;
           return (
-            <li key={s.kind} className={`flex items-center gap-1.5 ${active ? "text-navy font-semibold" : done ? "text-ink" : "text-muted"}`}>
+            <li
+              key={s.kind}
+              className={`flex items-center gap-1.5 ${active ? "text-navy font-semibold" : done ? "text-ink" : "text-muted"}`}
+            >
               <span
                 className={`size-5 rounded-full text-[11px] flex items-center justify-center ${
                   active ? "bg-navy text-white" : done ? "bg-navy/15 text-navy" : "border border-line"
@@ -261,7 +262,8 @@ function validate(s: Step, r: Responses): string | null {
     }
     case "objectives":
       if (!r.objectives.length) return "Scegli almeno un obiettivo.";
-      if (r.objectivesText.trim().length < MIN_TEXT) return `Racconta le vostre ambizioni in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
+      if (r.objectivesText.trim().length < MIN_TEXT)
+        return `Racconta le vostre ambizioni in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
       return null;
     case "area": {
       const qs = QUESTIONS.filter((q) => q.area === s.area);
@@ -271,7 +273,8 @@ function validate(s: Step, r: Responses): string | null {
     }
     case "issues":
       if (!r.issues.length) return "Scegli almeno una sfida.";
-      if (r.issuesText.trim().length < MIN_TEXT) return `Descrivi le sfide in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
+      if (r.issuesText.trim().length < MIN_TEXT)
+        return `Descrivi le sfide in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
       return null;
   }
 }
@@ -287,16 +290,24 @@ function Intro({ r, update }: SectionProps) {
       <h1 className="text-3xl font-semibold text-navy">Prima di iniziare</h1>
       {r.context && (
         <p className="mt-4 rounded-lg border border-navy/30 bg-navy/5 px-4 py-3 text-sm">
-          Compili il diagnostico come collega per <strong>{r.context.companyName}</strong>. Il profilo dell&apos;azienda è
-          già compilato; le tue risposte individuali saranno visibili all&apos;amministratore dello spazio aziendale, che
-          potrà confrontarle con quelle degli altri colleghi.
+          Compili il diagnostico come collega per <strong>{r.context.companyName}</strong>. Il profilo dell&apos;azienda è già compilato; le
+          tue risposte individuali saranno visibili all&apos;amministratore dello spazio aziendale, che potrà confrontarle con quelle degli
+          altri colleghi.
         </p>
       )}
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {[
           { icon: Radar, t: "Subito l'Ottogramma", d: "Profilo sugli 8 ambiti, confronto con aziende simili ed evidenze chiave." },
-          { icon: FileText, t: "Report approfondito", d: "Entro 2 giorni lavorativi, l'analisi delle priorità rivista dai nostri esperti." },
-          { icon: ShieldCheck, t: "Dati protetti", d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri, salvo i colleghi che inviti tu." },
+          {
+            icon: FileText,
+            t: "Report approfondito",
+            d: "Entro 2 giorni lavorativi, l'analisi delle priorità rivista dai nostri esperti.",
+          },
+          {
+            icon: ShieldCheck,
+            t: "Dati protetti",
+            d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri, salvo i colleghi che inviti tu.",
+          },
         ].map(({ icon: Icon, t, d }) => (
           <div key={t} className="rounded-xl border border-line p-4">
             <Icon className="size-5 text-navy" aria-hidden strokeWidth={1.75} />
@@ -306,20 +317,17 @@ function Intro({ r, update }: SectionProps) {
         ))}
       </div>
       <p className="mt-6 text-muted">
-        Per ogni tema scegli la descrizione più vicina alla situazione di <strong className="text-ink">oggi</strong>, non a
-        quella desiderata: un quadro onesto produce priorità più utili.
+        Per ogni tema scegli la descrizione più vicina alla situazione di <strong className="text-ink">oggi</strong>, non a quella
+        desiderata: un quadro onesto produce priorità più utili.
       </p>
       <div className="mt-8 space-y-4">
-        <Check
-          checked={r.consents.service}
-          onChange={(v) => update({ consents: { ...r.consents, service: v, benchmark: v } })}
-        >
+        <Check checked={r.consents.service} onChange={(v) => update({ consents: { ...r.consents, service: v, benchmark: v } })}>
           Ho letto l&apos;
           <Link href="/privacy" className="underline" target="_blank">
             informativa privacy
           </Link>{" "}
-          e accetto le condizioni del servizio, compreso l&apos;uso delle risposte in forma anonima e aggregata per
-          statistiche, confronti tra aziende e finalità di ricerca. <span className="text-accent">*</span>
+          e accetto le condizioni del servizio, compreso l&apos;uso delle risposte in forma anonima e aggregata per statistiche, confronti
+          tra aziende e finalità di ricerca. <span className="text-accent">*</span>
         </Check>
         <Check checked={r.consents.marketing} onChange={(v) => update({ consents: { ...r.consents, marketing: v } })}>
           Desidero ricevere comunicazioni su servizi, ricerche e iniziative (facoltativo).
@@ -327,9 +335,8 @@ function Intro({ r, update }: SectionProps) {
       </div>
       <p className="mt-6 text-xs text-muted flex gap-2">
         <Info className="size-4 shrink-0" aria-hidden />
-        Il diagnostico fa parte di un programma di ricerca sulla gestione delle imprese italiane: i dati raccolti
-        servono anche a studi e confronti, sempre in forma anonima e aggregata. Il risultato è un&apos;autovalutazione
-        orientativa, non una consulenza né un rating.
+        Il diagnostico fa parte di un programma di ricerca sulla gestione delle imprese italiane: i dati raccolti servono anche a studi e
+        confronti, sempre in forma anonima e aggregata. Il risultato è un&apos;autovalutazione orientativa, non una consulenza né un rating.
       </p>
     </div>
   );
@@ -373,8 +380,8 @@ function Profile({ r, update }: SectionProps) {
       <p className="text-sm text-muted">Sezione 1</p>
       <h1 className="text-3xl font-semibold text-navy">La tua azienda</h1>
       <p className="mt-2 text-muted">
-        Con la partita IVA possiamo completare il profilo con i dati pubblici dell&apos;azienda e confrontarti con aziende
-        simili per settore e dimensione.
+        Con la partita IVA possiamo completare il profilo con i dati pubblici dell&apos;azienda e confrontarti con aziende simili per
+        settore e dimensione.
       </p>
       {isSupabaseConfigured() && <DocUpload r={r} update={update} />}
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -408,7 +415,9 @@ function Profile({ r, update }: SectionProps) {
             )}
             {f.id === "PR-10" && vatInfo && <span className="mt-1 block text-xs text-muted">{vatInfo}</span>}
             {f.id === "PR-02" && (
-              <span className="mt-1 block text-xs text-muted">Sui valori di confine vale la fascia superiore (con €5M esatti, €5-10M).</span>
+              <span className="mt-1 block text-xs text-muted">
+                Sui valori di confine vale la fascia superiore (con €5M esatti, €5-10M).
+              </span>
             )}
           </label>
         ))}
@@ -633,7 +642,7 @@ function DocUpload({ r, update }: SectionProps) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, size: file.size }),
       });
-      const p = (await prep.json()) as { error?: string; path?: string; token?: string };
+      const p = (await prep.json().catch(() => ({}))) as { error?: string; path?: string; token?: string };
       if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
       const { error: upErr } = await supabaseBrowser()
         .storage.from("documenti")
@@ -646,7 +655,7 @@ function DocUpload({ r, update }: SectionProps) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, path: p.path }),
       });
-      const j = (await res.json()) as {
+      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprova tra poco" }))) as {
         error?: string;
         documentId?: string;
         profile?: Record<string, string>;
@@ -674,7 +683,10 @@ function DocUpload({ r, update }: SectionProps) {
       if (filled.length) parts.push(`compilati: ${filled.join(", ")}`);
       if (j.financials) parts.push(`letti i dati del bilancio${j.financials.year ? ` ${j.financials.year}` : ""}`);
       if (j.governance?.organo) parts.push(`governance: ${j.governance.organo}`);
-      setMsg((m) => ({ ...m, [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlla i campi qui sotto.` : "Letto: i campi erano già compilati." }))
+      setMsg((m) => ({
+        ...m,
+        [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlla i campi qui sotto.` : "Letto: i campi erano già compilati.",
+      }));
     } catch (e) {
       setMsg((m) => ({ ...m, [kind]: e instanceof Error ? e.message : "Lettura non riuscita" }));
     } finally {
@@ -688,36 +700,32 @@ function DocUpload({ r, update }: SectionProps) {
         <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Hai a portata di mano visura e bilancio?
       </p>
       <p className="mt-1 text-sm text-muted">
-        Caricali in PDF (facoltativo): compiliamo noi i campi e il report includerà numeri chiave e governance. I file
-        restano in un archivio privato e puoi cancellarli in qualsiasi momento dalla tua area personale.
+        Caricali in PDF (facoltativo), con un clic o trascinandoli nei riquadri: compiliamo noi i campi e il report includerà numeri chiave
+        e governance. I file restano in un archivio privato e puoi cancellarli in qualsiasi momento dalla tua area personale.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {DOCS.map((d) => {
           const done = !!r.documents?.[d.kind];
           return (
             <div key={d.kind}>
-              <label
-                className={`flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer ${
+              <FileDrop
+                onFile={(f) => void upload(d.kind, f)}
+                disabled={busy !== null}
+                activeClassName="border-navy ring-2 ring-navy/30 bg-paper"
+                className={`flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer transition ${
                   busy === d.kind ? "opacity-60 pointer-events-none" : "hover:border-navy-soft"
                 } ${done ? "border-navy" : "border-line"}`}
               >
-                <span className={`size-9 rounded-lg flex items-center justify-center ${done ? "bg-navy text-white" : "bg-paper text-navy"}`}>
+                <span
+                  className={`size-9 rounded-lg flex items-center justify-center ${done ? "bg-navy text-white" : "bg-paper text-navy"}`}
+                >
                   {done ? <CheckIcon className="size-4" aria-hidden /> : <Upload className="size-4" aria-hidden />}
                 </span>
                 <span className="text-sm">
                   <span className="font-medium block">{d.label}</span>
                   <span className="text-muted">{busy === d.kind ? "Lettura in corso…" : done ? "Caricato · sostituisci" : d.hint}</span>
                 </span>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  className="sr-only"
-                  onChange={(e) => {
-                    void upload(d.kind, e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
+              </FileDrop>
               {msg[d.kind] && <p className="mt-1.5 text-xs text-muted">{msg[d.kind]}</p>}
             </div>
           );

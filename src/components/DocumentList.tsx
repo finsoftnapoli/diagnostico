@@ -4,6 +4,7 @@ import { FileText, Plus, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
 import { DOC_KINDS, DOC_LABELS, type AnyDocKind, type PlanSummary } from "@/lib/documents";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import FileDrop from "@/components/FileDrop";
 
 export interface DocRow {
   id: string;
@@ -125,7 +126,7 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, size: file.size, companyId }),
       });
-      const p = (await prep.json()) as { error?: string; path?: string; token?: string };
+      const p = (await prep.json().catch(() => ({}))) as { error?: string; path?: string; token?: string };
       if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
       const { error: upErr } = await supabaseBrowser()
         .storage.from("documenti")
@@ -137,7 +138,13 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, path: p.path, companyId, label }),
       });
-      const j = (await res.json()) as { error?: string; documentId?: string; period?: number | null; read?: boolean; plan?: PlanSummary };
+      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprova tra poco" }))) as {
+        error?: string;
+        documentId?: string;
+        period?: number | null;
+        read?: boolean;
+        plan?: PlanSummary;
+      };
       if (!res.ok || !j.documentId) throw new Error(j.error ?? "Lettura non riuscita");
       onAdded({
         id: j.documentId,
@@ -180,7 +187,11 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
         {companies.length > 1 && (
           <label className="text-sm sm:col-span-2">
             <span className="font-medium">Azienda</span>
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2">
+            <select
+              value={companyId}
+              onChange={(e) => setCompanyId(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2"
+            >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -191,7 +202,11 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
         )}
         <label className="text-sm">
           <span className="font-medium">Tipo di documento</span>
-          <select value={kind} onChange={(e) => setKind(e.target.value as AnyDocKind)} className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2">
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as AnyDocKind)}
+            className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2"
+          >
             {DOC_KINDS.map((k) => (
               <option key={k} value={k}>
                 {DOC_LABELS[k]}
@@ -210,8 +225,11 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
             className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2"
           />
         </label>
-        <label
-          className={`sm:col-span-2 flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer ${
+        <FileDrop
+          onFile={(f) => f && setFile(f)}
+          disabled={busy}
+          activeClassName="border-navy ring-2 ring-navy/30 bg-paper"
+          className={`sm:col-span-2 flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer transition ${
             busy ? "opacity-60 pointer-events-none" : "hover:border-navy-soft"
           } ${file ? "border-navy" : "border-line"}`}
         >
@@ -219,14 +237,17 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
             <Upload className="size-4" aria-hidden />
           </span>
           <span className="text-sm">
-            <span className="font-medium block">{file ? file.name : "Scegli il file PDF"}</span>
+            <span className="font-medium block">{file ? file.name : "Scegli il file PDF o trascinalo qui"}</span>
             <span className="text-muted">Fino a 20 MB</span>
           </span>
-          <input type="file" accept="application/pdf" className="sr-only" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        </label>
+        </FileDrop>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button onClick={submit} disabled={busy} className="bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-soft disabled:opacity-60">
+        <button
+          onClick={submit}
+          disabled={busy}
+          className="bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-navy-soft disabled:opacity-60"
+        >
           {busy ? "Elaborazione…" : "Carica e archivia"}
         </button>
         <button onClick={() => setOpen(false)} disabled={busy} className="text-sm underline text-navy-soft">
@@ -235,8 +256,8 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
       </div>
       {msg && <p className={`mt-3 text-sm ${msg.ok ? "text-muted" : "text-accent"}`}>{msg.text}</p>}
       <p className="mt-3 text-xs text-muted">
-        I documenti restano in un archivio privato, visibili solo a te e ai nostri esperti, e sono usati per i tuoi report e,
-        in forma anonima e aggregata, per i confronti tra aziende. Non salviamo nomi di persone.
+        I documenti restano in un archivio privato, visibili solo a te e ai nostri esperti, e sono usati per i tuoi report e, in forma
+        anonima e aggregata, per i confronti tra aziende. Non salviamo nomi di persone.
       </p>
     </div>
   );
