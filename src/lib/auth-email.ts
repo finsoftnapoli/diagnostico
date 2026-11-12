@@ -30,14 +30,14 @@ ${emailButton(p.link, cta)}`
   const body = `${para(esc(intro))}
 ${codeBox}
 ${linkPart}
-${para("Il codice e il link funzionano una sola volta e scadono dopo poco tempo. Se non hai fatto tu la richiesta, ignora questa email: senza il codice nessuno può accedere.", `font-size:13px;color:${C.muted};margin-top:18px`)}`;
+${para("Il codice e il link funzionano una sola volta e scadono dopo un'ora. Se non hai fatto tu la richiesta, ignora questa email: senza il codice nessuno può accedere.", `font-size:13px;color:${C.muted};margin-top:18px`)}`;
 
   const html = emailLayout({ preheader: p.token ? `Codice: ${p.token}` : title, title, body });
   const text = `${title}
 
 ${intro}
 ${p.token ? `\nCodice: ${p.token}\n` : ""}${p.link ? `\n${cta}: ${p.link}\n` : ""}
-Il codice e il link funzionano una sola volta e scadono dopo poco tempo. Se non hai fatto tu la richiesta, ignora questa email.
+Il codice e il link funzionano una sola volta e scadono dopo un'ora. Se non hai fatto tu la richiesta, ignora questa email.
 
 ${ownerSentence()}`;
   return { subject, html, text };

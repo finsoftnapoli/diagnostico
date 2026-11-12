@@ -101,8 +101,9 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 ## Messa in produzione
 
 1. Nome e dominio definitivi; `PUBLIC_SITE_URL` e nome in `src/config/brand.ts`; mittente Resend sul nuovo dominio.
-2. Nuovo progetto Supabase a Francoforte: eseguire `supabase/setup_completo.sql`, staff, URL di accesso, SMTP e modelli
-   email, chiavi in Vercel. Aggiornare l'informativa (oggi dice Francoforte, il test è a Londra).
+2. Nuovo progetto Supabase a Francoforte: eseguire `supabase/setup_completo.sql`, staff, URL di accesso, SMTP, modelli
+   email da `supabase/email-templates/` (rigenerabili con `npx tsx scripts/genera_template_email.ts`) oppure il Send Email
+   Hook verso `/api/auth/email` con `SEND_EMAIL_HOOK_SECRET`, chiavi in Vercel. Aggiornare l'informativa (oggi dice Francoforte, il test è a Londra).
 3. Stripe: account live, chiavi `sk_live_`, webhook con gli eventi elencati in `.env.example`.
 4. Fatturazione: dati `SELLER_*` e in `brand.ts`, sezionale concordato con il commercialista, utenza Aruba con API
    (`ARUBA_ENV=prod`).
