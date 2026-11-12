@@ -50,6 +50,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         <NarrativeEditor
           endpoint={`/api/admin/report/modulo/${m.id}`}
           spec={MODULE_SPEC}
+          pdfHref={`/api/moduli/${m.id}/pdf`}
           initial={(m.report_narrative as Record<string, unknown>) ?? null}
           status={m.report_status as string}
         />

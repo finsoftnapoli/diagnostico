@@ -1,6 +1,6 @@
 import "server-only";
 import { BRAND } from "@/config/brand";
-import { emailButton, emailLayout, esc, ownerSentence, para } from "./email-layout";
+import { emailButton, emailLayout, esc, ownerSentence, para, stop } from "./email-layout";
 import { AREAS } from "./questionnaire";
 
 // Invio di email del servizio tramite Resend (stesso account usato da Supabase per i codici di accesso).
@@ -54,7 +54,7 @@ Compila il diagnostico: ${p.link}
 L'invito scade il ${date}. Se non conosci il mittente, puoi ignorare questa email.
 ${ownerSentence()}`;
   const html = emailLayout({
-    preheader: `${p.inviter} ti invita a compilare il diagnostico di ${p.company}.`,
+    preheader: `${p.inviter} ti invita a compilare il diagnostico di ${p.company}${stop(p.company)}`,
     eyebrow: "Invito",
     title: `Il diagnostico di ${p.company}`,
     body: `${para(esc(greeting))}

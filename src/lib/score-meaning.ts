@@ -1,6 +1,6 @@
 // Lettura dei punteggi in parole: cosa significano 14, 22 o 45 in termini di pratiche dell'azienda.
 // Si parla di livelli di maturità e di "passi" da un livello al successivo, senza esporre il calcolo.
-import { LEVEL_NAMES } from "./insights";
+import { LEVEL_NAMES } from "./levels";
 
 /** Cosa caratterizza ciascun livello di maturità, in una frase. */
 export const LEVEL_DESCRIPTIONS = [
@@ -83,4 +83,13 @@ export function overallReading(overall: number | null, ref: number, levels: numb
         : `Siete sopra il riferimento delle aziende ben gestite della vostra fascia (${ref}, ${levelEquivalent(ref)}).`,
   );
   return out;
+}
+
+/** Lettura del punteggio di un modulo: il riferimento è indicativo per la fascia e può mancare. */
+export function moduleReading(score: number | null, ref: number | null, levels: number[]): string[] {
+  if (score === null) return [];
+  if (ref === null) return [`Un punteggio di ${score} su 100 corrisponde a ${levelEquivalent(score)}. ${levelMix(levels)}.`];
+  return overallReading(score, ref, levels).map((x) =>
+    x.replace("delle aziende ben gestite della vostra fascia", "indicativo per la vostra fascia"),
+  );
 }

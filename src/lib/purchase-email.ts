@@ -1,6 +1,6 @@
 // Email di conferma dell'acquisto: riepilogo dell'ordine, prossimi passi per ciò che è stato attivato, fattura.
 import { BUNDLE_HOURS, euro, PRODUCTS, VAT_RATE, type PricedLine } from "@/config/offers";
-import { C, emailButton, emailLayout, esc, ownerSentence, para } from "./email-layout";
+import { C, emailButton, emailLayout, esc, ownerSentence, para, stop } from "./email-layout";
 import { AREAS } from "./questionnaire";
 
 const areaName = (c: string) => AREAS.find((a) => a.code === c)?.name ?? c;
@@ -129,7 +129,7 @@ ${list
     : "";
 
   const body = `${p.slotLost ? `<div style="margin:0 0 18px;padding:12px 16px;border-radius:8px;background:#f9eeda;font-size:14px;line-height:1.5;color:${C.ink}"><strong>${esc(lost)}</strong></div>` : ""}
-${para(`Grazie, <strong>${esc(p.company)}</strong>. Il pagamento è andato a buon fine e quanto hai acquistato è già disponibile nella tua area personale.`)}
+${para(`Grazie, <strong>${esc(p.company)}</strong>${stop(p.company)} Il pagamento è andato a buon fine e quanto hai acquistato è già disponibile nella tua area personale.`)}
 ${summary}
 ${stepsHtml}
 ${emailButton(p.link, cta)}
@@ -144,7 +144,7 @@ ${para(esc(invoice), `font-size:13px;color:${C.muted};margin-top:18px`)}`;
 
   const text = `${heading}
 
-Grazie, ${p.company}. Il pagamento è andato a buon fine e quanto hai acquistato è già disponibile nella tua area personale.
+Grazie, ${p.company}${stop(p.company)} Il pagamento è andato a buon fine e quanto hai acquistato è già disponibile nella tua area personale.
 ${p.slotLost ? `\n${lost}\n` : ""}
 RIEPILOGO DELL'ORDINE (${date})
 ${views.map((v) => `- ${v.title}: ${v.amount}`).join("\n")}

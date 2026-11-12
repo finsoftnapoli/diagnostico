@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import ModuleReport from "@/components/ModuleReport";
 import ModuleWizard from "@/components/ModuleWizard";
 import type { ModuleNarrative } from "@/lib/module-report";
-import { bandText, normativeBenchmark } from "@/config/benchmark";
+import { moduleContext } from "@/lib/module-context";
 import { computeModule, emptyModuleResponses, type ModuleResponses } from "@/lib/module-scoring";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { AreaCode } from "@/lib/types";
@@ -39,19 +39,7 @@ async function Module({ params }: { params: Promise<{ id: string }> }) {
   const area = m.area as AreaCode;
   if (m.status !== "completed")
     return <ModuleWizard id={m.id} area={area} initial={{ ...emptyModuleResponses(), ...(m.responses as ModuleResponses) }} />;
-  const { data: diag } = await sb
-    .from("assessments")
-    .select("profile, area_scores(area, score)")
-    .eq("company_id", m.company_id)
-    .eq("status", "completed")
-    .order("completed_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const diagnosticScore =
-    (diag?.area_scores as { area: string; score: number | null }[] | undefined)?.find((s) => s.area === area)?.score ?? null;
-  // riferimento indicativo dell'ambito per la fascia di fatturato del diagnostico
-  const band = (diag?.profile as Record<string, string> | null)?.["PR-02"];
-  const reference = band ? { value: normativeBenchmark(band).values[area], label: `Riferimento aziende ${bandText(band)}` } : null;
+  const { diagnosticScore, reference } = await moduleContext(sb, m.company_id as string, area);
   return (
     <ModuleReport
       area={area}
@@ -59,6 +47,7 @@ async function Module({ params }: { params: Promise<{ id: string }> }) {
       result={computeModule(area, { ...emptyModuleResponses(), ...(m.responses as ModuleResponses) })}
       diagnosticScore={diagnosticScore}
       reference={reference}
+      pdfHref={m.report_status === "ready" ? `/api/moduli/${m.id}/pdf` : undefined}
       narrative={m.report_status === "ready" ? (m.report_narrative as ModuleNarrative) : null}
       failed={m.report_status === "failed"}
     />

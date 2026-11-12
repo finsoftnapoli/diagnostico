@@ -2,13 +2,15 @@ import { ArrowRight, Clock3, Gauge } from "lucide-react";
 import Link from "next/link";
 import { AreaIcon } from "@/lib/areaIcons";
 import { levelLabel } from "@/lib/insights";
+import { moduleReading } from "@/lib/score-meaning";
 import type { ModuleNarrative } from "@/lib/module-report";
 import type { ModuleResult } from "@/lib/module-scoring";
 import { AREAS } from "@/lib/questionnaire";
 import { SubareaIcon } from "@/lib/subareaIcons";
 import type { AreaCode } from "@/lib/types";
-import PrintButton from "./PrintButton";
+import PdfDownload from "./PdfDownload";
 import RadarProfile from "./RadarProfile";
+import ScoreReading from "./ScoreReading";
 import SubareaDetail from "./SubareaDetail";
 
 /** Risultato di un modulo: Ottogramma dell'ambito subito, analisi scritta quando approvata dallo staff. */
@@ -20,6 +22,7 @@ export default function ModuleReport({
   reference,
   narrative,
   failed,
+  pdfHref,
 }: {
   area: AreaCode;
   company: string;
@@ -29,6 +32,8 @@ export default function ModuleReport({
   reference: { value: number; label: string } | null;
   narrative: ModuleNarrative | null;
   failed?: boolean;
+  /** Link al PDF impaginato, quando l'analisi è approvata. */
+  pdfHref?: string;
 }) {
   const a = AREAS.find((x) => x.code === area)!;
   const score = result.score;
@@ -46,7 +51,7 @@ export default function ModuleReport({
           <p className="text-sm text-muted">Ottogramma dell&apos;ambito · {company}</p>
           <h1 className="text-3xl font-semibold text-navy leading-tight">{a.name}</h1>
         </div>
-        {narrative && <PrintButton />}
+        {narrative && pdfHref && <PdfDownload href={pdfHref} />}
       </div>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -85,6 +90,17 @@ export default function ModuleReport({
           <p className="text-sm text-muted">{spread <= 33 ? "Profilo equilibrato" : "Divario elevato tra i sotto-ambiti"}</p>
         </div>
       </div>
+
+      <ScoreReading
+        overall={score}
+        reference={reference?.value ?? null}
+        levels={result.themes.filter((t) => t.level !== null).map((t) => t.level as number)}
+        lines={moduleReading(
+          score,
+          reference?.value ?? null,
+          result.themes.filter((t) => t.level !== null).map((t) => t.level as number),
+        )}
+      />
 
       <section className="mt-10 grid gap-8 lg:grid-cols-[1.15fr_1fr] items-start print-keep">
         <div>
@@ -129,9 +145,7 @@ export default function ModuleReport({
         </div>
       </section>
 
-      <SubareaDetail area={area} result={result} reference={reference?.value ?? null} />
-
-      {narrative ? (
+      {narrative && (
         <section className="mt-10 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
           <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri esperti</p>
           <h2 className="mt-1 text-2xl font-semibold text-navy">Sintesi</h2>
@@ -140,68 +154,80 @@ export default function ModuleReport({
               <p key={p.slice(0, 40)}>{p}</p>
             ))}
           </div>
-          <h3 className="mt-8 font-semibold text-navy">Lettura per sotto-ambito</h3>
-          <div className="mt-3 space-y-3">
-            {narrative.themes.map((t) => (
-              <div key={t.theme} className="rounded-lg bg-white border border-line p-4">
-                <p className="font-semibold">{t.theme}</p>
-                <p className="mt-1.5 text-sm leading-relaxed">{t.diagnosis}</p>
-                {t.actions.length > 0 && (
-                  <ul className="mt-2 space-y-1 text-sm">
-                    {t.actions.map((x) => (
+        </section>
+      )}
+
+      <SubareaDetail
+        area={area}
+        result={result}
+        reference={reference?.value ?? null}
+        expert={
+          narrative ? Object.fromEntries(narrative.themes.map((t) => [t.theme, { diagnosis: t.diagnosis, actions: t.actions }])) : undefined
+        }
+      />
+
+      {narrative ? (
+        <>
+          <section className="mt-14">
+            <h2 className="text-2xl font-semibold text-navy">Piano di lavoro</h2>
+            <p className="mt-1 text-sm text-muted">Gli interventi in sequenza: prima le basi, poi il resto.</p>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {narrative.roadmap.map((h, i) => (
+                <div key={h.horizon} className="print-keep rounded-xl border border-line p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="size-7 rounded-full bg-navy text-white text-xs font-semibold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <p className="font-semibold text-navy">{h.horizon}</p>
+                  </div>
+                  <ul className="mt-3 space-y-2 text-sm">
+                    {h.actions.map((x) => (
                       <li key={x} className="flex gap-2">
-                        <ArrowRight className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden /> {x}
+                        <span className="mt-0.5 size-4 shrink-0 rounded border-2 border-navy/60" aria-hidden />
+                        <span>{x}</span>
                       </li>
                     ))}
                   </ul>
-                )}
-              </div>
-            ))}
-          </div>
-          <h3 className="mt-8 font-semibold text-navy">Piano di lavoro</h3>
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            {narrative.roadmap.map((h) => (
-              <div key={h.horizon} className="rounded-lg bg-white border border-line p-4">
-                <p className="text-xs uppercase tracking-wide text-muted">{h.horizon}</p>
-                <ul className="mt-2 space-y-1.5 text-sm list-disc pl-4">
-                  {h.actions.map((x) => (
-                    <li key={x}>{x}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          </section>
           {narrative.kpis.length > 0 && (
-            <>
-              <h3 className="mt-8 font-semibold text-navy">Indicatori da seguire</h3>
-              <ul className="mt-2 space-y-1 text-sm list-disc pl-5">
+            <section className="mt-12">
+              <h2 className="text-2xl font-semibold text-navy">Indicatori da seguire</h2>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {narrative.kpis.map((k) => (
-                  <li key={k}>{k}</li>
+                  <li key={k} className="flex gap-3 rounded-xl bg-paper p-4 text-sm">
+                    <Gauge className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden /> {k}
+                  </li>
                 ))}
               </ul>
-            </>
+            </section>
           )}
-          {narrative.closing && <p className="mt-8 leading-relaxed">{narrative.closing}</p>}
-          <Link
-            href="/area/servizi#consulenza"
-            className="no-print mt-5 inline-flex items-center gap-1.5 bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg"
-          >
-            Prenota una consulenza <ArrowRight className="size-4" aria-hidden />
-          </Link>
-        </section>
+          <section className="print-keep mt-12 rounded-xl bg-navy p-6 text-white sm:p-8">
+            <h2 className="text-xl font-semibold">Il prossimo passo</h2>
+            {narrative.closing && <p className="mt-2 max-w-3xl leading-relaxed text-white/90">{narrative.closing}</p>}
+            <Link
+              href="/area/servizi#consulenza"
+              className="no-print mt-5 inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-navy"
+            >
+              Prenota una consulenza <ArrowRight className="size-4" aria-hidden />
+            </Link>
+          </section>
+        </>
       ) : (
         <div className="mt-10 rounded-xl border border-line bg-paper p-4 flex items-start gap-3">
           <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
           <p className="text-sm">
             {failed ? (
               <>
-                <strong className="text-navy">L&apos;analisi è in ritardo.</strong> Ci stiamo lavorando e ti avviseremo via email appena è
+                <strong className="text-navy">L&apos;analisi è in ritardo.</strong> Ci stiamo lavorando e vi avviseremo via email appena è
                 pronta.
               </>
             ) : (
               <>
                 <strong className="text-navy">L&apos;analisi è in preparazione.</strong> I nostri esperti stanno preparando la lettura per
-                sotto-ambito, il piano di lavoro e gli indicatori: la riceverai via email entro 2 giorni lavorativi.
+                sotto-ambito, il piano di lavoro e gli indicatori: la riceverete via email entro 2 giorni lavorativi.
               </>
             )}
           </p>

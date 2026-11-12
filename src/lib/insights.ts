@@ -4,9 +4,11 @@
 import type { Benchmark } from "@/config/benchmark";
 import { AREAS, ISSUES, OBJECTIVES, QUESTIONS } from "./questionnaire";
 import type { AreaResult, Result } from "./scoring";
+import { levelEquivalent } from "./score-meaning";
 import type { AreaCode, Question, Responses } from "./types";
 
-export const LEVEL_NAMES = ["Informale", "Di base", "Strutturato", "Gestito e migliorato"] as const;
+import { LEVEL_NAMES } from "./levels";
+export { LEVEL_NAMES };
 
 export function levelLabel(score: number | null) {
   if (score === null) return "—";
@@ -154,17 +156,19 @@ export function buildInsights(r: Responses, res: Result, bench: Benchmark): Insi
   if (overall !== null) {
     const rel =
       deltaVsBenchmark === null || Math.abs(deltaVsBenchmark) < 5
-        ? "in linea con il riferimento"
+        ? "in linea con il riferimento della vostra fascia"
         : deltaVsBenchmark > 0
-          ? `sopra il riferimento di ${deltaVsBenchmark} punti`
-          : `sotto il riferimento di ${-deltaVsBenchmark} punti`;
-    summary.push(`Punteggio complessivo ${overall} su 100 (${levelLabel(overall).toLowerCase()}), ${rel} della tua fascia.`);
+          ? `${deltaVsBenchmark} punti sopra il riferimento della vostra fascia`
+          : `${-deltaVsBenchmark} punti sotto il riferimento della vostra fascia`;
+    summary.push(`${cap(levelEquivalent(overall))} (${overall} su 100), ${rel}.`);
   }
   if (byScore.length >= 2) {
+    const top = byScore[0];
+    const low = byScore[byScore.length - 1];
     summary.push(
       spread > 30
-        ? `Profilo sbilanciato: ${spread} punti separano ${nameOf(byScore[0].code)} (${byScore[0].score}) da ${nameOf(byScore[byScore.length - 1].code)} (${byScore[byScore.length - 1].score}). Gli ambiti deboli rischiano di frenare quelli forti.`
-        : `Profilo abbastanza equilibrato: tra l'ambito più forte e il più debole ci sono ${spread} punti.`,
+        ? `Profilo sbilanciato: ${nameOf(top.code)} è l'ambito più avanti, ${nameOf(low.code)} il più indietro. Gli ambiti deboli rischiano di frenare quelli forti.`
+        : "Profilo abbastanza omogeneo: gli otto ambiti sono a livelli di maturità vicini tra loro.",
     );
   }
   const blocked = readiness.filter((x) => x.verdict === "ostacolo");
@@ -172,10 +176,11 @@ export function buildInsights(r: Responses, res: Result, bench: Benchmark): Insi
     summary.push(
       `Per ${listIt(blocked.map((b) => `«${b.label.toLowerCase()}»`))} gli ambiti che servono sono oggi deboli: è il primo nodo da sciogliere.`,
     );
-  if (res.priorities.length)
-    summary.push(`Le priorità: ${listIt(res.priorities.map((p) => nameOf(p.code)))}.`);
+  if (res.priorities.length) summary.push(`Le priorità su cui concentrarvi: ${listIt(res.priorities.map((p) => nameOf(p.code)))}.`);
   if (res.flags.length)
-    summary.push(`${res.flags.length === 1 ? "Una risposta va verificata" : `${res.flags.length} risposte vanno verificate`}: il punteggio potrebbe essere ottimista.`);
+    summary.push(
+      `${res.flags.length === 1 ? "Una risposta va verificata" : `${res.flags.length} risposte vanno verificate`}: in quei punti il quadro potrebbe essere ottimista.`,
+    );
 
   return {
     overall,
@@ -196,6 +201,8 @@ export function buildInsights(r: Responses, res: Result, bench: Benchmark): Insi
     summary,
   };
 }
+
+const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
 
 /** "a, b e c" */
 function listIt(xs: string[]): string {

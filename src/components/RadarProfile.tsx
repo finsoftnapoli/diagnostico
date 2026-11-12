@@ -42,9 +42,9 @@ export default function RadarProfile({
       }));
   const hasRef = items ? items.some((i) => i.ref != null) : !!reference;
   return (
-    <div className="w-full aspect-square max-w-[540px] mx-auto">
+    <div className="w-full aspect-[6/5] max-w-[560px] mx-auto">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} outerRadius="64%" margin={{ top: 8, right: 36, bottom: 8, left: 36 }}>
+        <RadarChart data={data} outerRadius="76%" margin={{ top: 16, right: 36, bottom: 4, left: 36 }}>
           <PolarGrid stroke="#d9dee5" />
           <PolarAngleAxis
             dataKey="area"
@@ -88,7 +88,7 @@ export default function RadarProfile({
             />
           )}
           <Radar
-            name="La tua azienda"
+            name="La vostra azienda"
             dataKey="score"
             stroke="#0a2a4a"
             strokeWidth={2}

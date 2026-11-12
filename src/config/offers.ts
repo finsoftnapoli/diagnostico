@@ -39,8 +39,8 @@ export const PRODUCTS: Record<Sku, Product> = {
     invoiceText: "Consulenza direzionale da remoto (1 ora)",
     bullets: [
       "Un'ora in videochiamata con un consulente senior",
-      "Lettura del tuo Ottogramma e validazione delle priorità",
-      "Prime azioni con tempi e responsabili; scegli tu data e ora",
+      "Lettura dell'Ottogramma e validazione delle priorità",
+      "Prime azioni con tempi e responsabili, in data e ora a scelta",
     ],
   },
   bundle: {
@@ -59,7 +59,8 @@ export const PRODUCTS: Record<Sku, Product> = {
 /** Durata di una sessione di consulenza prenotabile. */
 export const SESSION_MIN = 60;
 
-export const euro = (v: number) => `€${v.toLocaleString("it-IT", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 })}`;
+export const euro = (v: number) =>
+  `€${v.toLocaleString("it-IT", { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 })}`;
 export const withVat = (net: number) => Math.round(net * (100 + VAT_RATE)) / 100;
 
 export interface CartLine {

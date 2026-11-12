@@ -10,9 +10,20 @@ const BANDS = [
   { from: 75, to: 100, cls: "bg-navy/25", dot: "bg-navy" },
 ];
 
-export default function ScoreReading({ overall, reference, levels }: { overall: number | null; reference: number; levels: number[] }) {
+export default function ScoreReading({
+  overall,
+  reference,
+  levels,
+  lines: given,
+}: {
+  overall: number | null;
+  reference: number | null;
+  levels: number[];
+  /** Lettura già pronta (per i moduli); altrimenti quella del diagnostico. */
+  lines?: string[];
+}) {
   if (overall === null) return null;
-  const lines = overallReading(overall, reference, levels);
+  const lines = given ?? (reference === null ? [] : overallReading(overall, reference, levels));
   return (
     <section className="mt-8 rounded-xl border border-line p-5 sm:p-6 print-keep">
       <h2 className="text-lg font-semibold text-navy">Come leggere il punteggio</h2>
@@ -22,7 +33,7 @@ export default function ScoreReading({ overall, reference, levels }: { overall: 
             <span key={b.from} className={`flex-1 ${b.cls}`} />
           ))}
         </div>
-        <Marker value={reference} label={`Riferimento ${reference}`} tone="muted" />
+        {reference !== null && <Marker value={reference} label={`Riferimento ${reference}`} tone="muted" />}
         <Marker value={overall} label={`Voi ${overall}`} tone="navy" />
         <div className="mt-2 grid grid-cols-4 text-[11px] text-muted">
           {LEVEL_NAMES.map((n, i) => (

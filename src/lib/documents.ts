@@ -111,7 +111,18 @@ export const PLAN_SCHEMA = {
     rischi: { type: "array", items: { type: "string" } },
     ambiti: { type: "array", items: { type: "string", enum: AREA_CODES } },
   },
-  required: ["titolo", "ragione_sociale", "anno_inizio", "anno_fine", "sintesi", "obiettivi", "iniziative", "investimenti", "rischi", "ambiti"],
+  required: [
+    "titolo",
+    "ragione_sociale",
+    "anno_inizio",
+    "anno_fine",
+    "sintesi",
+    "obiettivi",
+    "iniziative",
+    "investimenti",
+    "rischi",
+    "ambiti",
+  ],
   additionalProperties: false,
 } as const;
 
@@ -190,9 +201,15 @@ export function planSummaryFrom(d: PlanData): PlanSummary {
       .slice(0, 10)
       .map((o) => ({ indicatore: cut(o.indicatore, 80), anno: validYear(o.anno), valore: cut(o.valore, 60) }))
       .filter((o) => o.indicatore && o.valore),
-    iniziative: (d.iniziative ?? []).slice(0, 8).map((t) => cut(t, 200)).filter(Boolean),
+    iniziative: (d.iniziative ?? [])
+      .slice(0, 8)
+      .map((t) => cut(t, 200))
+      .filter(Boolean),
     investimenti: cut(d.investimenti, 300) || null,
-    rischi: (d.rischi ?? []).slice(0, 5).map((t) => cut(t, 200)).filter(Boolean),
+    rischi: (d.rischi ?? [])
+      .slice(0, 5)
+      .map((t) => cut(t, 200))
+      .filter(Boolean),
     ambiti: [...new Set((d.ambiti ?? []).filter((a) => AREA_CODES.includes(a)))],
   };
 }
@@ -335,9 +352,7 @@ const pct = (a: number | null | undefined, b: number | null | undefined) =>
 export function financialKpis(f: Financials): FinancialKpis {
   const ricavi = f.ricavi ?? f.valore_produzione;
   const pfn =
-    f.debiti_finanziari !== null && f.debiti_finanziari !== undefined
-      ? f.debiti_finanziari - (f.disponibilita_liquide ?? 0)
-      : null;
+    f.debiti_finanziari !== null && f.debiti_finanziari !== undefined ? f.debiti_finanziari - (f.disponibilita_liquide ?? 0) : null;
   const pfnOnEbitda = pfn !== null && f.ebitda && f.ebitda > 0 ? Math.round((pfn / f.ebitda) * 10) / 10 : null;
   const k: FinancialKpis = {
     ebitdaMargin: pct(f.ebitda, ricavi),
@@ -346,30 +361,37 @@ export function financialKpis(f: Financials): FinancialKpis {
     pfn,
     pfnOnEbitda,
     equityRatio: pct(f.patrimonio_netto, f.totale_attivo),
-    dso: f.crediti_commerciali !== null && f.crediti_commerciali !== undefined && ricavi ? Math.round((f.crediti_commerciali / ricavi) * 365) : null,
+    dso:
+      f.crediti_commerciali !== null && f.crediti_commerciali !== undefined && ricavi
+        ? Math.round((f.crediti_commerciali / ricavi) * 365)
+        : null,
     dio: f.rimanenze !== null && f.rimanenze !== undefined && ricavi ? Math.round((f.rimanenze / ricavi) * 365) : null,
     revenuePerEmployee: ricavi && f.employees ? Math.round(ricavi / f.employees) : null,
     notes: [],
   };
+  const it = (n: number) => n.toLocaleString("it-IT");
   if (k.ebitdaMargin !== null)
     k.notes.push(
       k.ebitdaMargin < 5
-        ? `Marginalità operativa bassa (EBITDA ${k.ebitdaMargin}% dei ricavi): poco spazio per investire e assorbire imprevisti.`
+        ? `Marginalità operativa bassa (EBITDA al ${it(k.ebitdaMargin)}% dei ricavi): poco spazio per investire e assorbire imprevisti.`
         : k.ebitdaMargin < 10
-          ? `Marginalità operativa intermedia (EBITDA ${k.ebitdaMargin}% dei ricavi).`
-          : `Buona marginalità operativa (EBITDA ${k.ebitdaMargin}% dei ricavi).`,
+          ? `Marginalità operativa intermedia (EBITDA al ${it(k.ebitdaMargin)}% dei ricavi).`
+          : `Buona marginalità operativa (EBITDA al ${it(k.ebitdaMargin)}% dei ricavi).`,
     );
   if (pfn !== null && pfn < 0) k.notes.push("L'azienda ha più liquidità che debiti finanziari (posizione finanziaria netta positiva).");
   else if (k.pfnOnEbitda !== null)
     k.notes.push(
       k.pfnOnEbitda > 4
-        ? `Indebitamento elevato: la posizione finanziaria netta vale ${k.pfnOnEbitda} volte l'EBITDA (sopra 4 le banche tendono a irrigidirsi).`
+        ? `Indebitamento elevato: la posizione finanziaria netta vale ${it(k.pfnOnEbitda)} volte l'EBITDA (sopra 4 le banche tendono a irrigidirsi).`
         : k.pfnOnEbitda > 2.5
-          ? `Indebitamento da tenere sotto controllo: ${k.pfnOnEbitda} volte l'EBITDA.`
-          : `Indebitamento sostenibile: ${k.pfnOnEbitda} volte l'EBITDA.`,
+          ? `Indebitamento da tenere sotto controllo: ${it(k.pfnOnEbitda)} volte l'EBITDA.`
+          : `Indebitamento sostenibile: ${it(k.pfnOnEbitda)} volte l'EBITDA.`,
     );
   if (k.equityRatio !== null && k.equityRatio < 20)
-    k.notes.push(`Patrimonio netto pari al ${k.equityRatio}% dell'attivo: struttura finanziaria fragile.`);
-  if (k.dso !== null && k.dso > 90) k.notes.push(`I clienti pagano in media in circa ${k.dso} giorni: il capitale circolante assorbe molta cassa.`);
+    k.notes.push(`Patrimonio netto pari al ${it(k.equityRatio)}% dell'attivo: struttura finanziaria fragile.`);
+  if (k.dso !== null && k.dso > 90)
+    k.notes.push(`I clienti pagano in media in circa ${k.dso} giorni: il capitale circolante assorbe molta cassa.`);
+  if (k.dio !== null && k.dio > 365)
+    k.notes.push("Le rimanenze valgono più di un anno di ricavi: verificate se comprendono lavori in corso o beni difficili da vendere.");
   return k;
 }

@@ -59,7 +59,7 @@ export default function Ottogramma({
         {band ? ` · fatturato ${bandText(band)}` : ""}
         {r.profile["PR-01"] ? ` · ${r.profile["PR-01"]}` : ""}
       </p>
-      <h1 className="mt-1 text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
+      <h1 className="mt-1 text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La vostra azienda"}</h1>
 
       {reportStatus !== "none" && <ReportBanner status={reportStatus} href={reportHref} />}
 
@@ -70,9 +70,23 @@ export default function Ottogramma({
           label={bench.label}
           value={`${ins.benchmarkAvg}`}
           unit="/100"
-          sub={ins.deltaVsBenchmark === null ? "" : ins.deltaVsBenchmark >= 0 ? `Sei ${ins.deltaVsBenchmark} punti sopra` : `Sei ${-ins.deltaVsBenchmark} punti sotto`}
+          sub={
+            ins.deltaVsBenchmark === null
+              ? ""
+              : Math.abs(ins.deltaVsBenchmark) < 5
+                ? "In linea con il riferimento"
+                : ins.deltaVsBenchmark > 0
+                  ? `${ins.deltaVsBenchmark} punti sopra il riferimento`
+                  : `${-ins.deltaVsBenchmark} punti sotto il riferimento`
+          }
         />
-        <Kpi icon={TrendingDown} label="Equilibrio del profilo" value={`${ins.spread}`} unit=" punti" sub={ins.balanced ? "Profilo equilibrato" : "Divario elevato tra gli ambiti"} />
+        <Kpi
+          icon={TrendingDown}
+          label="Equilibrio del profilo"
+          value={`${ins.spread}`}
+          unit=" punti"
+          sub={ins.balanced ? "Profilo abbastanza omogeneo" : "Divario elevato tra gli ambiti"}
+        />
       </div>
 
       <ScoreReading overall={ins.overall} reference={ins.benchmarkAvg} levels={ins.themes.map((t) => t.level)} />
@@ -133,7 +147,8 @@ export default function Ottogramma({
 
       <p className="mt-10 text-xs text-muted flex gap-2 max-w-3xl">
         <Info className="size-4 shrink-0" aria-hidden />
-        Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}: non è una consulenza né un rating; le risposte sono usate anche, in forma anonima e aggregata, per confronti tra aziende e ricerca.
+        Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}: non è una
+        consulenza né un rating; le risposte sono usate anche, in forma anonima e aggregata, per confronti tra aziende e ricerca.
       </p>
     </div>
   );
@@ -144,8 +159,8 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
     return (
       <div className="mt-6 rounded-xl border border-navy bg-navy/5 p-4 flex flex-wrap items-center gap-3">
         <p className="flex-1 text-sm">
-          <strong className="text-navy">Il tuo report approfondito è pronto.</strong> Analisi delle priorità, interventi
-          suggeriti e osservazioni dei nostri esperti.
+          <strong className="text-navy">Il report approfondito è pronto.</strong> Analisi delle priorità, interventi suggeriti e
+          osservazioni dei nostri esperti.
         </p>
         <Link href={href} className="inline-flex items-center gap-1.5 bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg">
           Apri il report <ArrowRight className="size-4" aria-hidden />
@@ -162,9 +177,9 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
     <div className="mt-6 rounded-xl border border-line bg-paper p-4 flex items-start gap-3">
       <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
       <p className="text-sm">
-        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> I nostri esperti stanno preparando
-        l&apos;analisi delle aree di priorità con gli interventi suggeriti: lo riceverai via email entro 2 giorni lavorativi e lo
-        ritroverai nella tua area personale.
+        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> I nostri esperti stanno preparando l&apos;analisi
+        delle aree di priorità con gli interventi suggeriti: lo riceverete via email entro 2 giorni lavorativi e lo ritroverete
+        nell&apos;area personale.
       </p>
     </div>
   );

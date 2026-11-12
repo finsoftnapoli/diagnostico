@@ -1,7 +1,7 @@
 "use client";
 // Dettaglio dell'Ottogramma di un ambito: una scheda per sotto-ambito con punteggio, livello di maturità,
 // confronto con il riferimento e, per ogni tema, la situazione di oggi e il passo successivo.
-import { AlertTriangle, ArrowUpRight, ListOrdered, TrendingDown } from "lucide-react";
+import { AlertTriangle, ArrowRight, ArrowUpRight, ListOrdered, TrendingDown } from "lucide-react";
 import { useState } from "react";
 import { LEVEL_NAMES } from "@/lib/insights";
 import type { ModuleResult } from "@/lib/module-scoring";
@@ -27,7 +27,18 @@ function Segments({ level }: { level: number | null }) {
   );
 }
 
-export default function SubareaDetail({ area, result, reference }: { area: AreaCode; result: ModuleResult; reference: number | null }) {
+export default function SubareaDetail({
+  area,
+  result,
+  reference,
+  expert,
+}: {
+  area: AreaCode;
+  result: ModuleResult;
+  reference: number | null;
+  /** Lettura degli esperti per sotto-ambito (nome → diagnosi e azioni), se il report è approvato. */
+  expert?: Record<string, { diagnosis: string; actions: string[] }>;
+}) {
   const [order, setOrder] = useState<"percorso" | "fragili">("percorso");
   const qs = MODULE_QUESTIONS[area];
   const scored = result.subs.filter((s) => s.score !== null);
@@ -125,6 +136,23 @@ export default function SubareaDetail({ area, result, reference }: { area: AreaC
                 )}
               </div>
 
+              {expert?.[s.name]?.diagnosis && (
+                <div className="mt-4 rounded-lg bg-navy/[0.04] p-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-navy-soft">Lettura dei nostri esperti</p>
+                  <p className="mt-1 leading-relaxed">{expert[s.name].diagnosis}</p>
+                  {expert[s.name].actions.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {expert[s.name].actions.map((x) => (
+                        <li key={x} className="flex gap-2">
+                          <ArrowRight className="size-3.5 mt-1 shrink-0 text-navy" aria-hidden />
+                          <span>{x}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
               <ul className="mt-4 divide-y divide-line">
                 {themes.map((t) => {
                   const q = qs.find((x) => x.id === t.id);
@@ -138,7 +166,11 @@ export default function SubareaDetail({ area, result, reference }: { area: AreaC
                           {t.level ? `${t.level}/4` : "n.a."} <Segments level={t.level} />
                         </span>
                       </div>
-                      {now && <p className="mt-1 text-xs text-muted leading-relaxed">Oggi: {now}</p>}
+                      {now && (
+                        <p className="mt-1 text-xs text-muted leading-relaxed">
+                          <span className="font-medium">Oggi:</span> {now}
+                        </p>
+                      )}
                       {next && (
                         <p className="mt-1 text-xs leading-relaxed text-navy-soft flex gap-1">
                           <ArrowUpRight className="size-3.5 shrink-0 mt-px" aria-hidden />

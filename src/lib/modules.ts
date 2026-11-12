@@ -792,10 +792,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Piano pluriennale",
       "text": "Avete un piano economico-finanziario a 3-5 anni?",
       "levels": [
-        "No.",
-        "Solo quando lo chiede una banca o un bando.",
-        "Sì, con conto economico, stato patrimoniale e flussi di cassa, aggiornato ogni anno.",
-        "Sì, integrato con il piano strategico, con scenari e sensibilità sulle ipotesi principali e usato nelle decisioni di investimento e finanziamento."
+        "Non c'è un piano economico-finanziario oltre l'anno in corso.",
+        "Si prepara un piano solo quando lo chiede una banca o un bando, poi non si aggiorna.",
+        "C'è un piano a 3-5 anni con conto economico, stato patrimoniale e flussi di cassa, aggiornato ogni anno.",
+        "Il piano è integrato con quello strategico, ha scenari e sensibilità sulle ipotesi principali e si usa nelle decisioni di investimento e finanziamento."
       ],
       "check": null,
       "na": false
@@ -2484,7 +2484,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Risultati dell'innovazione",
       "text": "Misurate i risultati dell'innovazione?",
       "levels": [
-        "No.",
+        "I risultati dell'innovazione non vengono misurati.",
         "Si ha un'idea dei prodotti nuovi che vanno bene.",
         "Si misura la quota di fatturato da prodotti o servizi introdotti negli ultimi tre anni.",
         "Indicatori di risultato e di processo (quota di fatturato nuovo, ritorno dei progetti, tempi) con obiettivi."
@@ -2528,10 +2528,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Temi rilevanti",
       "text": "Avete individuato i temi di sostenibilità più rilevanti per l'azienda e per i suoi interlocutori?",
       "levels": [
-        "No.",
-        "In modo informale, in base alle richieste ricevute.",
-        "Sì, con un'analisi dei temi rilevanti che considera impatti e rischi.",
-        "Sì, con un'analisi aggiornata che coinvolge clienti, dipendenti, banche e filiera e orienta la strategia."
+        "I temi rilevanti non sono stati individuati.",
+        "Si individuano in modo informale, in base alle richieste ricevute.",
+        "Un'analisi dei temi rilevanti considera impatti e rischi per l'azienda.",
+        "Un'analisi aggiornata coinvolge clienti, dipendenti, banche e filiera e orienta la strategia."
       ],
       "check": null,
       "na": false

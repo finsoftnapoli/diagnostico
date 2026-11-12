@@ -1,6 +1,19 @@
 "use client";
 
-import { ArrowRight, Banknote, CircleCheck, Landmark, Footprints, Gauge, Info, Scale, Target, TriangleAlert, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  Banknote,
+  CircleCheck,
+  Landmark,
+  Footprints,
+  Gauge,
+  Info,
+  Scale,
+  Target,
+  TriangleAlert,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
@@ -71,11 +84,9 @@ export default function Report({
         {r.profile["PR-01"] ? ` · ${r.profile["PR-01"]}` : ""}
       </p>
       <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
+        <h1 className="text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La vostra azienda"}</h1>
         {narrative && (draft.savedId ? <PdfDownload href={`/api/report/${draft.savedId}/pdf`} /> : <PrintButton />)}
       </div>
-
-      {narrative && <Narrative n={narrative} sources={sources} />}
 
       {/* Indicatori */}
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -89,8 +100,12 @@ export default function Report({
             ins.deltaVsBenchmark === null
               ? ""
               : ins.deltaVsBenchmark >= 0
-                ? `Sei ${ins.deltaVsBenchmark} punti sopra`
-                : `Sei ${-ins.deltaVsBenchmark} punti sotto`
+                ? Math.abs(ins.deltaVsBenchmark) < 5
+                  ? "In linea con il riferimento"
+                  : `${ins.deltaVsBenchmark} punti sopra il riferimento`
+                : Math.abs(ins.deltaVsBenchmark) < 5
+                  ? "In linea con il riferimento"
+                  : `${-ins.deltaVsBenchmark} punti sotto il riferimento`
           }
         />
         <Kpi
@@ -98,7 +113,7 @@ export default function Report({
           label="Equilibrio del profilo"
           value={`${ins.spread}`}
           unit=" punti"
-          sub={ins.balanced ? "Profilo abbastanza equilibrato" : "Divario elevato tra gli ambiti"}
+          sub={ins.balanced ? "Profilo abbastanza omogeneo" : "Divario elevato tra gli ambiti"}
         />
       </div>
 
@@ -151,61 +166,86 @@ export default function Report({
         </div>
       </section>
 
+      {narrative && <Narrative n={narrative} sources={sources} />}
+
       {previous && (
         <Progress previous={previous} overall={ins.overall} scores={Object.fromEntries(res.areas.map((a) => [a.code, a.score]))} />
       )}
 
-      {/* Numeri del bilancio */}
-      {r.financials && <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />}
-
-      {/* Governance dalla visura */}
-      {r.governance && <GovernanceBlock g={r.governance} strLevel={r.levels["STR-3"]} />}
-
-      {/* Priorità e prossimi passi */}
+      {/* Priorità e prossimi passi: l'ordine e i testi sono quelli validati dagli esperti, se presenti */}
       <section className="mt-14">
-        <h2 className="text-2xl font-semibold text-navy">Le tre priorità e i primi passi</h2>
+        <h2 className="text-2xl font-semibold text-navy">Le priorità e da dove partire</h2>
         <p className="mt-1 text-sm text-muted max-w-3xl">
-          Gli ambiti in cui il divario dal livello più alto e il legame con le tue ambizioni e le tue sfide sono maggiori.
-          Per ciascuno indichiamo da dove partire: il passaggio al livello successivo sui temi più deboli.
+          Gli ambiti su cui concentrarvi per primi, perché pesano di più sulle vostre ambizioni e sulle sfide che avete indicato. Per
+          ciascuno, le azioni suggerite e il passo che porta i temi più deboli al livello successivo.
         </p>
-        <div className="mt-6 space-y-5">
-          {res.priorities.map((p, i) => {
-            const steps = ins.nextSteps.find((n) => n.area === p.code)?.steps ?? [];
-            const ref = bench.values[p.code];
+        <div className="mt-6 space-y-6">
+          {priorityCards(res, narrative).map((p, i) => {
+            const a = res.areas.find((x) => x.code === p.code)!;
+            const steps = ins.themes
+              .filter((t) => t.area === p.code && t.next)
+              .sort((x, y) => x.level - y.level)
+              .slice(0, 2);
             return (
-              <article key={p.code} className="rounded-xl border border-line overflow-hidden">
-                <header className="flex flex-wrap items-center gap-3 bg-paper px-5 py-4">
-                  <span className="size-10 rounded-lg bg-navy text-white flex items-center justify-center">
+              <article key={p.code} className="print-keep rounded-xl border border-line overflow-hidden">
+                <header className="flex flex-wrap items-center gap-3 bg-navy px-5 py-4 text-white">
+                  <span className="size-10 rounded-lg bg-white/10 flex items-center justify-center">
                     <AreaIcon code={p.code} />
                   </span>
                   <div className="flex-1 min-w-48">
-                    <p className="text-xs uppercase tracking-wide text-muted">Priorità {i + 1}</p>
-                    <h3 className="text-lg font-semibold text-navy">{p.name}</h3>
+                    <p className="text-xs uppercase tracking-wide text-white/70">
+                      Priorità {i + 1} · {a.name}
+                    </p>
+                    <h3 className="text-lg font-semibold leading-snug">{p.title ?? a.name}</h3>
                   </div>
                   <div className="text-right text-sm">
                     <p>
-                      <strong className="text-lg text-ink">{p.score}</strong>
-                      <span className="text-muted">/100 · {levelLabel(p.score)}</span>
+                      <strong className="text-lg">{a.score}</strong>
+                      <span className="text-white/70">/100 · {levelLabel(a.score)}</span>
                     </p>
-                    <p className="text-muted">
-                      {bench.kind === "mediana" ? "mediana" : "riferimento"} {ref} · rilevanza {relevanceLabel(p.relevance)}
+                    <p className="text-white/70">
+                      {bench.kind === "mediana" ? "mediana" : "riferimento"} {bench.values[p.code]}
+                      {a.isPriority ? ` · rilevanza ${relevanceLabel(a.relevance)}` : ""}
                     </p>
                   </div>
                 </header>
-                <div className="px-5 py-4 grid gap-5 md:grid-cols-[1fr_1.4fr]">
+                <div className="px-5 py-5 grid gap-6 md:grid-cols-[1.4fr_1fr]">
                   <div>
-                    <p className="text-sm font-semibold">Perché è prioritario</p>
-                    <ul className="mt-2 text-sm text-muted list-disc pl-5 space-y-1">
-                      {p.reasons.slice(1).map((x) => (
-                        <li key={x}>{x}</li>
-                      ))}
-                    </ul>
+                    {p.diagnosis && (
+                      <div className="space-y-2 leading-relaxed">
+                        {p.diagnosis.split(/\n\n+/).map((x) => (
+                          <p key={x.slice(0, 40)}>{x}</p>
+                        ))}
+                      </div>
+                    )}
+                    {p.actions.length > 0 && (
+                      <>
+                        <p className="mt-4 text-sm font-semibold text-navy">Le azioni suggerite</p>
+                        <ol className="mt-2 space-y-2 text-sm">
+                          {p.actions.map((x, k) => (
+                            <li key={x} className="flex gap-3">
+                              <span className="shrink-0 size-5 rounded-full bg-navy/10 text-navy text-xs font-semibold flex items-center justify-center">
+                                {k + 1}
+                              </span>
+                              <span>{x}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </>
+                    )}
+                    {!p.diagnosis && a.reasons.length > 1 && (
+                      <ul className="text-sm text-muted list-disc pl-5 space-y-1">
+                        {a.reasons.slice(1).map((x) => (
+                          <li key={x}>{x}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold flex items-center gap-1.5">
+                  <div className="rounded-lg bg-paper p-4">
+                    <p className="text-sm font-semibold flex items-center gap-1.5 text-navy">
                       <Footprints className="size-4" aria-hidden /> Da dove partire
                     </p>
-                    <ol className="mt-2 space-y-3">
+                    <ol className="mt-3 space-y-4">
                       {steps.map((t) => (
                         <Step key={t.id} t={t} />
                       ))}
@@ -218,13 +258,28 @@ export default function Report({
         </div>
       </section>
 
+      {narrative && narrative.quickWins.length > 0 && (
+        <section className="mt-14">
+          <h2 className="text-2xl font-semibold text-navy">Interventi rapidi</h2>
+          <p className="mt-1 text-sm text-muted">Azioni a basso costo da avviare nelle prossime settimane.</p>
+          <ul className="mt-5 grid gap-3 md:grid-cols-2">
+            {narrative.quickWins.map((q) => (
+              <li key={q} className="flex gap-3 rounded-xl border border-line p-4 text-sm">
+                <span className="mt-0.5 size-4 shrink-0 rounded border-2 border-navy" aria-hidden />
+                <span>{q}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Ambizioni */}
       {ins.readiness.length > 0 && (
         <section className="mt-14">
           <h2 className="text-2xl font-semibold text-navy">Quanto l&apos;azienda è pronta per le sue ambizioni</h2>
           <p className="mt-1 text-sm text-muted max-w-3xl">
-            Per ogni obiettivo scelto, il punteggio medio degli ambiti che servono a raggiungerlo (l&apos;ambito principale
-            pesa il doppio).
+            Per ogni obiettivo che avete indicato, quanto sono solidi oggi gli ambiti da cui dipende e qual è il punto più debole da cui
+            partire.
           </p>
           <div className="mt-6 space-y-4">
             {ins.readiness.map((x, i) => (
@@ -242,8 +297,8 @@ export default function Report({
                   {x.weakest && x.verdict !== "base solida" && (
                     <>
                       {" "}
-                      Il punto più debole è <strong className="text-ink">{x.weakest.theme.toLowerCase()}</strong> (
-                      {AREA_SHORT[x.weakest.area]}, livello {x.weakest.level} di 4).
+                      Il punto più debole: <strong className="text-ink">{x.weakest.theme.toLowerCase()}</strong> (
+                      {AREA_SHORT[x.weakest.area]}), ancora al livello «{LEVEL_NAMES[x.weakest.level - 1]}».
                     </>
                   )}
                 </p>
@@ -261,8 +316,8 @@ export default function Report({
         <section className="mt-14">
           <h2 className="text-2xl font-semibold text-navy">Le sfide: dove possono nascere</h2>
           <p className="mt-1 text-sm text-muted max-w-3xl">
-            Per ogni sfida indicata, i temi collegati in cui le pratiche sono oggi informali o di base: sono le cause più
-            probabili su cui verificare.
+            Per ogni sfida che avete indicato, i temi collegati in cui le pratiche sono oggi informali o di base: sono le cause più
+            probabili, da verificare per prime.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {ins.issueCauses.map((c) => (
@@ -275,15 +330,18 @@ export default function Report({
                         <AreaIcon code={t.area} className="size-4 mt-0.5 shrink-0 text-navy" />
                         <span>
                           <strong>{t.theme}</strong>
-                          <span className="text-muted"> · livello {t.level}: {t.current}</span>
+                          <span className="text-muted">
+                            {" "}
+                            · {LEVEL_NAMES[t.level - 1]}: {t.current}
+                          </span>
                         </span>
                       </li>
                     ))}
                   </ul>
                 ) : (
                   <p className="mt-3 text-sm text-muted">
-                    Le pratiche collegate risultano strutturate: la causa potrebbe essere esterna o di esecuzione. Da
-                    approfondire con un esperto.
+                    Le pratiche collegate risultano strutturate: la causa potrebbe essere esterna o di esecuzione. Da approfondire con un
+                    esperto.
                   </p>
                 )}
               </div>
@@ -300,8 +358,7 @@ export default function Report({
             <TriangleAlert className="size-5" aria-hidden /> Da verificare
           </h2>
           <p className="mt-1 text-sm text-muted">
-            In questi punti la risposta di verifica non è coerente con il livello scelto: il punteggio potrebbe essere
-            ottimista.
+            In questi punti la risposta di verifica non è coerente con il livello scelto: il punteggio potrebbe essere ottimista.
           </p>
           <ul className="mt-3 text-sm space-y-2 list-disc pl-5">
             {res.flags.map((f) => (
@@ -311,11 +368,18 @@ export default function Report({
         </section>
       )}
 
+      {/* Numeri del bilancio */}
+      {r.financials && <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />}
+
+      {/* Governance dalla visura */}
+      {r.governance && <GovernanceBlock g={r.governance} strLevel={r.levels["STR-3"]} />}
+
       {/* Dettaglio */}
       <section className="mt-14">
         <h2 className="text-2xl font-semibold text-navy">Dettaglio per ambito e tema</h2>
         <p className="mt-1 text-sm text-muted">
-          La barra mostra il punteggio dell&apos;ambito; la tacca grigia il {bench.kind === "mediana" ? "valore mediano" : "riferimento"} della tua fascia.
+          La barra mostra il punteggio dell&apos;ambito; la tacca grigia il {bench.kind === "mediana" ? "valore mediano" : "riferimento"}{" "}
+          della vostra fascia.
         </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {res.areas.map((a) => {
@@ -324,7 +388,9 @@ export default function Report({
             return (
               <div key={a.code} className="rounded-xl border border-line p-4">
                 <div className="flex items-center gap-3">
-                  <span className={`size-9 rounded-lg flex items-center justify-center ${a.isPriority ? "bg-navy text-white" : "bg-paper text-navy"}`}>
+                  <span
+                    className={`size-9 rounded-lg flex items-center justify-center ${a.isPriority ? "bg-navy text-white" : "bg-paper text-navy"}`}
+                  >
                     <AreaIcon code={a.code} className="size-4" />
                   </span>
                   <div className="flex-1">
@@ -367,10 +433,11 @@ export default function Report({
 
       {/* Invito */}
       <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
-        <h2 className="text-xl font-semibold">Vuoi trasformare le priorità in un piano?</h2>
-        <p className="mt-2 text-white/85 max-w-2xl">
-          In un&apos;ora con un nostro consulente senior validiamo il {BRAND.reportName}, definiamo il livello da raggiungere
-          su ogni tema e i primi interventi, con tempi e responsabili.
+        <h2 className="text-xl font-semibold">{narrative ? "Il prossimo passo" : "Volete trasformare le priorità in un piano?"}</h2>
+        {narrative?.closing && <p className="mt-2 text-white/90 max-w-3xl leading-relaxed">{narrative.closing}</p>}
+        <p className="mt-2 text-white/75 max-w-2xl">
+          In un&apos;ora con un nostro consulente senior validiamo l&apos;{BRAND.reportName}, definiamo il livello da raggiungere su ogni
+          tema e i primi interventi, con tempi e responsabili.
         </p>
         <a
           href={
@@ -391,9 +458,9 @@ export default function Report({
       </div>
       <p className="mt-6 text-xs text-muted flex gap-2 max-w-3xl">
         <Info className="size-4 shrink-0" aria-hidden />
-        Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}:
-        non è una consulenza né un rating. Le risposte sono usate anche, in forma anonima e aggregata, per confronti tra
-        aziende e finalità di ricerca.
+        Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}: non è una
+        consulenza né un rating. Le risposte sono usate anche, in forma anonima e aggregata, per confronti tra aziende e finalità di
+        ricerca.
       </p>
     </div>
   );
@@ -437,8 +504,12 @@ function Dots({ level }: { level: number }) {
 
 function Verdict({ v }: { v: "base solida" | "da rafforzare" | "ostacolo" }) {
   const cls =
-    v === "base solida" ? "bg-navy/10 text-navy" : v === "da rafforzare" ? "bg-paper text-ink border border-line" : "bg-accent/10 text-accent";
-  return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>{v}</span>;
+    v === "base solida"
+      ? "bg-navy/10 text-navy"
+      : v === "da rafforzare"
+        ? "bg-paper text-ink border border-line"
+        : "bg-accent/10 text-accent";
+  return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>{v.charAt(0).toUpperCase() + v.slice(1)}</span>;
 }
 
 function Step({ t }: { t: ThemeView }) {
@@ -446,14 +517,15 @@ function Step({ t }: { t: ThemeView }) {
     <li className="text-sm">
       <p className="font-medium">{t.theme}</p>
       <p className="mt-1 text-muted">
-        <span className="text-xs uppercase tracking-wide">Oggi · livello {t.level}</span> — {t.current}
+        <span className="text-xs uppercase tracking-wide">Oggi · {LEVEL_NAMES[t.level - 1]}</span> — {t.current}
       </p>
       {t.next && (
         <p className="mt-1">
-          <span className="text-xs uppercase tracking-wide text-navy font-semibold">Prossimo passo · livello {t.level + 1}</span> — {t.next}
+          <span className="text-xs uppercase tracking-wide text-navy font-semibold">Passo successivo · {LEVEL_NAMES[t.level]}</span> —{" "}
+          {t.next}
         </p>
       )}
-      {t.sizeNote && <p className="mt-1 text-xs text-muted">Per la tua dimensione: {t.sizeNote}</p>}
+      {t.sizeNote && <p className="mt-1 text-xs text-muted">Per un&apos;azienda della vostra dimensione: {t.sizeNote}</p>}
     </li>
   );
 }
@@ -471,16 +543,26 @@ function Numbers({ f, finScore }: { f: NonNullable<Draft["responses"]["financial
     ["Ricavi", eur(f.ricavi ?? f.valore_produzione), k.revenuePerEmployee ? `${eur(k.revenuePerEmployee)} per addetto` : ""],
     ["EBITDA", eur(f.ebitda), k.ebitdaMargin !== null ? `${k.ebitdaMargin.toLocaleString("it-IT")}% dei ricavi` : ""],
     ["Utile netto", eur(f.utile_netto), k.netMargin !== null ? `${k.netMargin.toLocaleString("it-IT")}% dei ricavi` : ""],
-    ["Posizione finanziaria netta", eur(k.pfn), k.pfnOnEbitda !== null ? `${k.pfnOnEbitda.toLocaleString("it-IT")} volte l'EBITDA` : k.pfn !== null && k.pfn < 0 ? "cassa netta" : ""],
+    [
+      "Posizione finanziaria netta",
+      eur(k.pfn),
+      k.pfnOnEbitda !== null ? `${k.pfnOnEbitda.toLocaleString("it-IT")} volte l'EBITDA` : k.pfn !== null && k.pfn < 0 ? "cassa netta" : "",
+    ],
     ["Patrimonio netto", eur(f.patrimonio_netto), k.equityRatio !== null ? `${k.equityRatio.toLocaleString("it-IT")}% dell'attivo` : ""],
-    ["Giorni di incasso", k.dso !== null ? `${k.dso}` : "—", k.dio !== null ? `magazzino ${k.dio} giorni di ricavi` : ""],
-  ];
+    [
+      "Giorni di incasso",
+      k.dso !== null ? `${k.dso}` : "—",
+      k.dio !== null && k.dio <= 365 ? `magazzino pari a ${k.dio} giorni di ricavi` : "",
+    ],
+  ].filter(([, v]) => v !== "—") as [string, string, string][];
   return (
     <section className="mt-14">
       <h2 className="text-2xl font-semibold text-navy flex items-center gap-2">
         <Banknote className="size-6" aria-hidden strokeWidth={1.75} /> I numeri dell&apos;ultimo bilancio{f.year ? ` (${f.year})` : ""}
       </h2>
-      <p className="mt-1 text-sm text-muted">Dati letti dal bilancio che hai caricato. Le soglie di lettura sono generali e vanno adattate al settore.</p>
+      <p className="mt-1 text-sm text-muted">
+        Dati letti dal bilancio che avete caricato. Le soglie di lettura sono generali e vanno adattate al settore.
+      </p>
       <div className="mt-6 grid gap-3 grid-cols-2 lg:grid-cols-3">
         {tiles.map(([label, value, sub]) => (
           <div key={label} className="rounded-xl border border-line p-4">
@@ -502,9 +584,9 @@ function Numbers({ f, finScore }: { f: NonNullable<Draft["responses"]["financial
             <li className="flex gap-3">
               <ArrowRight className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
               <span>
-                Il punteggio di Finanza e controllo è {finScore} su 100:{" "}
+                In Finanza e controllo le pratiche sono oggi al livello «{levelLabel(finScore)}»:{" "}
                 {finScore < 50
-                  ? "con strumenti di pianificazione e controllo più strutturati questi numeri si potrebbero governare in anticipo, non solo leggere a consuntivo."
+                  ? "con budget, previsioni e controllo più strutturati questi numeri si governerebbero in anticipo, non solo a consuntivo."
                   : "gli strumenti di controllo ci sono: il passo successivo è usarli per guidare le scelte su prezzi, investimenti e finanziamenti."}
               </span>
             </li>
@@ -517,17 +599,26 @@ function Numbers({ f, finScore }: { f: NonNullable<Draft["responses"]["financial
 
 function GovernanceBlock({ g, strLevel }: { g: Governance; strLevel: number | undefined }) {
   const facts: [string, string][] = [];
-  if (g.organo) facts.push(["Organo amministrativo", g.organo + (g.amministratori && g.amministratori > 1 ? ` (${g.amministratori} membri)` : "")]);
+  if (g.organo)
+    facts.push(["Organo amministrativo", g.organo + (g.amministratori && g.amministratori > 1 ? ` (${g.amministratori} membri)` : "")]);
   if (g.organoControllo !== null) facts.push(["Collegio sindacale o revisore", g.organoControllo ? "presente" : "assente"]);
   if (g.soci) facts.push(["Soci", String(g.soci)]);
   if (g.quotaSocioPrincipale !== null) facts.push(["Quota del socio principale", `${g.quotaSocioPrincipale.toLocaleString("it-IT")}%`]);
   const notes: string[] = [];
   if (g.organo === "amministratore unico")
-    notes.push("Amministratore unico: le decisioni sono concentrate in una persona. È efficiente, ma rende cruciali deleghe, continuità e un confronto esterno sulle scelte rilevanti.");
-  if (g.organoControllo === false) notes.push("Non risulta un organo di controllo: per le aziende in crescita un revisore o un advisory board rafforza credibilità con banche e investitori.");
-  if (g.quotaSocioPrincipale !== null && g.quotaSocioPrincipale >= 75) notes.push("Controllo molto concentrato: la pianificazione della successione e le regole tra soci pesano sulla continuità.");
+    notes.push(
+      "Amministratore unico: le decisioni sono concentrate in una persona. È efficiente, ma rende cruciali deleghe, continuità e un confronto esterno sulle scelte rilevanti.",
+    );
+  if (g.organoControllo === false)
+    notes.push(
+      "Non risulta un organo di controllo: per le aziende in crescita un revisore o un advisory board rafforza credibilità con banche e investitori.",
+    );
+  if (g.quotaSocioPrincipale !== null && g.quotaSocioPrincipale >= 75)
+    notes.push("Controllo molto concentrato: la pianificazione della successione e le regole tra soci pesano sulla continuità.");
   if (strLevel !== undefined && strLevel >= 3 && g.organo === "amministratore unico" && g.organoControllo === false)
-    notes.push("Hai indicato una governance strutturata: con amministratore unico e senza organo di controllo, verifica che ci sia davvero una voce esterna indipendente.");
+    notes.push(
+      "Avete indicato una governance strutturata: con amministratore unico e senza organo di controllo, verificate che ci sia davvero una voce esterna indipendente.",
+    );
   if (!facts.length) return null;
   return (
     <section className="mt-14">
@@ -556,7 +647,12 @@ function GovernanceBlock({ g, strLevel }: { g: Governance; strLevel: number | un
   );
 }
 
-const AREA_NAME: Record<string, string> = Object.fromEntries(AREAS.map((a) => [a.code, a.name]));
+/** Priorità da mostrare: quelle validate dagli esperti, nel loro ordine; altrimenti quelle calcolate. */
+function priorityCards(res: ReturnType<typeof computeResult>, n: ReportNarrative | null | undefined) {
+  if (n?.priorities.length)
+    return n.priorities.map((p) => ({ code: p.area as AreaCode, title: p.title, diagnosis: p.diagnosis, actions: p.actions }));
+  return res.priorities.map((p) => ({ code: p.code, title: null as string | null, diagnosis: "", actions: [] as string[] }));
+}
 
 /** Analisi elaborata dall'AI a partire dai dati del diagnostico. */
 function Narrative({ n, sources }: { n: ReportNarrative; sources: string[] }) {
@@ -573,41 +669,13 @@ function Narrative({ n, sources }: { n: ReportNarrative; sources: string[] }) {
       {n.crossCutting && (
         <>
           <h3 className="mt-6 font-semibold text-navy">Lettura d&apos;insieme</h3>
-          <p className="mt-2 leading-relaxed">{n.crossCutting}</p>
-        </>
-      )}
-      {n.priorities.length > 0 && (
-        <>
-          <h3 className="mt-6 font-semibold text-navy">Le priorità nel dettaglio</h3>
-          <div className="mt-3 space-y-4">
-            {n.priorities.map((p) => (
-              <div key={p.area} className="rounded-lg bg-white border border-line p-4">
-                <p className="text-xs uppercase tracking-wide text-muted">{AREA_NAME[p.area] ?? p.area}</p>
-                <p className="mt-1 font-semibold">{p.title}</p>
-                <p className="mt-2 text-sm leading-relaxed">{p.diagnosis}</p>
-                {p.actions.length > 0 && (
-                  <ul className="mt-2 text-sm list-disc pl-5 space-y-1">
-                    {p.actions.map((a) => (
-                      <li key={a}>{a}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+          <div className="mt-2 space-y-3 leading-relaxed">
+            {n.crossCutting.split(/\n\n+/).map((p) => (
+              <p key={p.slice(0, 40)}>{p}</p>
             ))}
           </div>
         </>
       )}
-      {n.quickWins.length > 0 && (
-        <>
-          <h3 className="mt-6 font-semibold text-navy">Interventi rapidi</h3>
-          <ul className="mt-2 text-sm list-disc pl-5 space-y-1">
-            {n.quickWins.map((q) => (
-              <li key={q}>{q}</li>
-            ))}
-          </ul>
-        </>
-      )}
-      {n.closing && <p className="mt-6 leading-relaxed">{n.closing}</p>}
     </section>
   );
 }

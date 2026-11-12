@@ -291,9 +291,9 @@ function Intro({ r, update }: SectionProps) {
       <h1 className="text-3xl font-semibold text-navy">Prima di iniziare</h1>
       {r.context && (
         <p className="mt-4 rounded-lg border border-navy/30 bg-navy/5 px-4 py-3 text-sm">
-          Compili il diagnostico come collega per <strong>{r.context.companyName}</strong>. Il profilo dell&apos;azienda è già compilato; le
-          tue risposte individuali saranno visibili all&apos;amministratore dello spazio aziendale, che potrà confrontarle con quelle degli
-          altri colleghi.
+          Compili il diagnostico come collega per <strong>{r.context.companyName}</strong>
+          {r.context.companyName.endsWith(".") ? "" : "."} Il profilo dell&apos;azienda è già compilato; le tue risposte individuali saranno
+          visibili all&apos;amministratore dello spazio aziendale, che potrà confrontarle con quelle degli altri colleghi.
         </p>
       )}
       <div className="mt-6 grid gap-3 sm:grid-cols-3">

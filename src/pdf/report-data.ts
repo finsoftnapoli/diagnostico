@@ -3,7 +3,7 @@ import { bandText, type Benchmark } from "@/config/benchmark";
 import { BRAND } from "@/config/brand";
 import { AREA_SHORT } from "@/lib/areaIcons";
 import { financialKpis } from "@/lib/documents";
-import { buildInsights, levelLabel, type ThemeView } from "@/lib/insights";
+import { buildInsights, LEVEL_NAMES, levelLabel, type ThemeView } from "@/lib/insights";
 import { AREAS } from "@/lib/questionnaire";
 import type { ReportNarrative } from "@/lib/report";
 import { areaReading, levelEquivalent, overallReading } from "@/lib/score-meaning";
@@ -16,6 +16,9 @@ const eur = (v: number | null | undefined) =>
     : Math.abs(v) >= 1_000_000
       ? `${(v / 1_000_000).toLocaleString("it-IT", { maximumFractionDigits: 1 })} mln €`
       : `${Math.round(v / 1000).toLocaleString("it-IT")} mila €`;
+
+/** Iniziale minuscola dopo i due punti, salvo sigle (CRM, ERP…). */
+const lower = (x: string) => (/^[A-ZÀ-Ý][a-zà-ÿ']/.test(x) ? x.charAt(0).toLowerCase() + x.slice(1) : x);
 
 export interface PdfArea {
   code: AreaCode;
@@ -87,8 +90,12 @@ export function reportPdfData(
               eur(f.patrimonio_netto),
               k.equityRatio !== null ? `${k.equityRatio.toLocaleString("it-IT")}% dell'attivo` : "",
             ],
-            ["Giorni di incasso", k.dso !== null ? `${k.dso}` : "—", k.dio !== null ? `magazzino ${k.dio} giorni di ricavi` : ""],
-          ] as [string, string, string][],
+            [
+              "Giorni di incasso",
+              k.dso !== null ? `${k.dso}` : "—",
+              k.dio !== null && k.dio <= 365 ? `magazzino pari a ${k.dio} giorni di ricavi` : "",
+            ],
+          ].filter(([, v]) => v !== "—") as [string, string, string][],
           notes: k.notes,
         }
       : null;
@@ -137,9 +144,15 @@ export function reportPdfData(
       label: x.label,
       verdict: x.verdict,
       areas: x.areas.map((c) => AREAS.find((a) => a.code === c)?.name ?? c).join(", "),
-      weakest: x.weakest ? `${x.weakest.theme}: ${x.weakest.current}` : null,
+      weakest:
+        x.weakest && x.verdict !== "base solida"
+          ? `${x.weakest.theme.toLowerCase()} (${AREA_SHORT[x.weakest.area]}), ancora al livello «${LEVEL_NAMES[x.weakest.level - 1]}»: ${lower(x.weakest.current)}`
+          : null,
     })),
-    issues: ins.issueCauses.map((c) => ({ label: c.label, causes: c.causes.map((t) => `${t.theme}: ${t.current}`) })),
+    issues: ins.issueCauses.map((c) => ({
+      label: c.label,
+      causes: c.causes.map((t) => `${t.theme}, «${LEVEL_NAMES[t.level - 1]}»: ${lower(t.current)}`),
+    })),
     numbers,
     sources,
     brand: BRAND.name,

@@ -20,8 +20,8 @@ export default function Offers({ assessmentId, priorities }: { assessmentId?: st
     <section className="mt-14">
       <h2 className="text-2xl font-semibold text-navy">Vai più a fondo</h2>
       <p className="mt-1 text-sm text-muted max-w-3xl">
-        Il diagnostico mostra dove intervenire. Per trasformarlo in un piano puoi approfondire un ambito alla volta o confrontarti con un nostro
-        consulente senior.
+        Il diagnostico mostra dove intervenire. Per trasformarlo in un piano potete approfondire un ambito alla volta o confrontarvi con un
+        nostro consulente senior.
       </p>
       <div className="mt-6 grid gap-4 lg:grid-cols-3 items-stretch">
         {cards.map(({ p, icon: Icon, unit, cta, anchor }) => {
@@ -46,7 +46,11 @@ export default function Offers({ assessmentId, priorities }: { assessmentId?: st
               {p.sku === "modulo" && priorities.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {priorities.map((x) => (
-                    <span key={x.code} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border border-navy text-navy" title="Tra le tue priorità">
+                    <span
+                      key={x.code}
+                      className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border border-navy text-navy"
+                      title="Tra le priorità del diagnostico"
+                    >
                       <AreaIcon code={x.code} className="size-3.5" /> {AREA_SHORT[x.code]}
                     </span>
                   ))}

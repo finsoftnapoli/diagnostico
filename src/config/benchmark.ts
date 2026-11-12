@@ -10,16 +10,7 @@ import type { AreaCode } from "@/lib/types";
 
 export const MIN_SAMPLE = 30;
 
-export const REVENUE_BANDS = [
-  "Meno di €1M",
-  "€1-2M",
-  "€2-5M",
-  "€5-10M",
-  "€10-25M",
-  "€25-50M",
-  "€50-100M",
-  "€100M e oltre",
-] as const;
+export const REVENUE_BANDS = ["Meno di €1M", "€1-2M", "€2-5M", "€5-10M", "€10-25M", "€25-50M", "€50-100M", "€100M e oltre"] as const;
 
 /**
  * Macro-fasce per la mediana reale: finché una fascia non ha MIN_SAMPLE aziende, si usa la macro-fascia
@@ -81,7 +72,7 @@ export function normativeBenchmark(band: string | undefined): Benchmark {
   return {
     kind: "riferimento",
     label: `Riferimento aziende ${bandText(b)}`,
-    note: `Livello atteso per un'azienda ben gestita con fatturato ${bandText(b)}, definito dai nostri esperti. Sarà sostituito dalla mediana delle aziende reali quando nel tuo segmento ci saranno almeno ${MIN_SAMPLE} compilazioni.`,
+    note: `Livello atteso per un'azienda ben gestita con fatturato ${bandText(b)}, definito dai nostri esperti. Sarà sostituito dalla mediana delle aziende reali quando nel vostro segmento ci saranno almeno ${MIN_SAMPLE} compilazioni.`,
     values,
   };
 }

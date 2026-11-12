@@ -9,6 +9,9 @@ export const C = { navy: "#0a2a4a", navySoft: "#1e4470", ink: "#1a2433", muted: 
 const FONT = "'Helvetica Neue',Helvetica,Arial,sans-serif";
 
 /** "Finsoft S.r.l." senza punto doppio a fine frase. */
+/** Punto finale dopo un nome, senza raddoppiarlo dopo "S.r.l.". */
+export const stop = (s: string) => (s.endsWith(".") ? "" : ".");
+
 export const ownerSentence = () => `${BRAND.name} è un servizio di ${BRAND.ownerLegal.replace(/\.$/, "")}.`;
 
 export function emailButton(href: string, label: string) {
