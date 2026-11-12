@@ -123,7 +123,7 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<Mo
   const client = new Anthropic();
   const msg = await client.messages.create({
     model: MODEL,
-    max_tokens: 5000,
+    max_tokens: 16000,
     system: SYSTEM,
     output_config: { effort: "medium", format: { type: "json_schema", schema: MODULE_NARRATIVE_SCHEMA } },
     messages: [{ role: "user", content: `Ecco i dati del modulo di approfondimento. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],

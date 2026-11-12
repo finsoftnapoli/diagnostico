@@ -111,7 +111,7 @@ export async function generateNarrative(r: Responses, docs: ReportInputs | null 
   const client = new Anthropic();
   const msg = await client.messages.create({
     model: MODEL,
-    max_tokens: 4000,
+    max_tokens: 16000,
     system: SYSTEM,
     output_config: { effort: "medium", format: { type: "json_schema", schema: NARRATIVE_SCHEMA } },
     messages: [{ role: "user", content: `Ecco i dati del diagnostico. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],

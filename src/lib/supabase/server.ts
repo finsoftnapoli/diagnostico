@@ -2,10 +2,13 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { SUPABASE_PUBLIC_KEY, SUPABASE_URL } from "./env";
 
 /** Client con la sessione dell'utente: rispetta le regole di accesso del database. */
 export async function supabaseServer() {
+  // la sessione si legge solo al momento della richiesta, mai durante la preparazione statica della pagina
+  await connection();
   const store = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {
     cookies: {
