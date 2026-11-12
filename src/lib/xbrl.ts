@@ -50,7 +50,9 @@ function currentFacts(xml: string): { facts: Map<string, string>; anyDate: Map<s
   for (const m of xml.matchAll(/<(?:[\w.-]+:)?context\b([^>]*)>([\s\S]*?)<\/(?:[\w.-]+:)?context>/g)) {
     const id = attr(m[1], "id");
     const body = m[2];
-    if (!id || /<(?:[\w.-]+:)?(segment|scenario)\b/.test(body)) continue; // contesti con dimensioni: tabelle di dettaglio
+    // contesti con dimensioni (tabelle di nota integrativa): si scartano. Un semplice scenario come
+    // "depositato", che i software di bilancio mettono in ogni contesto, non è una dimensione.
+    if (!id || /<(?:[\w.-]+:)?(explicitMember|typedMember)\b/.test(body)) continue;
     const date = body.match(/<(?:[\w.-]+:)?(?:instant|endDate)>\s*(\d{4}-\d{2}-\d{2})/)?.[1];
     if (date) contexts.set(id, date);
   }

@@ -84,6 +84,15 @@ describe("bilancio XBRL", () => {
     expect(b.partita_iva).toBe("00743110157");
   });
 
+  it("legge i contesti con lo scenario 'depositato' dei software di bilancio", () => {
+    const scen = "<xbrli:scenario><itcc-ci-micr:scen>itcc-ci:depositato</itcc-ci-micr:scen></xbrli:scenario>";
+    const depositato = ORDINARIO.replace(/<\/xbrli:period><\/xbrli:context>/g, `</xbrli:period>${scen}</xbrli:context>`);
+    const b = parseXbrl(depositato)!;
+    expect(b.anno_esercizio).toBe(2024);
+    expect(b.totale_attivo).toBe(8_000_000);
+    expect(b.ebitda).toBe(1_250_000);
+  });
+
   it("negli schemi senza dettaglio dei debiti lascia vuoti i debiti finanziari", () => {
     const micro = ORDINARIO.replace(/<itcc-ci:Debiti[^\n]*\n/g, "");
     expect(parseXbrl(micro)!.debiti_finanziari).toBeNull();
