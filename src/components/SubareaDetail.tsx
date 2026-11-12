@@ -6,6 +6,7 @@ import { useState } from "react";
 import { LEVEL_NAMES } from "@/lib/insights";
 import type { ModuleResult } from "@/lib/module-scoring";
 import { MODULE_QUESTIONS } from "@/lib/modules";
+import { SubareaIcon } from "@/lib/subareaIcons";
 import type { AreaCode } from "@/lib/types";
 
 const band = (s: number | null) => {
@@ -92,8 +93,11 @@ export default function SubareaDetail({ area, result, reference }: { area: AreaC
               className={`print-keep rounded-xl border p-4 sm:p-5 ${weakest.has(s.code) ? "border-accent/40" : "border-line"}`}
             >
               <div className="flex items-start gap-3">
-                <span className="shrink-0 size-7 rounded-full bg-paper text-navy text-xs font-semibold flex items-center justify-center">
-                  {s.n}
+                <span className="relative shrink-0 size-10 rounded-xl bg-navy/10 text-navy flex items-center justify-center">
+                  <SubareaIcon code={s.code} className="size-5" />
+                  <span className="absolute -top-1.5 -right-1.5 size-4 rounded-full bg-white border border-line text-[10px] font-semibold flex items-center justify-center tabular-nums">
+                    {s.n}
+                  </span>
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

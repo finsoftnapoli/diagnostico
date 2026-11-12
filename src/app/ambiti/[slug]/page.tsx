@@ -8,6 +8,7 @@ import { BRAND } from "@/config/brand";
 import { euro, PRODUCTS } from "@/config/offers";
 import { siteUrl } from "@/config/site";
 import { AreaIcon } from "@/lib/areaIcons";
+import { SubareaIcon } from "@/lib/subareaIcons";
 import { MODULE_SUBAREAS } from "@/lib/modules";
 import { AREAS, QUESTIONS } from "@/lib/questionnaire";
 
@@ -109,7 +110,9 @@ export default async function AreaLandingPage({ params }: PageProps<"/ambiti/[sl
           <ol className="mt-6 grid gap-3 sm:grid-cols-2">
             {subs.map((s, i) => (
               <li key={s.code} className="bg-white border border-line rounded-xl p-4 flex gap-3">
-                <span className="shrink-0 size-7 rounded-full bg-navy text-white text-xs font-semibold flex items-center justify-center">{i + 1}</span>
+                <span className="shrink-0 size-9 rounded-lg bg-navy/10 text-navy flex items-center justify-center" title={`Sotto-ambito ${i + 1}`}>
+                  <SubareaIcon code={s.code} className="size-5" />
+                </span>
                 <span>
                   <span className="block font-semibold">{s.name}</span>
                   <span className="block text-sm text-muted">{s.description}</span>

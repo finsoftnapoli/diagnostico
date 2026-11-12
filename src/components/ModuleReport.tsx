@@ -5,6 +5,7 @@ import { levelLabel } from "@/lib/insights";
 import type { ModuleNarrative } from "@/lib/module-report";
 import type { ModuleResult } from "@/lib/module-scoring";
 import { AREAS } from "@/lib/questionnaire";
+import { SubareaIcon } from "@/lib/subareaIcons";
 import type { AreaCode } from "@/lib/types";
 import PrintButton from "./PrintButton";
 import RadarProfile from "./RadarProfile";
@@ -109,8 +110,8 @@ export default function ModuleReport({
             <p className="font-semibold text-navy">Più solidi</p>
             <ul className="mt-2 space-y-1">
               {strongest.map((x) => (
-                <li key={x.code}>
-                  {x.name} <span className="text-muted">({x.score})</span>
+                <li key={x.code} className="flex items-center gap-2">
+                  <SubareaIcon code={x.code} className="size-4 text-navy" /> {x.name} <span className="text-muted">({x.score})</span>
                 </li>
               ))}
             </ul>
@@ -119,8 +120,8 @@ export default function ModuleReport({
             <p className="font-semibold text-navy">Più fragili</p>
             <ul className="mt-2 space-y-1">
               {weakest.map((x) => (
-                <li key={x.code}>
-                  {x.name} <span className="text-muted">({x.score})</span>
+                <li key={x.code} className="flex items-center gap-2">
+                  <SubareaIcon code={x.code} className="size-4 text-navy" /> {x.name} <span className="text-muted">({x.score})</span>
                 </li>
               ))}
             </ul>

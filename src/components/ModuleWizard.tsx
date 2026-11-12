@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AreaIcon } from "@/lib/areaIcons";
+import { SubareaIcon } from "@/lib/subareaIcons";
 import type { ModuleResponses } from "@/lib/module-scoring";
 import { MODULE_QUESTIONS, MODULE_SUBAREAS, type ModuleQuestion } from "@/lib/modules";
 import { AREAS } from "@/lib/questionnaire";
@@ -127,7 +128,9 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
                     }`}
                   >
                     <span className="flex items-center gap-1 font-semibold">
-                      {done && !active ? <Check className="size-3" aria-hidden /> : <span className="tabular-nums">{i + 1}</span>}
+                      <SubareaIcon code={sa.code} className="size-3.5" />
+                      <span className="tabular-nums">{i + 1}</span>
+                      {done && !active && <Check className="size-3 ml-auto" aria-hidden />}
                       <span className="sr-only">{done ? "completato" : ""}</span>
                     </span>
                     <span className="block mt-0.5">{sa.short}</span>
@@ -155,11 +158,18 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
 
       {page < subs.length ? (
         <section className="mt-6" aria-labelledby={`sa-${subs[page].code}`}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted">Sotto-ambito {page + 1} di 8</p>
-          <h2 id={`sa-${subs[page].code}`} className="text-xl font-semibold text-navy">
-            {subs[page].name}
-          </h2>
-          <p className="text-sm text-muted">{subs[page].description}</p>
+          <div className="flex items-start gap-3">
+            <span className="shrink-0 size-10 rounded-xl bg-navy/10 text-navy flex items-center justify-center">
+              <SubareaIcon code={subs[page].code} className="size-5" />
+            </span>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted">Sotto-ambito {page + 1} di 8</p>
+              <h2 id={`sa-${subs[page].code}`} className="text-xl font-semibold text-navy">
+                {subs[page].name}
+              </h2>
+              <p className="text-sm text-muted">{subs[page].description}</p>
+            </div>
+          </div>
           <div className="mt-4 space-y-5">
             {qs
               .filter((q) => q.sub === subs[page].code)
