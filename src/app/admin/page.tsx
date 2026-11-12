@@ -36,6 +36,9 @@ async function AdminList() {
       </nav>
       <section className="mb-12">
         <h2 className="text-xl font-semibold text-navy">Report da rivedere ({toReview.length})</h2>
+        {toReview.some((t) => t.failed) && (
+          <p className="mt-1 text-sm text-muted">I report non riusciti si rigenerano dalla scheda della compilazione con «Genera ora».</p>
+        )}
         {toReview.length === 0 ? (
           <p className="mt-3 text-sm text-muted">Nessun report in attesa.</p>
         ) : (
@@ -46,9 +49,12 @@ async function AdminList() {
                   <strong>{t.company}</strong> · {t.what}
                   <span className="text-muted"> · completato il {new Date(t.date).toLocaleDateString("it-IT")}</span>
                 </span>
-                <Link href={t.href} className="underline text-navy-soft">
-                  Rivedi e approva
-                </Link>
+                <span className="flex items-center gap-3">
+                  {t.failed && <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">Generazione non riuscita</span>}
+                  <Link href={t.href} className="underline text-navy-soft">
+                    {t.failed ? "Apri e rigenera" : "Rivedi e approva"}
+                  </Link>
+                </span>
               </li>
             ))}
           </ul>

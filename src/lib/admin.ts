@@ -53,21 +53,36 @@ export const priorities = (r: AdminRow) =>
 export const scoreOf = (r: AdminRow, area: string) => r.area_scores.find((s) => s.area === area)?.score ?? null;
 
 
-/** Report generati in attesa di revisione: diagnostici e moduli. */
+/** Report in attesa dello staff: generati da rivedere e non riusciti da rigenerare (diagnostici e moduli). */
 export async function listToReview() {
   const db = supabaseService();
   const [{ data: d }, { data: m }] = await Promise.all([
-    db.from("assessments").select("id, completed_at, respondent_email, companies(name)").eq("report_status", "review").order("completed_at"),
-    db.from("module_assessments").select("id, completed_at, area, companies(name)").eq("report_status", "review").order("completed_at"),
+    db
+      .from("assessments")
+      .select("id, completed_at, respondent_email, report_status, companies(name)")
+      .in("report_status", ["review", "failed"])
+      .order("completed_at"),
+    db
+      .from("module_assessments")
+      .select("id, completed_at, area, report_status, companies(name)")
+      .in("report_status", ["review", "failed"])
+      .order("completed_at"),
   ]);
   const name = (c: unknown) => (c as { name: string } | null)?.name ?? "—";
   return [
-    ...(d ?? []).map((r) => ({ href: `/admin/${r.id}`, what: "Diagnostico", company: name(r.companies), date: r.completed_at as string })),
+    ...(d ?? []).map((r) => ({
+      href: `/admin/${r.id}`,
+      what: "Diagnostico",
+      company: name(r.companies),
+      date: r.completed_at as string,
+      failed: r.report_status === "failed",
+    })),
     ...(m ?? []).map((r) => ({
       href: `/admin/modulo/${r.id}`,
       what: `Modulo ${AREAS.find((a) => a.code === r.area)?.name ?? r.area}`,
       company: name(r.companies),
       date: r.completed_at as string,
+      failed: r.report_status === "failed",
     })),
   ].sort((a, b) => a.date.localeCompare(b.date));
 }
