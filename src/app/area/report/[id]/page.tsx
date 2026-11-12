@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -11,6 +12,8 @@ import { emptyResponses } from "@/lib/scoring";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import { readReport, trackReport } from "@/lib/report-access";
 import type { Responses } from "@/lib/types";
+
+export const metadata: Metadata = { title: "Il vostro report" };
 
 export default function SavedReportPage({ params }: PageProps<"/area/report/[id]">) {
   return (
@@ -28,7 +31,7 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
   // la regola di accesso restituisce la compilazione solo al suo autore, all'amministratore o allo staff
   const { data } = await sb
     .from("assessments")
-    .select("id, responses, completed_at, user_id, company_id, report_status, report_inputs")
+    .select("id, responses, completed_at, user_id, company_id, report_status, report_inputs, companies(name)")
     .eq("id", id)
     .maybeSingle();
   if (!data) notFound();
@@ -50,6 +53,9 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
     completedAt: data.completed_at,
     savedId: data.id,
   };
+  // le compilazioni più vecchie non hanno la ragione sociale tra le risposte: si usa quella dell'azienda
+  const companyName = (data.companies as unknown as { name: string } | null)?.name;
+  if (companyName && !draft.responses.profile["PR-11"]) draft.responses.profile = { ...draft.responses.profile, "PR-11": companyName };
   // diagnostico precedente della stessa persona per la stessa azienda, per vedere i progressi
   const { data: prev } = await sb
     .from("assessments")
