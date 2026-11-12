@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AreaIcon } from "@/lib/areaIcons";
@@ -40,7 +40,25 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
     setR((x) => ({ ...x, ...p }));
   };
 
-  const answered = qs.filter((q) => r.levels[q.id] !== undefined && (!q.check || r.levels[q.id] === 0 || r.checks[q.id])).length;
+  const isDone = (q: ModuleQuestion) => r.levels[q.id] !== undefined && (!q.check || r.levels[q.id] === 0 || !!r.checks[q.id]);
+  const answered = qs.filter(isDone).length;
+  const subs = MODULE_SUBAREAS[area];
+  const subDone = (code: string) => qs.filter((q) => q.sub === code).every(isDone);
+  const subStarted = (code: string) => qs.some((q) => q.sub === code && r.levels[q.id] !== undefined);
+  // pagina corrente: un sotto-ambito per volta, l'ultima per note e invio; si riparte dal primo incompleto
+  const [page, setPage] = useState(() => {
+    const first = subs.findIndex((sa) => !qs.filter((q) => q.sub === sa.code).every((q) => initial.levels[q.id] !== undefined));
+    return first === -1 ? subs.length : first;
+  });
+  const top = useRef<HTMLDivElement>(null);
+  // su schermi stretti la scheda attiva resta visibile nella barra scorrevole
+  useEffect(() => {
+    document.querySelector(`[data-tab="${page}"]`)?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [page]);
+  const go = (n: number) => {
+    setPage(n);
+    top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   async function submit() {
     setSending(true);
@@ -72,61 +90,148 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
         </div>
       </div>
 
-      <div className="sticky top-0 z-10 mt-6 -mx-4 px-4 py-3 bg-white/95 backdrop-blur border-b border-line flex items-center gap-3 text-sm">
-        <div className="flex-1 h-2 rounded-full bg-line overflow-hidden">
-          <div className="h-full bg-navy transition-all" style={{ width: `${(answered / qs.length) * 100}%` }} />
+      <div ref={top} className="scroll-mt-4" />
+      <div className="sticky top-0 z-10 mt-6 -mx-4 px-4 pt-3 pb-2 bg-white/95 backdrop-blur border-b border-line">
+        <div className="flex items-center gap-3 text-sm">
+          <div className="flex-1 h-2 rounded-full bg-line overflow-hidden">
+            <div className="h-full bg-navy transition-all" style={{ width: `${(answered / qs.length) * 100}%` }} />
+          </div>
+          <span className="tabular-nums text-muted">
+            {answered}/{qs.length}
+          </span>
+          <span className="text-xs text-muted w-24 text-right">
+            {saved === "saving" ? "Salvataggio…" : saved === "saved" ? "Salvato" : saved === "error" ? "Non salvato" : ""}
+          </span>
         </div>
-        <span className="tabular-nums text-muted">
-          {answered}/{qs.length}
-        </span>
-        <span className="text-xs text-muted w-24 text-right">
-          {saved === "saving" ? "Salvataggio…" : saved === "saved" ? "Salvato" : saved === "error" ? "Non salvato" : ""}
-        </span>
+        <nav aria-label="Sotto-ambiti" className="mt-3 -mx-4 px-4 overflow-x-auto">
+          <ol className="flex gap-1.5 min-w-max sm:min-w-0 sm:grid sm:grid-cols-9">
+            {subs.map((sa, i) => {
+              const active = page === i;
+              const done = subDone(sa.code);
+              return (
+                <li key={sa.code}>
+                  <button
+                    type="button"
+                    onClick={() => go(i)}
+                    data-tab={i}
+                    aria-current={active ? "step" : undefined}
+                    title={sa.name}
+                    className={`w-full h-full min-w-24 sm:min-w-0 rounded-lg border px-2 py-1.5 text-left text-xs leading-tight hyphens-auto break-words transition ${
+                      active
+                        ? "bg-navy text-white border-navy"
+                        : done
+                          ? "bg-navy/10 text-navy border-transparent hover:border-navy-soft"
+                          : subStarted(sa.code)
+                            ? "border-navy/40 text-ink hover:border-navy-soft"
+                            : "border-line text-muted hover:border-navy-soft"
+                    }`}
+                  >
+                    <span className="flex items-center gap-1 font-semibold">
+                      {done && !active ? <Check className="size-3" aria-hidden /> : <span className="tabular-nums">{i + 1}</span>}
+                      <span className="sr-only">{done ? "completato" : ""}</span>
+                    </span>
+                    <span className="block mt-0.5">{sa.short}</span>
+                  </button>
+                </li>
+              );
+            })}
+            <li>
+              <button
+                type="button"
+                onClick={() => go(subs.length)}
+                data-tab={subs.length}
+                aria-current={page === subs.length ? "step" : undefined}
+                className={`w-full h-full min-w-24 sm:min-w-0 rounded-lg border px-2 py-1.5 text-left text-xs leading-tight transition ${
+                  page === subs.length ? "bg-navy text-white border-navy" : "border-dashed border-line text-muted hover:border-navy-soft"
+                }`}
+              >
+                <Send className="size-3" aria-hidden />
+                <span className="block mt-0.5">Note e invio</span>
+              </button>
+            </li>
+          </ol>
+        </nav>
       </div>
 
-      <div className="mt-6 space-y-10">
-        {MODULE_SUBAREAS[area].map((sa, si) => (
-          <section key={sa.code} aria-labelledby={`sa-${sa.code}`}>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">Sotto-ambito {si + 1} di 8</p>
-            <h2 id={`sa-${sa.code}`} className="text-xl font-semibold text-navy">
-              {sa.name}
-            </h2>
-            <p className="text-sm text-muted">{sa.description}</p>
-            <div className="mt-4 space-y-5">
-              {qs
-                .filter((q) => q.sub === sa.code)
-                .map((q) => (
-                  <Question key={q.id} q={q} qi={qs.indexOf(q)} total={qs.length} r={r} update={update} />
-                ))}
+      {page < subs.length ? (
+        <section className="mt-6" aria-labelledby={`sa-${subs[page].code}`}>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Sotto-ambito {page + 1} di 8</p>
+          <h2 id={`sa-${subs[page].code}`} className="text-xl font-semibold text-navy">
+            {subs[page].name}
+          </h2>
+          <p className="text-sm text-muted">{subs[page].description}</p>
+          <div className="mt-4 space-y-5">
+            {qs
+              .filter((q) => q.sub === subs[page].code)
+              .map((q) => (
+                <Question key={q.id} q={q} qi={qs.indexOf(q)} total={qs.length} r={r} update={update} />
+              ))}
+          </div>
+        </section>
+      ) : (
+        <section className="mt-6 space-y-6" aria-label="Note e invio">
+          <label className="block rounded-xl border border-line p-4 sm:p-5">
+            <span className="font-semibold text-ink">Qualcosa da aggiungere per il nostro esperto? (facoltativo)</span>
+            <span className="block text-sm text-muted">Progetti in corso, vincoli, domande specifiche sull&apos;ambito.</span>
+            <textarea
+              value={r.notes ?? ""}
+              onChange={(e) => update({ notes: e.target.value })}
+              maxLength={3000}
+              rows={4}
+              className="mt-3 w-full rounded-lg border border-line px-3 py-2 text-sm"
+            />
+          </label>
+          {answered < qs.length && (
+            <div className="rounded-xl bg-paper px-4 py-3 text-sm">
+              <p className="font-medium">Mancano {qs.length - answered} risposte in questi sotto-ambiti:</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {subs.map((sa, i) =>
+                  subDone(sa.code) ? null : (
+                    <button
+                      key={sa.code}
+                      type="button"
+                      onClick={() => go(i)}
+                      className="px-3 py-1 rounded-full border border-line bg-white hover:border-navy-soft"
+                    >
+                      {i + 1}. {sa.short}
+                    </button>
+                  ),
+                )}
+              </div>
             </div>
-          </section>
-        ))}
+          )}
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              onClick={submit}
+              disabled={sending || answered < qs.length}
+              className="inline-flex items-center gap-2 bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-50"
+            >
+              {sending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Invia per
+              l&apos;analisi
+            </button>
+            {answered === qs.length && <p className="text-sm text-muted">Dopo l&apos;invio non potrai più modificare le risposte.</p>}
+          </div>
+        </section>
+      )}
 
-        <label className="block rounded-xl border border-line p-4 sm:p-5">
-          <span className="font-semibold text-ink">Qualcosa da aggiungere per il nostro esperto? (facoltativo)</span>
-          <span className="block text-sm text-muted">Progetti in corso, vincoli, domande specifiche sull&apos;ambito.</span>
-          <textarea
-            value={r.notes ?? ""}
-            onChange={(e) => update({ notes: e.target.value })}
-            maxLength={3000}
-            rows={4}
-            className="mt-3 w-full rounded-lg border border-line px-3 py-2 text-sm"
-          />
-        </label>
-      </div>
-
-      <div className="mt-8 flex flex-wrap items-center gap-4">
+      <div className="mt-8 flex items-center justify-between gap-3 border-t border-line pt-5">
         <button
-          onClick={submit}
-          disabled={sending || answered < qs.length}
-          className="inline-flex items-center gap-2 bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-50"
+          type="button"
+          onClick={() => go(page - 1)}
+          disabled={page === 0}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-navy-soft disabled:invisible"
         >
-          {sending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Invia per
-          l&apos;analisi
+          <ArrowLeft className="size-4" aria-hidden /> Indietro
         </button>
-        <p className="text-sm text-muted">
-          {answered < qs.length ? `Mancano ${qs.length - answered} risposte.` : "Dopo l'invio non potrai più modificare le risposte."}
-        </p>
+        {page < subs.length && (
+          <button
+            type="button"
+            onClick={() => go(page + 1)}
+            className="inline-flex items-center gap-2 border border-navy text-navy font-semibold px-4 py-2 rounded-lg hover:bg-navy hover:text-white"
+          >
+            {page === subs.length - 1 ? "Note e invio" : `Avanti: ${subs[page + 1].short}`} <ArrowRight className="size-4" aria-hidden />
+          </button>
+        )}
       </div>
       {error && <p className="mt-3 text-sm text-accent">{error}</p>}
     </div>

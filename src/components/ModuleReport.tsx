@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, Clock3, Gauge } from "lucide-react";
+import { ArrowRight, Clock3, Gauge } from "lucide-react";
 import Link from "next/link";
 import { AreaIcon } from "@/lib/areaIcons";
 import { levelLabel } from "@/lib/insights";
@@ -8,6 +8,7 @@ import { AREAS } from "@/lib/questionnaire";
 import type { AreaCode } from "@/lib/types";
 import PrintButton from "./PrintButton";
 import RadarProfile from "./RadarProfile";
+import SubareaDetail from "./SubareaDetail";
 
 /** Risultato di un modulo: Ottogramma dell'ambito subito, analisi scritta quando approvata dallo staff. */
 export default function ModuleReport({
@@ -30,7 +31,6 @@ export default function ModuleReport({
 }) {
   const a = AREAS.find((x) => x.code === area)!;
   const score = result.score;
-  const flags = result.themes.filter((t) => t.flag);
   const scored = result.subs.filter((x) => x.score !== null);
   const strongest = [...scored].sort((x, y) => (y.score as number) - (x.score as number)).slice(0, 2);
   const weakest = [...scored].sort((x, y) => (x.score as number) - (y.score as number)).slice(0, 2);
@@ -99,7 +99,9 @@ export default function ModuleReport({
           />
           <p className="mt-1 text-xs text-muted text-center">
             Scala da 0 a 100. In evidenza i due sotto-ambiti più fragili.
-            {reference ? ` La linea tratteggiata è il ${reference.label.charAt(0).toLowerCase()}${reference.label.slice(1)} per l'intero ambito.` : ""}
+            {reference
+              ? ` La linea tratteggiata è il ${reference.label.charAt(0).toLowerCase()}${reference.label.slice(1)} per l'intero ambito.`
+              : ""}
           </p>
         </div>
         <div className="grid gap-3 text-sm">
@@ -126,44 +128,7 @@ export default function ModuleReport({
         </div>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold text-navy">Sotto-ambito per sotto-ambito</h2>
-        <div className="mt-4 space-y-5">
-          {result.subs.map((x) => (
-            <div key={x.code} className="print-keep">
-              <div className="grid grid-cols-[minmax(0,1fr)_3rem] sm:grid-cols-[16rem_minmax(0,1fr)_3rem] items-center gap-x-4 gap-y-1 text-sm">
-                <span className="font-semibold text-navy">{x.name}</span>
-                <span className="order-3 sm:order-none col-span-2 sm:col-span-1 h-2.5 rounded-full bg-line overflow-hidden">
-                  {x.score !== null && <span className="block h-full bg-navy" style={{ width: `${Math.max(x.score, 3)}%` }} />}
-                </span>
-                <span className="text-right tabular-nums font-semibold">{x.score === null ? "n.a." : x.score}</span>
-              </div>
-              <ul className="mt-1.5 sm:ml-[17rem] space-y-0.5 text-xs text-muted">
-                {result.themes
-                  .filter((t) => t.sub === x.code)
-                  .map((t) => (
-                    <li key={t.id} className="flex justify-between gap-3">
-                      <span>{t.theme}</span>
-                      <span className="tabular-nums">{t.level === null ? "non applicabile" : `livello ${t.level} di 4`}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        {flags.length > 0 && (
-          <div className="mt-6 rounded-lg bg-paper p-4 text-sm print-keep">
-            <p className="font-semibold flex items-center gap-1.5">
-              <AlertTriangle className="size-4 text-accent" aria-hidden /> Da verificare
-            </p>
-            <ul className="mt-2 space-y-1">
-              {flags.map((t) => (
-                <li key={t.id}>{t.flag}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
+      <SubareaDetail area={area} result={result} reference={reference?.value ?? null} />
 
       {narrative ? (
         <section className="mt-10 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
