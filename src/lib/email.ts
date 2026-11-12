@@ -152,18 +152,18 @@ export function heldReportEmail(p: { company: string; what: string; reasons: str
   const subject = p.failed ? `Report non generato: ${p.company}` : `Report trattenuto per revisione: ${p.company}`;
   const intro = p.failed
     ? `La generazione di ${p.what} di ${p.company} non è riuscita. Si può rigenerare dall'area staff.`
-    : `${p.what.charAt(0).toUpperCase() + p.what.slice(1)} di ${p.company} non ha superato i controlli automatici e non è stato inviato al cliente. Va rivisto e approvato ${BRAND.reportPromise} dalla compilazione.`;
+    : `${p.what.charAt(0).toUpperCase() + p.what.slice(1)} di ${p.company} non ha superato i controlli automatici e non è stato inviato al cliente. Va rivisto e approvato in tempo per l'invio promesso al cliente (${BRAND.reportPromise} alla compilazione).`;
   const text = `${intro}\n\n${p.reasons.map((r) => `- ${r}`).join("\n")}\n\nApri: ${p.link}`;
   const html = `<p>${esc(intro)}</p>${p.reasons.length ? `<ul>${p.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}<p><a href="${esc(p.link)}">Apri nell'area staff</a></p>`;
   return { subject, text, html };
 }
 
-/** Avviso interno: un report è partito da solo dopo i controlli. */
-export function releasedReportEmail(p: { company: string; what: string; notes: string[]; link: string }) {
-  const subject = `Report inviato: ${p.company}`;
-  const intro = `${p.what.charAt(0).toUpperCase() + p.what.slice(1)} di ${p.company} ha superato i controlli automatici ed è stato inviato al cliente.`;
-  const text = `${intro}${p.notes.length ? `\n\nNote dei controlli:\n${p.notes.map((r) => `- ${r}`).join("\n")}` : ""}\n\nRileggilo quando vuoi: ${p.link}`;
-  const html = `<p>${esc(intro)}</p>${p.notes.length ? `<p>Note dei controlli:</p><ul>${p.notes.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}<p><a href="${esc(p.link)}">Rileggilo nell'area staff</a></p>`;
+/** Avviso interno: un report ha superato i controlli e partirà da solo all'ora indicata. */
+export function scheduledReportEmail(p: { company: string; what: string; when: string; notes: string[]; link: string }) {
+  const subject = `Report pronto, parte ${p.when}: ${p.company}`;
+  const intro = `${p.what.charAt(0).toUpperCase() + p.what.slice(1)} di ${p.company} ha superato i controlli automatici e partirà da solo verso il cliente ${p.when}. Fino ad allora si può rileggere, correggere, inviare subito o trattenere dall'area staff.`;
+  const text = `${intro}${p.notes.length ? `\n\nNote dei controlli:\n${p.notes.map((r) => `- ${r}`).join("\n")}` : ""}\n\nApri: ${p.link}`;
+  const html = `<p>${esc(intro)}</p>${p.notes.length ? `<p>Note dei controlli:</p><ul>${p.notes.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}<p><a href="${esc(p.link)}">Apri nell'area staff</a></p>`;
   return { subject, text, html };
 }
 

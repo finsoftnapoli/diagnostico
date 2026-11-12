@@ -52,6 +52,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
       {m.status === "completed" && (
         <div className="mt-4 max-w-2xl">
           <ReleaseInfo
+            endpoint={`/api/admin/report/modulo/${id}`}
             status={m.report_status as string}
             checks={release.checks}
             releasedBy={release.releasedBy}

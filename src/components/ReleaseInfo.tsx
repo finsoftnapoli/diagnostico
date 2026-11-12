@@ -1,6 +1,8 @@
 import { CheckCircle2, Eye, ShieldAlert } from "lucide-react";
 import type { ReportUsage } from "@/lib/report-access";
 import type { ReleaseVerdict } from "@/lib/release-checks";
+import { releaseLabel } from "@/lib/release-schedule";
+import HoldReport from "./HoldReport";
 
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Rome" }) : "";
@@ -12,12 +14,15 @@ export default function ReleaseInfo({
   releasedBy,
   releasedAt,
   usage,
+  endpoint,
 }: {
   status: string;
   checks: ReleaseVerdict | null;
   releasedBy: "auto" | "staff" | null;
   releasedAt: string | null;
   usage?: ReportUsage;
+  /** Indirizzo delle azioni dello staff sul report, per fermare l'invio programmato. */
+  endpoint?: string;
 }) {
   const reasons = checks ? [...checks.blocking, ...(checks.secondOpinion?.issues ?? [])] : [];
   const notes = checks?.notes ?? [];
@@ -40,9 +45,14 @@ export default function ReleaseInfo({
         <p>
           {checks
             ? checks.ok
-              ? "Controlli superati: in attesa di approvazione."
+              ? checks.hold
+                ? "Controlli superati, invio fermato dallo staff: parte solo con l'approvazione."
+                : checks.releaseAfter
+                  ? `Controlli superati: parte da solo ${releaseLabel(checks.releaseAfter)}. Fino ad allora si può correggere, approvare per inviarlo subito o trattenere.`
+                  : "Controlli superati: in attesa di approvazione."
               : "Trattenuto: non ha superato i controlli automatici."
             : "In attesa di approvazione."}
+          {endpoint && checks?.ok && checks.releaseAfter && !checks.hold && <HoldReport endpoint={endpoint} />}
         </p>
       ) : (
         <p className="text-muted">{status === "failed" ? "Generazione non riuscita." : "Report in preparazione."}</p>

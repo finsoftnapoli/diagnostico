@@ -15,7 +15,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - La banca delle domande si modifica in `scripts/content.py` e si rigenera con `python3 scripts/genera_domande.py`;
   i moduli di approfondimento in `scripts/moduli_content.py`, con `python3 scripts/genera_moduli.py <cartella Excel>`.
 - Testi pubblici: si parla di metodologia, algoritmi e sistemi proprietari e del ruolo degli esperti, senza descrivere formule
-  o uso dell'AI (il minimo legale resta nell'informativa); i report si promettono con `BRAND.reportPromise` ("entro 24 ore") e partono da soli se superano i controlli.
+  o uso dell'AI (il minimo legale resta nell'informativa); i report si promettono con `BRAND.reportPromise` ("la mattina del giorno successivo"): se superano i controlli partono da soli alle 9 del giorno dopo la compilazione.
 - Prezzi solo in `src/config/offers.ts`; testi delle pagine pubbliche in `src/config/ambiti.ts` e `src/config/faq.ts`.
 - Ogni nuova migrazione deve essere rieseguibile (`if not exists`, `drop ... if exists`) e va aggiunta a
   `supabase/setup_completo.sql` con `scripts/genera_setup.sh`; aggiornare README e piano quando cambia una funzione visibile.

@@ -55,6 +55,11 @@ export const priorities = (r: AdminRow) =>
 
 export const scoreOf = (r: AdminRow, area: string) => r.area_scores.find((s) => s.area === area)?.score ?? null;
 
+/** Ora di invio programmato di un report che ha superato i controlli e non è stato fermato. */
+const scheduledAt = (c: unknown) => {
+  const v = c as { ok?: boolean; hold?: boolean; releaseAfter?: string } | null;
+  return v?.ok && v.releaseAfter && !v.hold ? v.releaseAfter : null;
+};
 
 /** Report in attesa dello staff: generati da rivedere e non riusciti da rigenerare (diagnostici e moduli). */
 export async function listToReview() {
@@ -62,12 +67,12 @@ export async function listToReview() {
   const [{ data: d }, { data: m }] = await Promise.all([
     db
       .from("assessments")
-      .select("id, completed_at, respondent_email, report_status, companies(name)")
+      .select("id, completed_at, respondent_email, report_status, report_checks, companies(name)")
       .in("report_status", ["review", "failed"])
       .order("completed_at"),
     db
       .from("module_assessments")
-      .select("id, completed_at, area, report_status, companies(name)")
+      .select("id, completed_at, area, report_status, report_checks, companies(name)")
       .in("report_status", ["review", "failed"])
       .order("completed_at"),
   ]);
@@ -79,6 +84,7 @@ export async function listToReview() {
       company: name(r.companies),
       date: r.completed_at as string,
       failed: r.report_status === "failed",
+      scheduled: scheduledAt(r.report_checks),
     })),
     ...(m ?? []).map((r) => ({
       href: `/admin/modulo/${r.id}`,
@@ -86,6 +92,7 @@ export async function listToReview() {
       company: name(r.companies),
       date: r.completed_at as string,
       failed: r.report_status === "failed",
+      scheduled: scheduledAt(r.report_checks),
     })),
   ].sort((a, b) => a.date.localeCompare(b.date));
 }

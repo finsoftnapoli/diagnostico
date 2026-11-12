@@ -11,7 +11,7 @@ import { AreaIcon } from "@/lib/areaIcons";
 import { AREAS } from "@/lib/questionnaire";
 
 const TITLE = `Diagnostico aziendale gratuito per PMI · ${BRAND.name}`;
-const DESCRIPTION = `Check-up gratuito della tua azienda su 8 ambiti di gestione: strategia, finanza, vendite, persone, operations, digitale, innovazione e sostenibilità. Subito l'${BRAND.reportName} con il confronto con aziende simili, ${BRAND.reportPromise} il report con le priorità.`;
+const DESCRIPTION = `Check-up gratuito della vostra azienda su 8 ambiti di gestione: strategia, finanza, vendite, persone, operations, digitale, innovazione e sostenibilità. Subito l'${BRAND.reportName} con il confronto con aziende simili, ${BRAND.reportPromise} il report con le priorità.`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -22,19 +22,19 @@ export const metadata: Metadata = {
 
 const STEPS = [
   [
-    "Rispondi su 8 ambiti",
-    `Una domanda alla volta: per ogni tema scegli tra quattro descrizioni concrete quella più vicina alla situazione di oggi. Mentre rispondi si disegna l'${BRAND.reportName}.`,
+    "Rispondete su 8 ambiti",
+    `Una domanda alla volta: per ogni tema scegliete tra quattro descrizioni concrete quella più vicina alla situazione di oggi. Mentre rispondete si disegna l'${BRAND.reportName}.`,
   ],
   [
-    "Racconta ambizioni e sfide",
-    "Dove vuoi portare l'azienda e che cosa oggi la frena. Se hai visura e bilancio, in PDF o nel formato XBRL del Registro Imprese, li leggiamo noi e compiliamo i dati.",
+    "Raccontate ambizioni e sfide",
+    "Dove volete portare l'azienda e che cosa oggi la frena. Se avete visura e bilancio, in PDF o nel formato XBRL del Registro Imprese, li leggiamo noi e compiliamo i dati.",
   ],
   [
-    `Leggi l'${BRAND.reportName}`,
-    "Il profilo della tua azienda, il confronto con aziende della stessa fascia di fatturato e le evidenze chiave, subito.",
+    `Leggete l'${BRAND.reportName}`,
+    "Il profilo della vostra azienda, il confronto con aziende della stessa fascia di fatturato e le evidenze chiave, subito.",
   ],
   [
-    "Ricevi il report approfondito",
+    "Ricevete il report approfondito",
     `Per email, ${BRAND.reportPromise}: le tre priorità, le cause delle sfide e gli interventi da cui partire.`,
   ],
 ];
@@ -77,12 +77,12 @@ export default function Home() {
           <div>
             <p className="text-sm uppercase tracking-widest text-white/70">Diagnostico aziendale gratuito per PMI</p>
             <h1 className="mt-4 text-3xl sm:text-5xl font-semibold leading-tight">
-              Dove è solida la tua azienda, e dove conviene intervenire per primo.
+              Dove è solida la vostra azienda, e dove conviene intervenire per primo.
             </h1>
             <p className="mt-6 text-lg text-white/85 max-w-2xl">
-              Un check-up della gestione su 8 ambiti, frutto di 40 anni di esperienza in piccole e grandi aziende. Mentre rispondi si
-              disegna l&apos;{BRAND.reportName}, il profilo della tua azienda: alla fine lo leggi a confronto con aziende simili e{" "}
-              {BRAND.reportPromise} ricevi il report approfondito con le priorità.
+              Un check-up della gestione su 8 ambiti, frutto di 40 anni di esperienza in piccole e grandi aziende. Mentre rispondete si
+              disegna l&apos;{BRAND.reportName}, il profilo della vostra azienda: alla fine lo leggete a confronto con aziende simili e{" "}
+              {BRAND.reportPromise} ricevete il report approfondito con le priorità.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
@@ -95,7 +95,7 @@ export default function Home() {
                 Come funziona
               </a>
             </div>
-            <p className="mt-3 text-sm text-white/70">Gratuito · circa 15 minuti · ti fermi e riprendi quando vuoi</p>
+            <p className="mt-3 text-sm text-white/70">Gratuito · circa 15 minuti · vi fermate e riprendete quando volete</p>
           </div>
           <figure className="bg-white rounded-2xl p-4 sm:p-6 mx-auto w-full max-w-sm">
             <div className="flex justify-center">
@@ -119,13 +119,13 @@ export default function Home() {
             },
             {
               icon: PauseCircle,
-              t: "Ti fermi e riprendi quando vuoi",
-              d: "Le risposte si salvano da sole: puoi interrompere e continuare più tardi, anche da un altro dispositivo.",
+              t: "Vi fermate e riprendete quando volete",
+              d: "Le risposte si salvano da sole: potete interrompere e continuare più tardi, anche da un altro dispositivo.",
             },
             {
               icon: Users,
-              t: "Lo condividi con i collaboratori",
-              d: "Invita soci e responsabili a compilarlo: vedi le visioni a confronto e i temi su cui il management non è allineato.",
+              t: "Lo condividete con i collaboratori",
+              d: "Invitate soci e responsabili a compilarlo: vedete le visioni a confronto e i temi su cui il management non è allineato.",
             },
             {
               icon: Award,
@@ -143,7 +143,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-16">
-        <h2 className="text-2xl font-semibold text-navy">Cosa ricevi</h2>
+        <h2 className="text-2xl font-semibold text-navy">Cosa ricevete</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-3">
           {[
             {
@@ -154,12 +154,12 @@ export default function Home() {
             {
               icon: Scale,
               t: "Il confronto con aziende simili",
-              d: "Ogni ambito a confronto con le aziende della stessa fascia di fatturato, per capire dove sei avanti e dove indietro.",
+              d: "Ogni ambito a confronto con le aziende della stessa fascia di fatturato, per capire dove siete avanti e dove indietro.",
             },
             {
               icon: FileText,
               t: `Il report approfondito, ${BRAND.reportPromise}`,
-              d: "Le tre priorità collegate alle tue ambizioni e alle tue sfide, con gli interventi da cui partire e, se carichi il bilancio, i numeri chiave.",
+              d: "Le tre priorità collegate alle vostre ambizioni e alle vostre sfide, con gli interventi da cui partire e, se caricate il bilancio, i numeri chiave.",
             },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t}>
@@ -187,7 +187,7 @@ export default function Home() {
           </ol>
           <p className="mt-6 text-sm text-muted max-w-3xl">
             Il diagnostico applica la nostra metodologia proprietaria, costruita sull&apos;esperienza di consulenza di direzione: algoritmi
-            e sistemi di analisi trasformano le risposte in indicazioni concrete per la tua azienda. Ogni report passa da controlli di
+            e sistemi di analisi trasformano le risposte in indicazioni concrete per la vostra azienda. Ogni report passa da controlli di
             qualità e dalla supervisione dei nostri esperti.{" "}
             <Link href="/metodo" className="underline text-navy-soft">
               Il nostro metodo
@@ -227,17 +227,17 @@ export default function Home() {
             <Users className="size-6 text-navy" aria-hidden strokeWidth={1.75} />
             <h2 className="mt-3 text-xl font-semibold text-navy">Più manager, una visione comune</h2>
             <p className="mt-2 text-muted leading-relaxed">
-              Invita i responsabili dell&apos;azienda a compilare il diagnostico: nell&apos;area personale vedi le diverse visioni a
+              Invitate i responsabili dell&apos;azienda a compilare il diagnostico: nell&apos;area personale vedete le diverse visioni a
               confronto e i temi su cui il management non è allineato.
             </p>
           </div>
           <div>
             <Gauge className="size-6 text-navy" aria-hidden strokeWidth={1.75} />
-            <h2 className="mt-3 text-xl font-semibold text-navy">I numeri della tua azienda</h2>
+            <h2 className="mt-3 text-xl font-semibold text-navy">I numeri della vostra azienda</h2>
             <p className="mt-2 text-muted leading-relaxed">
-              Carica la visura e il bilancio, in PDF o nel formato XBRL depositato al Registro Imprese: compiliamo i dati dell&apos;azienda
-              e il report aggiunge marginalità, indebitamento, giorni di incasso e governance. Più avanti puoi aggiungere bilanci aggiornati
-              e il business plan.
+              Caricate la visura e il bilancio, in PDF o nel formato XBRL depositato al Registro Imprese: compiliamo i dati
+              dell&apos;azienda e il report aggiunge marginalità, indebitamento, giorni di incasso e governance. Più avanti potete
+              aggiungere bilanci aggiornati e il business plan.
             </p>
           </div>
         </div>
@@ -265,7 +265,7 @@ export default function Home() {
       <section className="bg-navy text-white">
         <div className="mx-auto max-w-5xl px-4 py-14 flex flex-wrap items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl font-semibold">Pronto a vedere il profilo della tua azienda?</h2>
+            <h2 className="text-2xl font-semibold">Pronti a vedere il profilo della vostra azienda?</h2>
             <p className="mt-1 text-white/80">
               Un servizio di {BRAND.ownerLegal}, società di consulenza di strategia e creazione di valore.
             </p>

@@ -66,7 +66,7 @@ export default function Terms() {
         <p>
           Gli approfondimenti si attivano subito dopo il pagamento e si compilano dall&apos;area personale. Il report scritto è consegnato{" "}
           {BRAND.reportPromise}
-          dall&apos;invio del questionario completo, dopo i controlli di qualità e sotto la supervisione dei nostri esperti. Moduli e ore di
+          all&apos;invio del questionario completo, dopo i controlli di qualità e sotto la supervisione dei nostri esperti. Moduli e ore di
           consulenza restano disponibili nell&apos;area personale dell&apos;azienda per 12 mesi dall&apos;acquisto. [Da confermare.]
         </p>
       </S>

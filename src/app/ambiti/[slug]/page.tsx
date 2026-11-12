@@ -67,7 +67,10 @@ export default async function AreaLandingPage({ params }: PageProps<"/ambiti/[sl
             <h1 className="text-3xl sm:text-4xl font-semibold leading-tight">{p.seoTitle}</h1>
           </div>
           <p className="mt-6 text-lg text-white/85 max-w-3xl leading-relaxed">{p.intro}</p>
-          <Link href="/diagnostico" className="mt-8 inline-flex items-center gap-2 bg-white text-navy font-semibold px-6 py-3 rounded-lg hover:bg-paper">
+          <Link
+            href="/diagnostico"
+            className="mt-8 inline-flex items-center gap-2 bg-white text-navy font-semibold px-6 py-3 rounded-lg hover:bg-paper"
+          >
             Inizia il diagnostico gratuito <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
@@ -77,7 +80,7 @@ export default async function AreaLandingPage({ params }: PageProps<"/ambiti/[sl
         <div>
           <h2 className="text-xl font-semibold text-navy">Cosa misura il diagnostico gratuito</h2>
           <p className="mt-2 text-sm text-muted">
-            Tre temi su {area.name.toLowerCase()}, insieme agli altri sette ambiti, nel profilo complessivo della tua azienda.
+            Tre temi su {area.name.toLowerCase()}, insieme agli altri sette ambiti, nel profilo complessivo della vostra azienda.
           </p>
           <ul className="mt-4 space-y-3">
             {themes.map((q) => (
@@ -104,13 +107,17 @@ export default async function AreaLandingPage({ params }: PageProps<"/ambiti/[sl
         <div className="mx-auto max-w-5xl px-4 py-14">
           <h2 className="text-xl font-semibold text-navy">L&apos;approfondimento: gli 8 sotto-ambiti</h2>
           <p className="mt-2 text-muted max-w-3xl">
-            Dopo il diagnostico puoi acquistare l&apos;approfondimento dell&apos;ambito: un {BRAND.reportName} dedicato, con 2-3 domande per sotto-ambito,
-            punteggi subito e un report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire. {euro(PRODUCTS.modulo.price)} + IVA.
+            Dopo il diagnostico potete acquistare l&apos;approfondimento dell&apos;ambito: un {BRAND.reportName} dedicato, con 2-3 domande
+            per sotto-ambito, punteggi subito e un report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire.{" "}
+            {euro(PRODUCTS.modulo.price)} + IVA.
           </p>
           <ol className="mt-6 grid gap-3 sm:grid-cols-2">
             {subs.map((s, i) => (
               <li key={s.code} className="bg-white border border-line rounded-xl p-4 flex gap-3">
-                <span className="shrink-0 size-9 rounded-lg bg-navy/10 text-navy flex items-center justify-center" title={`Sotto-ambito ${i + 1}`}>
+                <span
+                  className="shrink-0 size-9 rounded-lg bg-navy/10 text-navy flex items-center justify-center"
+                  title={`Sotto-ambito ${i + 1}`}
+                >
                   <SubareaIcon code={s.code} className="size-5" />
                 </span>
                 <span>
@@ -127,7 +134,11 @@ export default async function AreaLandingPage({ params }: PageProps<"/ambiti/[sl
         <h2 className="text-xl font-semibold text-navy">Gli altri ambiti</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {AREA_PAGES.filter((x) => x.slug !== p.slug).map((x) => (
-            <Link key={x.slug} href={`/ambiti/${x.slug}`} className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-line hover:border-navy-soft">
+            <Link
+              key={x.slug}
+              href={`/ambiti/${x.slug}`}
+              className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full border border-line hover:border-navy-soft"
+            >
               <AreaIcon code={x.code} className="size-3.5" /> {AREAS.find((a) => a.code === x.code)?.name}
             </Link>
           ))}

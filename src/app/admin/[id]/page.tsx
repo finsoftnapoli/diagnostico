@@ -89,6 +89,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         {/* contesto per chi rivede, sempre a portata */}
         <aside className="space-y-4 text-sm lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
           <ReleaseInfo
+            endpoint={`/api/admin/report/diagnostico/${id}`}
             status={r.report_status}
             checks={release.checks}
             releasedBy={release.releasedBy}

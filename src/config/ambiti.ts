@@ -21,7 +21,7 @@ export const AREA_PAGES: AreaPage[] = [
     slug: "strategia-governance",
     seoTitle: "Diagnostico di strategia e governance per PMI",
     seoDescription:
-      "Valuta direzione strategica, pianificazione, delega, organo amministrativo, passaggio generazionale e adeguati assetti della tua PMI. Gratuito.",
+      "Valutate direzione strategica, pianificazione, delega, organo amministrativo, passaggio generazionale e adeguati assetti della vostra PMI. Gratuito.",
     intro:
       "Nelle PMI la strategia vive spesso nella testa del titolare: funziona finché l'azienda è piccola, poi rallenta le decisioni e rende fragile la continuità. Il diagnostico misura quanto la direzione è chiara e condivisa, come si decide e si delega, che ruolo svolgono l'organo amministrativo e i soci e quanto sono presidiati i rischi e gli adeguati assetti richiesti dal Codice della crisi.",
     signals: [
@@ -81,7 +81,7 @@ export const AREA_PAGES: AreaPage[] = [
     slug: "operations-supply-chain",
     seoTitle: "Diagnostico di operations e supply chain per PMI",
     seoDescription:
-      "Pianificazione, produttività, qualità, acquisti e fornitori, scorte e logistica, manutenzione e sicurezza: valuta l'efficienza delle operations della tua azienda.",
+      "Pianificazione, produttività, qualità, acquisti e fornitori, scorte e logistica, manutenzione e sicurezza: valutate l'efficienza delle operations della vostra azienda.",
     intro:
       "Ritardi nelle consegne, scorte che non tornano e costi di produzione poco noti erodono margini e reputazione. Il diagnostico misura come si allineano vendite e capacità, come si programma il lavoro, quanto si conoscono produttività e costi della non qualità, come si gestiscono acquisti e fornitori critici, scorte, logistica, manutenzione e sicurezza. Vale anche per le aziende di servizi: le domande che non vi riguardano si possono escludere.",
     signals: [
@@ -111,7 +111,7 @@ export const AREA_PAGES: AreaPage[] = [
     slug: "innovazione",
     seoTitle: "Diagnostico della capacità di innovazione per PMI",
     seoDescription:
-      "Strategia dell'innovazione, raccolta delle idee, selezione dei progetti, sviluppo e lancio, collaborazioni, incentivi e brevetti: misura come innova la tua PMI.",
+      "Strategia dell'innovazione, raccolta delle idee, selezione dei progetti, sviluppo e lancio, collaborazioni, incentivi e brevetti: misurate come innova la vostra PMI.",
     intro:
       "Molte PMI innovano di continuo su richiesta dei clienti, ma senza priorità, risorse dedicate né misura dei risultati. Il diagnostico misura quanto è chiaro dove innovare, come nascono e si scelgono i progetti, come si sviluppano e si lanciano prodotti e servizi, con chi collaborate, quanto sfruttate incentivi e proprietà intellettuale e quanto la cultura aziendale sostiene chi sperimenta.",
     signals: [

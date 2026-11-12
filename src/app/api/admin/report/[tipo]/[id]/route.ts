@@ -37,6 +37,21 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/repor
     return NextResponse.json({ narrative, status: "review" });
   }
 
+  if (body.action === "hold") {
+    // ferma l'invio automatico programmato: il report partirà solo con un'approvazione
+    const { data: cur } = await db.from(table).select("report_checks").eq("id", id).maybeSingle();
+    const checks = (cur?.report_checks ?? null) as Record<string, unknown> | null;
+    if (r.report_status !== "review" || !checks)
+      return NextResponse.json({ error: "Nessun invio programmato da fermare" }, { status: 409 });
+    const { error: holdError } = await db
+      .from(table)
+      .update({ report_checks: { ...checks, hold: true } })
+      .eq("id", id)
+      .eq("report_status", "review");
+    if (holdError) return NextResponse.json({ error: "Operazione non riuscita" }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+
   if (body.action !== "save" && body.action !== "approve") return NextResponse.json({ error: "Azione non valida" }, { status: 400 });
   if (!r.report_narrative) return NextResponse.json({ error: "Il report non è ancora stato generato" }, { status: 409 });
   const narrative = cleanNarrative(spec, body.narrative, r.report_narrative);

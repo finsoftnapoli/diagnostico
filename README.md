@@ -54,11 +54,12 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
   (pagamenti), **Aruba Fatturazione Elettronica** (invio allo SDI), Google Meet o simili per le videochiamate.
 - Report: la generazione parte all'invio della compilazione (`after()` in `/api/compilazioni` e `/api/moduli/<id>`); il report passa
   dai controlli di `src/lib/release-checks.ts` e da una seconda lettura indipendente (`src/lib/release.ts`): se li supera
-  parte da solo verso il cliente, altrimenti resta "da rivedere" e lo staff riceve un avviso con i motivi
+  ne viene programmato l'invio per le 9 del giorno successivo alla compilazione (`src/lib/release-schedule.ts`; lo staff è avvisato
+  e può correggere, inviare subito o trattenere), altrimenti resta "da rivedere" e lo staff riceve un avviso con i motivi
   (`REPORT_AUTO_RELEASE=0` riporta tutto alla revisione). Il testo del report si legge solo dal server
   (`src/lib/report-access.ts`), che registra anche aperture e scarichi (`report_events`, visibili nell'area staff).
-- Attività pianificate (Vercel Cron, protette da `CRON_SECRET`): `/api/cron/report` alle 7:00 riprende i report rimasti in coda
-  e ricorda allo staff quelli trattenuti; `/api/cron/pulizia` alle 3:30 elimina bozze scadute e documenti da non conservare.
+- Attività pianificate (Vercel Cron, protette da `CRON_SECRET`): `/api/cron/report` alle 8:10 UTC (dopo le 9 italiane) invia i report
+  programmati, riprende quelli rimasti in coda e ricorda allo staff quelli trattenuti; `/api/cron/pulizia` alle 3:30 elimina bozze scadute e documenti da non conservare.
 
 ### Flussi principali
 
@@ -128,4 +129,4 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 - Nomi di soci e amministratori letti dalla visura restano nel browser di chi carica il documento: mai nel database.
 - I testi rivolti agli utenti parlano di "esperti" (chi valida i report e fa le consulenze), di "Ottogramma" (il profilo) e
   di "metodologia, algoritmi e sistemi proprietari": nessun dettaglio pubblico su formule o uso dell'AI, salvo il minimo
-  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono con `BRAND.reportPromise` ("entro 24 ore").
+  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono con `BRAND.reportPromise` ("la mattina del giorno successivo").

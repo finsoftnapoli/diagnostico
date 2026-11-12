@@ -2,17 +2,18 @@ import "server-only";
 import { BRAND } from "@/config/brand";
 import { companyDocInputs } from "./company-docs";
 import { siteUrl } from "@/config/site";
-import { heldReportEmail, isEmailConfigured, releasedReportEmail, reportReadyEmail, reviewDigestEmail, sendEmail } from "./email";
+import { heldReportEmail, isEmailConfigured, reportReadyEmail, reviewDigestEmail, scheduledReportEmail, sendEmail } from "./email";
 import { generateModuleReport } from "./module-report";
 import { autoReleaseEnabled } from "./release";
 import type { ReleaseVerdict } from "./release-checks";
+import { nextMorning, releaseLabel } from "./release-schedule";
 import { generateNarrative } from "./report-narrative";
 import { computeResult } from "./scoring";
 import { supabaseService } from "./supabase/server";
 import type { Responses } from "./types";
 
-// Genera i report approfonditi e ne controlla il contenuto. Un report che supera i controlli parte subito
-// verso il cliente; uno che non li supera resta "da rivedere" e lo staff viene avvisato.
+// Genera i report approfonditi e ne controlla il contenuto. Un report che supera i controlli parte da solo
+// la mattina successiva alla compilazione; uno che non li supera resta "da rivedere". Lo staff è avvisato in entrambi i casi.
 /** Minuti di attesa prima che l'esecuzione pianificata riprenda una compilazione (la generazione parte già all'invio). */
 const DELAY_MIN = 10;
 /** Report generati in parallelo e tempo massimo di lavoro per esecuzione (la funzione ha 300 secondi). */
@@ -35,22 +36,27 @@ async function companyOf(db: Db, table: Table, id: string) {
   return (data?.companies as unknown as { name: string } | null)?.name ?? "azienda";
 }
 
-/** Salva il report generato e decide se rilasciarlo; avvisa il cliente o lo staff. */
+/**
+ * Salva il report generato. Se supera i controlli se ne programma l'invio per la mattina successiva alla compilazione;
+ * altrimenti resta trattenuto. In entrambi i casi lo staff è avvisato.
+ */
 async function saveGenerated(db: Db, table: Table, id: string, base: Record<string, unknown>, verdict: ReleaseVerdict, opts: Options) {
   const auto = !!opts.release && verdict.ok && autoReleaseEnabled();
-  const now = new Date().toISOString();
+  let releaseAfter: string | null = null;
+  if (auto) {
+    const { data: row } = await db.from(table).select("completed_at").eq("id", id).maybeSingle();
+    releaseAfter = nextMorning(row?.completed_at ? new Date(row.completed_at as string) : new Date()).toISOString();
+  }
   const { error } = await db
     .from(table)
     .update({
       ...base,
-      report_checks: verdict,
-      report_status: auto ? "ready" : "review",
-      ...(auto ? { report_ready_at: now } : {}),
-      report_released_by: auto ? "auto" : null,
-      report_released_at: auto ? now : null,
+      report_checks: releaseAfter ? { ...verdict, releaseAfter } : verdict,
+      report_status: "review",
+      report_released_by: null,
+      report_released_at: null,
     })
     .eq("id", id);
-  let released = auto;
   if (error) {
     // colonne del rilascio automatico non ancora presenti nel database: si resta alla revisione dello staff
     console.warn("Rilascio automatico non disponibile:", error.message);
@@ -58,21 +64,25 @@ async function saveGenerated(db: Db, table: Table, id: string, base: Record<stri
       .from(table)
       .update({ ...base, report_status: "review" })
       .eq("id", id);
-    released = false;
+    releaseAfter = null;
   }
   if (!opts.release) return;
-  const origin = siteUrl();
-  const staffLink = `${origin}/admin/${table === "assessments" ? "" : "modulo/"}${id}`;
+  const staffLink = `${siteUrl()}/admin/${table === "assessments" ? "" : "modulo/"}${id}`;
   const what = table === "assessments" ? "il report del diagnostico" : "il report dell'approfondimento";
   try {
-    if (released) await notifyReportReady(db, table, id, origin);
     if (isEmailConfigured()) {
       const company = await companyOf(db, table, id);
       const reasons = [...verdict.blocking, ...(verdict.secondOpinion?.issues ?? [])];
       await sendEmail({
         to: staffEmail(),
-        ...(released
-          ? releasedReportEmail({ company, what, notes: [...verdict.notes, ...(verdict.secondOpinion?.issues ?? [])], link: staffLink })
+        ...(releaseAfter
+          ? scheduledReportEmail({
+              company,
+              what,
+              when: releaseLabel(releaseAfter),
+              notes: [...verdict.notes, ...(verdict.secondOpinion?.issues ?? [])],
+              link: staffLink,
+            })
           : heldReportEmail({
               company,
               what,
@@ -84,6 +94,41 @@ async function saveGenerated(db: Db, table: Table, id: string, base: Record<stri
   } catch (e) {
     console.error("Avviso sul report non inviato:", e instanceof Error ? e.message : e);
   }
+}
+
+/** Report con i controlli superati e l'ora di invio raggiunta, non fermati dallo staff: partono verso il cliente. */
+export async function releaseDueReports(db: Db, origin: string) {
+  const now = new Date().toISOString();
+  let released = 0;
+  let held = 0;
+  for (const table of ["assessments", "module_assessments"] as const) {
+    const { data, error } = await db.from(table).select("id, report_checks").eq("report_status", "review");
+    if (error) {
+      // colonne assenti finché la migrazione non è eseguita: tutti i report in revisione sono da rivedere
+      const { count } = await db.from(table).select("id", { count: "exact", head: true }).eq("report_status", "review");
+      held += count ?? 0;
+      continue;
+    }
+    for (const r of (data ?? []) as { id: string; report_checks: ReleaseVerdict | null }[]) {
+      const c = r.report_checks;
+      const scheduled = !!c?.ok && !!c.releaseAfter && !c.hold;
+      if (!scheduled) held++;
+      if (!scheduled || (c.releaseAfter as string) > now || !autoReleaseEnabled()) continue;
+      const { data: done } = await db
+        .from(table)
+        .update({ report_status: "ready", report_ready_at: now, report_released_by: "auto", report_released_at: now })
+        .eq("id", r.id)
+        .eq("report_status", "review")
+        .select("id")
+        .maybeSingle();
+      if (!done) continue;
+      released++;
+      await notifyReportReady(db, table, r.id, origin).catch((e) =>
+        console.error("Email al cliente non inviata:", e instanceof Error ? e.message : e),
+      );
+    }
+  }
+  return { released, held };
 }
 
 async function saveFailed(db: Db, table: Table, id: string, attempts: number, opts: Options, e: unknown) {
@@ -198,17 +243,13 @@ export async function generatePendingReports(origin: string) {
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
-  // promemoria allo staff se restano report trattenuti da rivedere
-  const [{ count: d }, { count: m }] = await Promise.all([
-    db.from("assessments").select("id", { count: "exact", head: true }).eq("report_status", "review"),
-    db.from("module_assessments").select("id", { count: "exact", head: true }).eq("report_status", "review"),
-  ]);
-  const toReview = (d ?? 0) + (m ?? 0);
+  // i report controllati partono all'ora programmata; promemoria allo staff se ne restano di trattenuti
+  const { released, held: toReview } = await releaseDueReports(db, siteUrl());
   if (toReview && isEmailConfigured())
     await sendEmail({ to: staffEmail(), ...reviewDigestEmail({ count: toReview, link: `${origin}/admin` }) }).catch((e) =>
       console.error("Avviso revisione non inviato:", e instanceof Error ? e.message : e),
     );
-  return { generated, failed: total - queue.length - generated, remaining: queue.length, toReview };
+  return { generated, failed: total - queue.length - generated, remaining: queue.length, released, toReview };
 }
 
 /** Email al cliente quando il report è rilasciato, dai controlli automatici o dallo staff. */

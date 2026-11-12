@@ -11,6 +11,10 @@ export interface ReleaseVerdict {
   /** Esito della seconda lettura indipendente, quando è stata fatta. */
   secondOpinion?: { ok: boolean; issues: string[] } | null;
   at?: string;
+  /** Controlli superati: momento da cui il report parte da solo verso il cliente. */
+  releaseAfter?: string;
+  /** Lo staff ha fermato l'invio automatico: il report parte solo con un'approvazione. */
+  hold?: boolean;
 }
 
 type Json = unknown;

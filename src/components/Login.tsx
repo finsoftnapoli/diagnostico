@@ -61,7 +61,7 @@ export default function Login() {
     }
     const { error } = await supabaseBrowser().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
-    if (error) return setError("Codice non valido o scaduto: controlla l'ultima email ricevuta o richiedi un nuovo codice.");
+    if (error) return setError("Codice non valido o scaduto: controllate l'ultima email ricevuta o richiedete un nuovo codice.");
     router.push(next);
     router.refresh();
   }
@@ -71,13 +71,13 @@ export default function Login() {
       <h1 className="text-2xl font-semibold text-navy">Accedi</h1>
       {sent === null ? (
         <p className="mt-2 text-sm text-muted">
-          Ti inviamo un&apos;email con un codice e un link di accesso: niente password da ricordare.
+          Vi inviamo un&apos;email con un codice e un link di accesso: niente password da ricordare.
         </p>
       ) : (
         <div className="mt-4 flex gap-3 rounded-lg bg-paper px-4 py-3 text-sm">
           <MailCheck className="size-5 shrink-0 text-navy" aria-hidden />
           <p>
-            Abbiamo scritto a <strong>{email.trim()}</strong>. Inserisci il codice, oppure apri il link dell&apos;email da questo browser.
+            Abbiamo scritto a <strong>{email.trim()}</strong>. Inserite il codice, oppure aprite il link dell&apos;email da questo browser.
             Se non la trovi, guarda anche nella posta indesiderata.
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function Login() {
           </label>
         )}
         <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60">
-          {busy ? "Attendere…" : sent !== null ? "Accedi" : "Inviami il codice di accesso"}
+          {busy ? "Attendere…" : sent !== null ? "Accedi" : "Invia il codice di accesso"}
         </button>
       </form>
       {error && (

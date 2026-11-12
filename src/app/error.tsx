@@ -7,7 +7,7 @@ export default function Error({ retry }: { error: Error & { digest?: string }; r
     <div className="mx-auto max-w-3xl px-4 py-20">
       <h1 className="text-3xl font-semibold text-navy">Qualcosa non ha funzionato</h1>
       <p className="mt-3 text-muted">
-        Riprova tra qualche istante. Le risposte del questionario restano salvate nel tuo browser. Se il problema continua, scrivici a{" "}
+        Riprovate tra qualche istante. Le risposte del questionario restano salvate nel browser. Se il problema continua, scriveteci a{" "}
         <a className="underline" href={`mailto:${BRAND.contactEmail}`}>
           {BRAND.contactEmail}
         </a>

@@ -1,3 +1,4 @@
+import { releaseLabel } from "@/lib/release-schedule";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -45,7 +46,9 @@ async function AdminList() {
         </Link>
       </nav>
       <section className="mb-12">
-        <h2 className="text-xl font-semibold text-navy">Report da rivedere ({toReview.length})</h2>
+        <h2 className="text-xl font-semibold text-navy">
+          Report da rivedere ({toReview.filter((t) => !t.scheduled).length}) e in partenza ({toReview.filter((t) => t.scheduled).length})
+        </h2>
         {toReview.some((t) => t.failed) && (
           <p className="mt-1 text-sm text-muted">I report non riusciti si rigenerano dalla scheda della compilazione con «Genera ora».</p>
         )}
@@ -65,8 +68,11 @@ async function AdminList() {
                       Generazione non riuscita
                     </span>
                   )}
+                  {t.scheduled && (
+                    <span className="rounded-full bg-paper px-2 py-0.5 text-xs text-muted">Parte da solo {releaseLabel(t.scheduled)}</span>
+                  )}
                   <Link href={t.href} className="underline text-navy-soft">
-                    {t.failed ? "Apri e rigenera" : "Rivedi e approva"}
+                    {t.failed ? "Apri e rigenera" : t.scheduled ? "Rileggi" : "Rivedi e approva"}
                   </Link>
                 </span>
               </li>
