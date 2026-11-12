@@ -15,7 +15,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode, Choice, Financials, Governance, Responses } from "@/lib/types";
 import { isValidItalianVat, normalizeVat } from "@/lib/vat";
 import FileDrop from "@/components/FileDrop";
-import { acceptFor, docFormat } from "@/lib/doc-format";
+import { acceptFor, docFormat, withType } from "@/lib/doc-format";
 
 type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
 
@@ -644,8 +644,13 @@ function DocUpload({ r, update }: SectionProps) {
       if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
       const { error: upErr } = await supabaseBrowser()
         .storage.from("documenti")
-        .uploadToSignedUrl(p.path, p.token, file, { contentType: fmt.contentType });
-      if (upErr) throw new Error("Caricamento non riuscito, riprova");
+        .uploadToSignedUrl(p.path, p.token, withType(file, fmt.contentType), { contentType: fmt.contentType });
+      if (upErr)
+        throw new Error(
+          /mime/i.test(upErr.message)
+            ? "Formato del file non accettato dall'archivio: scrivici e lo abilitiamo."
+            : "Caricamento non riuscito, riprova",
+        );
       // 2. lettura
       setMsg((m) => ({
         ...m,

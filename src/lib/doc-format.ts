@@ -16,3 +16,9 @@ export function docFormat(file: { name: string; type: string; size: number }, ki
   if (isXml) return { error: "Il formato XBRL vale solo per il bilancio: per questo documento carica il PDF." };
   return { error: kind === "bilancio" ? "Il file deve essere un PDF o un XBRL." : "Il file deve essere un PDF." };
 }
+
+/**
+ * Il file con il tipo giusto: il caricamento nell'archivio usa il tipo assegnato dal browser, che per i file XBRL
+ * è vuoto (l'archivio li rifiuterebbe come file generici).
+ */
+export const withType = (file: File, type: string): Blob => (file.type === type ? file : new Blob([file], { type }));

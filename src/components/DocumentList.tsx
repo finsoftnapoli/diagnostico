@@ -5,7 +5,7 @@ import { useState } from "react";
 import { DOC_KINDS, DOC_LABELS, type AnyDocKind, type PlanSummary } from "@/lib/documents";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import FileDrop from "@/components/FileDrop";
-import { acceptFor, docFormat } from "@/lib/doc-format";
+import { acceptFor, docFormat, withType } from "@/lib/doc-format";
 
 export interface DocRow {
   id: string;
@@ -137,8 +137,13 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
       if (!prep.ok || !p.path || !p.token) throw new Error(p.error ?? "Caricamento non riuscito");
       const { error: upErr } = await supabaseBrowser()
         .storage.from("documenti")
-        .uploadToSignedUrl(p.path, p.token, file, { contentType: fmt.contentType });
-      if (upErr) throw new Error("Caricamento non riuscito, riprova");
+        .uploadToSignedUrl(p.path, p.token, withType(file, fmt.contentType), { contentType: fmt.contentType });
+      if (upErr)
+        throw new Error(
+          /mime/i.test(upErr.message)
+            ? "Formato del file non accettato dall'archivio: scrivici e lo abilitiamo."
+            : "Caricamento non riuscito, riprova",
+        );
       setMsg({ text: fmt.formato === "xbrl" ? "Lettura in corso…" : "Lettura in corso, può richiedere fino a un minuto…", ok: true });
       const res = await fetch("/api/documenti", {
         method: "POST",
