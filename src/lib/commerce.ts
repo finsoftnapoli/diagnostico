@@ -4,8 +4,10 @@ import { BUNDLE_HOURS, euro, priceCart, PRODUCTS, SESSION_MIN, VAT_RATE, type Ca
 import { isArubaConfigured, uploadInvoice } from "./aruba";
 import type { Billing } from "./billing";
 import { isEmailConfigured, sendEmail } from "./email";
+import { C, emailButton, emailLayout, esc, ownerSentence, para } from "./email-layout";
 import { calendarInvite } from "./ics";
 import { buildFatturaPA, invoiceNumber, progressivoInvio, sellerFromEnv } from "./invoice";
+import { purchaseEmail } from "./purchase-email";
 import { AREAS } from "./questionnaire";
 import type { supabaseService } from "./supabase/server";
 
@@ -13,9 +15,15 @@ type Db = ReturnType<typeof supabaseService>;
 const AREA_CODES = AREAS.map((a) => a.code as string);
 export const areaName = (c: string) => AREAS.find((a) => a.code === c)?.name ?? c;
 const staffEmail = () => process.env.STAFF_NOTIFY_EMAIL ?? BRAND.contactEmail;
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const when = (d: Date) =>
-  d.toLocaleString("it-IT", { timeZone: "Europe/Rome", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  d.toLocaleString("it-IT", {
+    timeZone: "Europe/Rome",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 /** Tempo per completare il pagamento: lo slot scelto resta bloccato un po' più a lungo. */
 export const CHECKOUT_MINUTES = 31;
@@ -104,9 +112,19 @@ export async function holdSlot(db: Db, slotId: string, orderId: string) {
 
 /** Ordine non pagato (pagamento abbandonato o scaduto): si annulla e lo slot torna libero. */
 export async function cancelOrder(db: Db, orderId: string) {
-  const { data } = await db.from("orders").update({ status: "cancelled" }).eq("id", orderId).eq("status", "pending").select("slot_id").maybeSingle();
+  const { data } = await db
+    .from("orders")
+    .update({ status: "cancelled" })
+    .eq("id", orderId)
+    .eq("status", "pending")
+    .select("slot_id")
+    .maybeSingle();
   if (data?.slot_id)
-    await db.from("expert_slots").update({ status: "open", held_until: null, held_by_order: null }).eq("id", data.slot_id).eq("held_by_order", orderId);
+    await db
+      .from("expert_slots")
+      .update({ status: "open", held_until: null, held_by_order: null })
+      .eq("id", data.slot_id)
+      .eq("held_by_order", orderId);
 }
 
 type OrderRow = {
@@ -187,10 +205,13 @@ export async function fulfillOrder(db: Db, orderId: string, method: "stripe" | "
     console.error("Fattura non emessa:", e instanceof Error ? e.message : e);
     return null;
   });
-  await sendOrderEmails(db, o, invoice?.number ?? null, origin, !!o.slot_id && !booking).catch((e) =>
+  await sendOrderEmails(db, o, invoice?.number ?? null, origin, { booked: !!booking, slotLost: !!o.slot_id && !booking }).catch((e) =>
     console.error("Email ordine non inviate:", e instanceof Error ? e.message : e),
   );
-  if (booking) await sendBookingEmails(db, booking, origin).catch((e) => console.error("Email prenotazione non inviate:", e instanceof Error ? e.message : e));
+  if (booking)
+    await sendBookingEmails(db, booking, origin).catch((e) =>
+      console.error("Email prenotazione non inviate:", e instanceof Error ? e.message : e),
+    );
   return { alreadyDone: false, booking, invoice: invoice?.number ?? null };
 }
 
@@ -200,7 +221,11 @@ export async function fulfillOrder(db: Db, orderId: string, method: "stripe" | "
 export async function issueInvoice(db: Db, orderId: string) {
   const { data: order } = await db.from("orders").select("id, items, billing, payment_method, paid_at, status").eq("id", orderId).single();
   if (!order || order.status !== "paid") throw new Error("Ordine non pagato");
-  const { data: existing } = await db.from("invoices").select("id, number, status, xml, year, seq, issued_on").eq("order_id", orderId).maybeSingle();
+  const { data: existing } = await db
+    .from("invoices")
+    .select("id, number, status, xml, year, seq, issued_on")
+    .eq("order_id", orderId)
+    .maybeSingle();
   type Inv = { id: string; number: string; status: string; xml: string | null; year: number; seq: number; issued_on: string };
   let inv = existing as Inv | null;
   const seller = sellerFromEnv();
@@ -253,15 +278,24 @@ export async function issueInvoice(db: Db, orderId: string) {
 
   if (inv.xml && inv.status !== "sent") {
     if (!isArubaConfigured()) {
-      await db.from("invoices").update({ status: "manual", error: "Invio automatico ad Aruba non configurato: caricare l'XML a mano" }).eq("id", inv.id);
+      await db
+        .from("invoices")
+        .update({ status: "manual", error: "Invio automatico ad Aruba non configurato: caricare l'XML a mano" })
+        .eq("id", inv.id);
       inv.status = "manual";
     } else {
       try {
         const name = await uploadInvoice(inv.xml);
-        await db.from("invoices").update({ status: "sent", aruba_filename: name, error: null, sent_at: new Date().toISOString() }).eq("id", inv.id);
+        await db
+          .from("invoices")
+          .update({ status: "sent", aruba_filename: name, error: null, sent_at: new Date().toISOString() })
+          .eq("id", inv.id);
         inv.status = "sent";
       } catch (e) {
-        await db.from("invoices").update({ status: "error", error: e instanceof Error ? e.message.slice(0, 500) : "errore" }).eq("id", inv.id);
+        await db
+          .from("invoices")
+          .update({ status: "error", error: e instanceof Error ? e.message.slice(0, 500) : "errore" })
+          .eq("id", inv.id);
         inv.status = "error";
       }
     }
@@ -316,7 +350,11 @@ export async function cancelBooking(db: Db, bookingId: string, origin: string) {
     .maybeSingle();
   if (!b) return false;
   if (b.entitlement_id) await db.rpc("use_credit", { p_entitlement: b.entitlement_id, p_delta: -1 });
-  await db.from("expert_slots").update({ status: "open", held_until: null, held_by_order: null }).eq("id", b.slot_id).eq("status", "booked");
+  await db
+    .from("expert_slots")
+    .update({ status: "open", held_until: null, held_by_order: null })
+    .eq("id", b.slot_id)
+    .eq("status", "booked");
   await sendBookingEmails(db, bookingId, origin, true).catch(() => {});
   return true;
 }
@@ -328,35 +366,32 @@ async function emailOf(db: Db, userId: string) {
   return data.user?.email ?? null;
 }
 
-async function sendOrderEmails(db: Db, o: OrderRow, invoiceNo: string | null, origin: string, slotLost: boolean) {
+async function sendOrderEmails(
+  db: Db,
+  o: OrderRow,
+  invoiceNo: string | null,
+  origin: string,
+  booking: { booked: boolean; slotLost: boolean },
+) {
   if (!isEmailConfigured()) return;
   const to = await emailOf(db, o.user_id);
   const rows = o.items.map((l) => `${l.description}: ${euro(l.netCents / 100)}`);
   const totals = `Imponibile ${euro(o.net_cents / 100)} · IVA ${VAT_RATE}% ${euro(o.vat_cents / 100)} · Totale ${euro(o.total_cents / 100)}`;
-  const link = `${origin}/area/servizi`;
-  const lost = slotLost
-    ? "L'orario che avevi scelto nel frattempo non era più disponibile: l'ora di consulenza è comunque attiva, scegli un nuovo orario dalla tua area personale."
-    : "";
-  if (to) {
-    const text = `Buongiorno,
-
-grazie per l'acquisto. Abbiamo attivato:
-${rows.map((r) => `- ${r}`).join("\n")}
-
-${totals}
-${invoiceNo ? `La fattura n. ${invoiceNo} ti arriverà tramite il Sistema di Interscambio.` : "La fattura ti arriverà tramite il Sistema di Interscambio."}
-${lost}
-
-Trovi i servizi acquistati nella tua area personale: ${link}
-
-${BRAND.name} è un servizio di ${BRAND.ownerLegal}.`;
-    const html = `<p>Buongiorno,</p><p>grazie per l'acquisto. Abbiamo attivato:</p><ul>${rows.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>
-<p>${esc(totals)}<br>${invoiceNo ? `La fattura n. ${esc(invoiceNo)} ti arriverà tramite il Sistema di Interscambio.` : "La fattura ti arriverà tramite il Sistema di Interscambio."}</p>
-${lost ? `<p><strong>${esc(lost)}</strong></p>` : ""}
-<p><a href="${esc(link)}" style="display:inline-block;background:#0a2a4a;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">Vai ai tuoi servizi</a></p>
-<p style="color:#5b6573;font-size:13px">${esc(BRAND.name)} è un servizio di ${esc(BRAND.ownerLegal)}.</p>`;
-    await sendEmail({ to, subject: "Conferma di acquisto", text, html });
-  }
+  if (to)
+    await sendEmail({
+      to,
+      ...purchaseEmail({
+        company: o.billing.denominazione,
+        items: o.items,
+        netCents: o.net_cents,
+        vatCents: o.vat_cents,
+        totalCents: o.total_cents,
+        paidAt: new Date(o.paid_at),
+        invoiceNo,
+        ...booking,
+        link: `${origin}/area/servizi`,
+      }),
+    });
   await sendEmail({
     to: staffEmail(),
     replyTo: to ?? undefined,
@@ -390,21 +425,47 @@ export async function sendBookingEmails(db: Db, bookingId: string, origin: strin
     attendee: to ?? undefined,
     cancel: cancelled,
   });
-  const attachments = [{ filename: "consulenza.ics", content: Buffer.from(ics).toString("base64"), contentType: "text/calendar; method=" + (cancelled ? "CANCEL" : "REQUEST") }];
+  const attachments = [
+    {
+      filename: "consulenza.ics",
+      content: Buffer.from(ics).toString("base64"),
+      contentType: "text/calendar; method=" + (cancelled ? "CANCEL" : "REQUEST"),
+    },
+  ];
   const date = when(start);
   const subject = cancelled ? `Consulenza annullata: ${date}` : `Consulenza confermata: ${date}`;
-  const link = url
-    ? `Collegamento alla videochiamata: ${url}`
-    : "Ti invieremo il collegamento alla videochiamata prima della sessione.";
+  const link = url ? `Collegamento alla videochiamata: ${url}` : "Ti invieremo il collegamento alla videochiamata prima della sessione.";
   const body = cancelled
     ? `la consulenza di ${date} è stata annullata. L'ora resta disponibile: puoi scegliere un nuovo orario dalla tua area personale (${origin}/area/servizi).`
     : `la consulenza da remoto è confermata per ${date} (${slot.duration_min} minuti). ${link}\nIn allegato l'invito da aggiungere al calendario.`;
+  const detail = (label: string, value: string) =>
+    `<tr><td style="padding:4px 0;font-size:13px;color:${C.muted};width:110px">${esc(label)}</td><td style="padding:4px 0;font-size:15px;color:${C.ink};font-weight:700">${value}</td></tr>`;
+  const html = emailLayout({
+    preheader: cancelled ? `Consulenza di ${date} annullata.` : `Consulenza confermata per ${date}.`,
+    eyebrow: "Consulenza senior da remoto",
+    title: cancelled ? "Consulenza annullata" : "La tua consulenza è in calendario",
+    body: cancelled
+      ? `${para("Buongiorno,")}
+${para(`la consulenza di <strong>${esc(date)}</strong> è stata annullata. L'ora resta disponibile: puoi scegliere un nuovo orario quando vuoi.`)}
+${emailButton(`${origin}/area/servizi`, "Scegli un nuovo orario")}`
+      : `${para("Buongiorno,")}
+${para(`la tua consulenza da remoto con un nostro consulente senior è confermata${company ? ` per <strong>${esc(company)}</strong>` : ""}.`)}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.paper};border:1px solid ${C.line};border-radius:10px;margin:18px 0 6px"><tr><td style="padding:14px 20px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+${detail("Quando", esc(date))}
+${detail("Durata", `${slot.duration_min} minuti`)}
+${detail("Dove", url ? `<a href="${esc(url)}" style="color:${C.navySoft}">Videochiamata</a>` : "Videochiamata: il collegamento ti arriva prima della sessione")}
+${b.topic ? detail("Temi", esc(b.topic as string)) : ""}
+</table></td></tr></table>
+${para("In allegato trovi l'invito da aggiungere al calendario. Tieni a portata di mano il tuo Ottogramma: partiremo da lì.", `font-size:14px;color:${C.muted};margin-top:14px`)}
+${url ? emailButton(url, "Apri la videochiamata") : emailButton(`${origin}/area/servizi`, "Vai ai tuoi servizi")}`,
+  });
   if (to)
     await sendEmail({
       to,
       subject,
-      text: `Buongiorno,\n\n${body}\n\n${BRAND.name} è un servizio di ${BRAND.ownerLegal}.`,
-      html: `<p>Buongiorno,</p><p>${esc(body).replace(/\n/g, "<br>")}</p><p style="color:#5b6573;font-size:13px">${esc(BRAND.name)} è un servizio di ${esc(BRAND.ownerLegal)}.</p>`,
+      text: `Buongiorno,\n\n${body}${b.topic && !cancelled ? `\nTemi: ${b.topic}` : ""}\n\n${ownerSentence()}`,
+      html,
       attachments,
     });
   await sendEmail({

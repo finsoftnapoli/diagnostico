@@ -1,5 +1,6 @@
 import "server-only";
 import { BRAND } from "@/config/brand";
+import { emailButton, emailLayout, esc, ownerSentence, para } from "./email-layout";
 import { AREAS } from "./questionnaire";
 
 // Invio di email del servizio tramite Resend (stesso account usato da Supabase per i codici di accesso).
@@ -37,8 +38,6 @@ export async function sendEmail(opts: {
   if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
 }
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-
 /** Testo dell'invito: comunicazione di servizio richiesta da chi invita, senza contenuti promozionali. */
 export function invitationEmail(p: { inviter: string; company: string; name?: string | null; link: string; expires: Date }) {
   const greeting = p.name ? `Buongiorno ${p.name},` : "Buongiorno,";
@@ -53,24 +52,28 @@ Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità d
 Compila il diagnostico: ${p.link}
 
 L'invito scade il ${date}. Se non conosci il mittente, puoi ignorare questa email.
-${BRAND.name} è un servizio di ${BRAND.owner}.`;
-  const html = `<p>${esc(greeting)}</p>
-<p><strong>${esc(p.inviter)}</strong> ti ha invitato a compilare il diagnostico gestionale di <strong>${esc(p.company)}</strong> su ${esc(BRAND.name)}.</p>
-<p>Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato. Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.</p>
-<p><a href="${esc(p.link)}" style="display:inline-block;background:#0a2a4a;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">Compila il diagnostico</a></p>
-<p style="color:#5b6573;font-size:13px">L'invito scade il ${esc(date)}. Se non conosci il mittente, puoi ignorare questa email.<br>${esc(BRAND.name)} è un servizio di ${esc(BRAND.owner)}.</p>`;
+${ownerSentence()}`;
+  const html = emailLayout({
+    preheader: `${p.inviter} ti invita a compilare il diagnostico di ${p.company}.`,
+    eyebrow: "Invito",
+    title: `Il diagnostico di ${p.company}`,
+    body: `${para(esc(greeting))}
+${para(`<strong>${esc(p.inviter)}</strong> ti ha invitato a compilare il diagnostico gestionale di <strong>${esc(p.company)}</strong> su ${esc(BRAND.name)}.`)}
+${para("Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato. Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.")}
+${emailButton(p.link, "Compila il diagnostico")}
+${para(`L'invito scade il ${esc(date)}. Se non conosci il mittente, puoi ignorare questa email.`, "font-size:13px;color:#5b6573;margin-top:18px")}`,
+  });
   return { subject, text, html };
 }
 
-const button = (href: string, label: string) =>
-  `<p><a href="${esc(href)}" style="display:inline-block;background:#0a2a4a;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">${esc(label)}</a></p>`;
-const footer = () => `<p style="color:#5b6573;font-size:13px">${esc(BRAND.name)} è un servizio di ${esc(BRAND.owner)}.</p>`;
 const areaName = (c: string) => AREAS.find((a) => a.code === c)?.name ?? c;
 
 /** Email: il report approfondito (del diagnostico o di un modulo) è pronto. */
 export function reportReadyEmail(p: { company: string; link: string; module?: string }) {
   const what = p.module ? `l'approfondimento ${areaName(p.module)}` : "il report approfondito del diagnostico";
-  const subject = p.module ? `Approfondimento ${areaName(p.module)} di ${p.company}: il report è pronto` : `Il report approfondito di ${p.company} è pronto`;
+  const subject = p.module
+    ? `Approfondimento ${areaName(p.module)} di ${p.company}: il report è pronto`
+    : `Il report approfondito di ${p.company} è pronto`;
   const body = p.module
     ? `Trovi la lettura di ciascun tema, il piano di lavoro con le priorità nel tempo e gli indicatori da seguire.`
     : `Oltre all'Ottogramma che hai già visto, trovi l'analisi delle aree di priorità, gli interventi suggeriti e le osservazioni dei nostri esperti.`;
@@ -80,11 +83,15 @@ ${what} di ${p.company} è pronto. ${body}
 
 Apri il report: ${p.link}
 
-${BRAND.name} è un servizio di ${BRAND.owner}.`;
-  const html = `<p>Buongiorno,</p>
-<p>${esc(what)} di <strong>${esc(p.company)}</strong> è pronto. ${esc(body)}</p>
-${button(p.link, "Apri il report")}
-${footer()}`;
+${ownerSentence()}`;
+  const html = emailLayout({
+    preheader: body,
+    eyebrow: p.module ? `Approfondimento ${areaName(p.module)}` : "Report approfondito",
+    title: `Il report di ${p.company} è pronto`,
+    body: `${para("Buongiorno,")}
+${para(`${esc(what.charAt(0).toUpperCase() + what.slice(1))} di <strong>${esc(p.company)}</strong> è pronto. ${esc(body)}`)}
+${emailButton(p.link, "Apri il report")}`,
+  });
   return { subject, text, html };
 }
 
@@ -92,7 +99,6 @@ ${footer()}`;
 export function reviewDigestEmail(p: { count: number; link: string }) {
   const subject = p.count === 1 ? "1 report da rivedere" : `${p.count} report da rivedere`;
   const text = `Ci sono ${p.count} report generati in attesa della tua revisione prima dell'invio ai clienti.\n\nArea staff: ${p.link}`;
-  const html = `<p>Ci sono <strong>${p.count}</strong> report generati in attesa della tua revisione prima dell'invio ai clienti.</p>${button(p.link, "Apri l'area staff")}`;
+  const html = `<p>Ci sono <strong>${p.count}</strong> report generati in attesa della tua revisione prima dell'invio ai clienti.</p><p><a href="${esc(p.link)}">Apri l'area staff</a></p>`;
   return { subject, text, html };
 }
-
