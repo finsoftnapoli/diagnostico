@@ -11,6 +11,7 @@ import { financialKpis } from "@/lib/documents";
 import { buildInsights, LEVEL_NAMES, levelLabel, type ThemeView } from "@/lib/insights";
 import { AREAS } from "@/lib/questionnaire";
 import { computeResult, relevanceLabel } from "@/lib/scoring";
+import { areaReading } from "@/lib/score-meaning";
 import type { AreaCode } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
@@ -19,6 +20,7 @@ import InviteColleagues from "./InviteColleagues";
 import PrintButton from "./PrintButton";
 import Progress, { type PreviousResult } from "./Progress";
 import RadarProfile from "./RadarProfile";
+import ScoreReading from "./ScoreReading";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
 
@@ -98,6 +100,8 @@ export default function Report({
           sub={ins.balanced ? "Profilo abbastanza equilibrato" : "Divario elevato tra gli ambiti"}
         />
       </div>
+
+      <ScoreReading overall={ins.overall} reference={ins.benchmarkAvg} levels={ins.themes.map((t) => t.level)} />
 
       {/* Radar e sintesi */}
       <section className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] items-start">
@@ -332,6 +336,13 @@ export default function Report({
                   <p className="text-lg font-semibold tabular-nums">{a.score}</p>
                 </div>
                 <Bar value={a.score ?? 0} marker={ref} />
+                <p className="mt-2 text-xs leading-relaxed text-muted">
+                  {areaReading(
+                    a.score,
+                    ref,
+                    themes.map((t) => t.level),
+                  )}
+                </p>
                 <ul className="mt-3 space-y-1.5">
                   {themes.map((t) => (
                     <li key={t.id} className="flex items-center justify-between gap-3 text-sm">

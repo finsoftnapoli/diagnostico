@@ -1,8 +1,10 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { moduleNarrativeProblem } from "./narrative-checks";
 import { computeModule, type ModuleResponses } from "./module-scoring";
 import { MODULE_QUESTIONS, ROADMAP_HORIZONS } from "./modules";
 import { AREAS, ISSUES, OBJECTIVES } from "./questionnaire";
+import { areaReading, levelEquivalent, levelMix } from "./score-meaning";
 import type { supabaseService } from "./supabase/server";
 import type { AreaCode, Responses } from "./types";
 
@@ -55,6 +57,11 @@ REGOLE FERME:
 - Le domande "non applicabili" vanno omesse; un sotto-ambito senza domande applicabili va omesso.
 - Le azioni devono essere specifiche, realizzabili da un'azienda di quella dimensione, e portare al livello successivo descritto.
 
+COME PARLARE DEI PUNTEGGI (il lettore non sa cosa significhi "17"):
+- Non scrivere mai un punteggio da solo o un confronto tra numeri. Traducilo in pratiche concrete: a quale livello sono i temi, cosa fa oggi l'azienda, cosa cambierebbe al livello successivo. Usa come base le letture già pronte (letturaModulo e, per ogni sotto-ambito, lettura), riformulandole.
+- Puoi citare un punteggio al massimo una volta per sotto-ambito, e solo accanto al suo significato.
+- I quattro livelli sono, in ordine: Informale, Di base, Strutturato, Gestito e migliorato.
+
 STRUTTURA (rispetta lo schema):
 - summary: 2 paragrafi sullo stato dell'ambito, l'equilibrio tra i sotto-ambiti, i punti di forza e le debolezze che contano di più rispetto alle ambizioni e alle sfide dichiarate.
 - themes: un elemento per ciascun sotto-ambito applicabile, NELLO STESSO ORDINE dell'input e con "theme" uguale al nome del sotto-ambito; diagnosis di 2-4 frasi che leggono insieme le sue domande; 1-3 azioni.
@@ -96,11 +103,20 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<Mo
     },
     ambito: AREAS.find((a) => a.code === area)?.name,
     punteggioModulo: res.score,
+    letturaModulo:
+      res.score === null
+        ? null
+        : `${res.score} su 100 corrisponde a ${levelEquivalent(res.score)}. ${levelMix(res.themes.filter((t) => t.level !== null).map((t) => t.level as number))}.`,
     punteggioAmbitoNelDiagnostico: (diag?.area_scores as { area: string; score: number | null }[] | undefined)?.find((s) => s.area === area)?.score ?? null,
     sottoAmbiti: res.subs.map((sa) => ({
       nome: sa.name,
       descrizione: sa.description,
       punteggio: sa.score,
+      lettura: areaReading(
+        sa.score,
+        null,
+        res.themes.filter((t) => t.sub === sa.code && t.level !== null).map((t) => t.level as number),
+      ),
       domande: res.themes
         .map((t, i) => ({ t, q: qs[i] }))
         .filter(({ q }) => q.sub === sa.code)
@@ -121,24 +137,31 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<Mo
   };
 
   const client = new Anthropic();
-  const msg = await client.messages.create({
-    model: MODEL,
-    max_tokens: 16000,
-    system: SYSTEM,
-    output_config: { effort: "medium", format: { type: "json_schema", schema: MODULE_NARRATIVE_SCHEMA } },
-    messages: [{ role: "user", content: `Ecco i dati del modulo di approfondimento. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],
-  } as Anthropic.MessageCreateParamsNonStreaming);
-  if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
-  const text = msg.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") throw new Error("risposta senza testo");
-  const n = JSON.parse(text.text) as ModuleNarrative;
-
-  // i nomi dei sotto-ambiti e gli orizzonti restano quelli del modulo, nell'ordine previsto
   const applicable = res.subs.filter((sa) => sa.score !== null);
-  n.themes = applicable.map((sa, i) => {
-    const found = n.themes.find((x) => x.theme === sa.name) ?? n.themes[i];
-    return { theme: sa.name, diagnosis: found?.diagnosis ?? "", actions: found?.actions ?? [] };
-  });
-  n.roadmap = ROADMAP_HORIZONS.map((h, i) => ({ horizon: h, actions: (n.roadmap.find((x) => x.horizon === h) ?? n.roadmap[i])?.actions ?? [] }));
-  return n;
+  let problem = "";
+  // una risposta formalmente valida ma incompleta si scarta e si riprova una volta
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const msg = await client.messages.create({
+      model: MODEL,
+      max_tokens: 16000,
+      system: SYSTEM,
+      output_config: { effort: "medium", format: { type: "json_schema", schema: MODULE_NARRATIVE_SCHEMA } },
+      messages: [{ role: "user", content: `Ecco i dati del modulo di approfondimento. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],
+    } as Anthropic.MessageCreateParamsNonStreaming);
+    if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
+    const text = msg.content.find((b) => b.type === "text");
+    if (!text || text.type !== "text") throw new Error("risposta senza testo");
+    const n = JSON.parse(text.text) as ModuleNarrative;
+
+    // i nomi dei sotto-ambiti e gli orizzonti restano quelli del modulo, nell'ordine previsto
+    n.themes = applicable.map((sa, i) => {
+      const found = (n.themes ?? []).find((x) => x.theme === sa.name) ?? n.themes?.[i];
+      return { theme: sa.name, diagnosis: found?.diagnosis ?? "", actions: found?.actions ?? [] };
+    });
+    n.roadmap = ROADMAP_HORIZONS.map((h, i) => ({ horizon: h, actions: ((n.roadmap ?? []).find((x) => x.horizon === h) ?? n.roadmap?.[i])?.actions ?? [] }));
+    problem = moduleNarrativeProblem(n);
+    if (!problem) return n;
+    console.warn(`Report del modulo incompleto (tentativo ${attempt}): ${problem}`);
+  }
+  throw new Error(`report incompleto: ${problem}`);
 }

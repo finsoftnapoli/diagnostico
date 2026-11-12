@@ -1,11 +1,13 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { narrativeProblem } from "./narrative-checks";
 import { normativeBenchmark, type Benchmark } from "@/config/benchmark";
 import type { ReportInputs } from "./company-docs";
 import { financialKpis, type PlanSummary } from "./documents";
 import { buildInsights, levelLabel } from "./insights";
 import { AREAS } from "./questionnaire";
 import { computeResult } from "./scoring";
+import { areaReading, overallReading } from "./score-meaning";
 import { NARRATIVE_SCHEMA, type ReportNarrative } from "./report";
 import type { Responses } from "./types";
 
@@ -43,14 +45,19 @@ function buildInput(r0: Responses, bench: Benchmark, docs: ReportInputs | null) 
     },
     punteggioComplessivo: ins.overall,
     riferimentoFascia: ins.benchmarkAvg,
-    ambiti: res.areas.map((a) => ({
-      codice: a.code,
-      nome: a.name,
-      punteggio: a.score,
-      livello: levelLabel(a.score),
-      riferimento: bench.values[a.code],
-      priorita: a.isPriority ? a.rank : null,
-    })),
+    letturaPunteggioComplessivo: overallReading(ins.overall, ins.benchmarkAvg, ins.themes.map((t) => t.level)).join(" "),
+    ambiti: res.areas.map((a) => {
+      const levels = ins.themes.filter((t) => t.area === a.code).map((t) => t.level);
+      return {
+        codice: a.code,
+        nome: a.name,
+        punteggio: a.score,
+        livello: levelLabel(a.score),
+        riferimento: bench.values[a.code],
+        lettura: areaReading(a.score, bench.values[a.code], levels),
+        priorita: a.isPriority ? a.rank : null,
+      };
+    }),
     priorita: res.priorities.map((p) => ({
       codice: p.code,
       nome: p.name,
@@ -97,6 +104,13 @@ REGOLE FERME:
 - Se c'è un piano aziendale (pianoAziendale), confronta i suoi obiettivi e le sue iniziative con la prontezza emersa dal diagnostico: dove il piano chiede capacità che oggi risultano deboli, dillo con chiarezza. Riporta i valori del piano solo come scritti nell'input.
 - Gli altri documenti (altriDocumenti) sono contesto: usali solo se pertinenti.
 
+COME PARLARE DEI PUNTEGGI (importante: il lettore non sa cosa significhi "22"):
+- Non scrivere mai un punteggio da solo o un confronto tra numeri ("22 contro 45"). Traducilo sempre in pratiche concrete: a quale livello di maturità sono i temi, cosa fa oggi l'azienda, cosa cambierebbe al livello successivo.
+- Usa le letture già pronte (letturaPunteggioComplessivo e, per ogni ambito, lettura) e le descrizioni dei temi (oggi, prossimoLivello) come base: riformulale con parole tue, non copiarle.
+- Puoi citare un punteggio al massimo una volta per ambito, e solo accanto al suo significato (per esempio: "Finanza e controllo è a 11 su 100: tutti e tre i temi sono ancora informali, a partire dal budget").
+- La distanza dal riferimento si esprime in passi concreti ("servirebbe portare budget e previsione di cassa al livello successivo"), non in punti.
+- I quattro livelli sono, in ordine: Informale, Di base, Strutturato, Gestito e migliorato.
+
 STRUTTURA (rispetta lo schema):
 - executiveSummary: 2-3 paragrafi che inquadrano lo stato complessivo, l'equilibrio del profilo e il legame con ambizioni e sfide.
 - crossCutting: osservazioni trasversali (squilibri tra ambiti, effetti a catena, prontezza rispetto agli obiettivi).
@@ -108,20 +122,28 @@ STRUTTURA (rispetta lo schema):
 export async function generateNarrative(r: Responses, docs: ReportInputs | null = null): Promise<ReportNarrative> {
   const bench = normativeBenchmark(r.profile["PR-02"]);
   const input = buildInput(r, bench, docs);
+  const expected = computeResult(r).priorities.map((p) => p.code);
   const client = new Anthropic();
-  const msg = await client.messages.create({
-    model: MODEL,
-    max_tokens: 16000,
-    system: SYSTEM,
-    output_config: { effort: "medium", format: { type: "json_schema", schema: NARRATIVE_SCHEMA } },
-    messages: [{ role: "user", content: `Ecco i dati del diagnostico. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],
-  } as Anthropic.MessageCreateParamsNonStreaming);
-  if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
-  const text = msg.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") throw new Error("risposta senza testo");
-  const narrative = JSON.parse(text.text) as ReportNarrative;
-  // tiene solo priorità su ambiti validi
-  const codes = new Set(AREAS.map((a) => a.code));
-  narrative.priorities = (narrative.priorities ?? []).filter((p) => codes.has(p.area));
-  return narrative;
+  let problem = "";
+  // una risposta formalmente valida ma incompleta si scarta e si riprova una volta
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const msg = await client.messages.create({
+      model: MODEL,
+      max_tokens: 16000,
+      system: SYSTEM,
+      output_config: { effort: "medium", format: { type: "json_schema", schema: NARRATIVE_SCHEMA } },
+      messages: [{ role: "user", content: `Ecco i dati del diagnostico. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],
+    } as Anthropic.MessageCreateParamsNonStreaming);
+    if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
+    const text = msg.content.find((b) => b.type === "text");
+    if (!text || text.type !== "text") throw new Error("risposta senza testo");
+    const narrative = JSON.parse(text.text) as ReportNarrative;
+    // tiene solo priorità su ambiti validi
+    const codes = new Set(AREAS.map((a) => a.code));
+    narrative.priorities = (narrative.priorities ?? []).filter((p) => codes.has(p.area));
+    problem = narrativeProblem(narrative, expected);
+    if (!problem) return narrative;
+    console.warn(`Report incompleto (tentativo ${attempt}): ${problem}`);
+  }
+  throw new Error(`report incompleto: ${problem}`);
 }

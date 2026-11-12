@@ -15,6 +15,7 @@ import Offers from "./Offers";
 import Progress, { type PreviousResult } from "./Progress";
 import InviteColleagues from "./InviteColleagues";
 import RadarProfile from "./RadarProfile";
+import ScoreReading from "./ScoreReading";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
 
@@ -73,6 +74,8 @@ export default function Ottogramma({
         />
         <Kpi icon={TrendingDown} label="Equilibrio del profilo" value={`${ins.spread}`} unit=" punti" sub={ins.balanced ? "Profilo equilibrato" : "Divario elevato tra gli ambiti"} />
       </div>
+
+      <ScoreReading overall={ins.overall} reference={ins.benchmarkAvg} levels={ins.themes.map((t) => t.level)} />
 
       <section className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] items-start">
         <div>
