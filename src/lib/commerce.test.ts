@@ -70,10 +70,26 @@ describe("acquisti e fatture", () => {
     expect(ics.split("\r\n").every((l) => l.length <= 75)).toBe(true);
   });
 
-  it("pulisce il report corretto dallo staff senza cambiare ambiti né numero di priorità", () => {
-    const original = { executiveSummary: "A", crossCutting: "B", priorities: [{ area: "FIN", title: "t", diagnosis: "d", actions: ["x"] }], quickWins: ["q"], closing: "c" };
-    const edited = { executiveSummary: " Nuovo ", crossCutting: "B", priorities: [{ area: "STR", title: "T2", diagnosis: "d2", actions: ["a", "", "b"] }, { area: "MKT" }], quickWins: ["", "q2"], closing: "c", extra: "no" };
+  it("pulisce il report corretto dallo staff: priorità riordinabili o rimovibili, mai aggiunte", () => {
+    const p = (area: string, title = "t") => ({ area, title, diagnosis: "d", actions: ["x"] });
+    const original = { executiveSummary: "A", crossCutting: "B", priorities: [p("FIN"), p("STR"), p("MKT")], quickWins: ["q"], closing: "c" };
+    const edited = {
+      executiveSummary: " Nuovo ",
+      crossCutting: "B",
+      priorities: [{ ...p("MKT", "T2"), actions: ["a", "", "b"] }, p("PER"), p("FIN"), p("MKT", "doppione")],
+      quickWins: ["", "q2"],
+      closing: "c",
+      extra: "no",
+    };
     const out = cleanNarrative(DIAGNOSTIC_SPEC, edited, original);
-    expect(out).toEqual({ executiveSummary: "Nuovo", crossCutting: "B", priorities: [{ area: "FIN", title: "T2", diagnosis: "d2", actions: ["a", "b"] }], quickWins: ["q2"], closing: "c" });
+    expect(out).toEqual({
+      executiveSummary: "Nuovo",
+      crossCutting: "B",
+      priorities: [{ area: "MKT", title: "T2", diagnosis: "d", actions: ["a", "b"] }, p("FIN")],
+      quickWins: ["q2"],
+      closing: "c",
+    });
+    // senza priorità valide si tengono quelle originali
+    expect((cleanNarrative(DIAGNOSTIC_SPEC, { ...edited, priorities: [] }, original) as { priorities: unknown[] }).priorities).toHaveLength(3);
   });
 });

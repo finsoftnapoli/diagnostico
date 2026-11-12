@@ -18,6 +18,9 @@ export interface AdminRow {
   companies: { name: string } | null;
   area_scores: { area: string; score: number | null; rank: number | null; is_priority: boolean }[];
   answers?: { question_id: string; level: number; check_answer: string | null; overestimate_flag: boolean }[];
+  /** Solo nel dettaglio: dati letti dai documenti al momento del report e risposte complete. */
+  report_inputs?: Record<string, unknown> | null;
+  responses?: Record<string, unknown> | null;
 }
 
 const BASE =
@@ -38,7 +41,7 @@ export async function listAssessments(withAnswers = false): Promise<AdminRow[]> 
 export async function getAssessment(id: string): Promise<AdminRow | null> {
   const { data } = await supabaseService()
     .from("assessments")
-    .select(`${BASE}, report_narrative, answers(question_id, level, check_answer, overestimate_flag)`)
+    .select(`${BASE}, report_narrative, report_inputs, responses, answers(question_id, level, check_answer, overestimate_flag)`)
     .eq("id", id)
     .maybeSingle();
   return (data as unknown as AdminRow) ?? null;
