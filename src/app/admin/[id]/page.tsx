@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import NarrativeEditor from "@/components/NarrativeEditor";
+import PdfDownload from "@/components/PdfDownload";
 import { getAssessment, priorities, scoreOf } from "@/lib/admin";
 import { DIAGNOSTIC_SPEC } from "@/lib/narrative-spec";
 import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "@/lib/questionnaire";
@@ -42,6 +43,12 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         status={r.report_status}
         labels={Object.fromEntries(AREAS.map((a) => [a.code, a.name]))}
       />
+      {r.report_narrative && (
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+          <PdfDownload href={`/api/report/${r.id}/pdf`} label="Anteprima del PDF" />
+          <span className="text-muted">Il PDF usa l&apos;ultima versione salvata: salva le modifiche prima di scaricarlo.</span>
+        </div>
+      )}
 
       <h2 className="mt-8 font-semibold text-navy">Profilo</h2>
       <dl className="mt-2 grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">

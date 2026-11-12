@@ -17,6 +17,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
 import type { ReportNarrative } from "@/lib/report";
 import InviteColleagues from "./InviteColleagues";
+import PdfDownload from "./PdfDownload";
 import PrintButton from "./PrintButton";
 import Progress, { type PreviousResult } from "./Progress";
 import RadarProfile from "./RadarProfile";
@@ -71,7 +72,7 @@ export default function Report({
       </p>
       <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La tua azienda"}</h1>
-        {narrative && <PrintButton />}
+        {narrative && (draft.savedId ? <PdfDownload href={`/api/report/${draft.savedId}/pdf`} /> : <PrintButton />)}
       </div>
 
       {narrative && <Narrative n={narrative} sources={sources} />}

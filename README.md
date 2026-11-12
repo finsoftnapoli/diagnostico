@@ -16,7 +16,7 @@ In prova su Vercel con database Supabase di test. Funziona:
 | Sito pubblico | Pagina iniziale, 8 pagine degli ambiti (`/ambiti/...`), il nostro metodo (`/metodo`), informativa privacy e condizioni di vendita in bozza, sitemap, robots, dati strutturati, anteprima social |
 | Diagnostico gratuito | Questionario in 5 sezioni (consensi, profilo, ambizioni, 24 domande, sfide) con salvataggio automatico e "salva e continua più tardi" via email; verifica anti-bot Cloudflare Turnstile; partita IVA verificata su VIES |
 | Documenti | Visura e bilancio in PDF letti con Claude durante il questionario (precompilano il profilo), anche trascinando il file; bilancio anche in XBRL (il file del Registro Imprese), letto direttamente senza AI; dall'area personale anche bilanci e visure aggiornati, business plan e altri documenti, usati nei report successivi |
-| Risultati | Ottogramma subito dopo la conferma dell'email: punteggi, confronto di fascia, evidenze chiave, offerte; report approfondito scritto dall'AI in differita, rivisto e approvato dallo staff, poi inviato per email; PDF dalla stampa del browser |
+| Risultati | Ottogramma subito dopo la conferma dell'email: punteggi, confronto di fascia, evidenze chiave, offerte; report approfondito scritto dall'AI in differita, rivisto e approvato dallo staff, poi inviato per email; PDF impaginato dal sito (`/api/report/<id>/pdf`, copertina, guida alla lettura, priorità, dettaglio); punteggi spiegati in parole |
 | Più manager | Inviti ai colleghi (suggeriti dalla visura), spazio aziendale con confronto delle visioni nell'area personale |
 | Vendite | Dati di fatturazione, acquisto con Stripe Checkout, attivazione di moduli e ore di consulenza, fattura elettronica FatturaPA (invio ad Aruba o coda da caricare a mano), prenotazione delle consulenze sugli orari dell'esperto con invito di calendario |
 | Approfondimenti | 8 moduli, ciascuno un Ottogramma dell'ambito con 8 sotto-ambiti e 16-18 domande; punteggi subito, report AI rivisto dallo staff |
@@ -79,7 +79,8 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 | `src/lib/questionnaire.ts`, `modules.ts` | Domande del diagnostico e dei moduli (generati dagli script, non modificare a mano) |
 | `src/lib/scoring.ts`, `module-scoring.ts` | Motori di punteggio e priorità |
 | `src/lib/insights.ts` | Evidenze, prontezza per le ambizioni, cause delle sfide, prossimi passi |
-| `src/lib/report-narrative.ts`, `module-report.ts`, `report-jobs.ts`, `narrative-spec.ts` | Report scritti dall'AI, coda di generazione e revisione |
+| `src/lib/report-narrative.ts`, `module-report.ts`, `report-jobs.ts`, `narrative-spec.ts`, `narrative-checks.ts` | Report scritti dall'AI, controllo di completezza, coda di generazione e revisione |
+| `src/lib/score-meaning.ts`, `src/pdf/` | Lettura dei punteggi in parole; report in PDF (@react-pdf/renderer, font Inter in `src/pdf/fonts`) |
 | `src/lib/documents.ts`, `xbrl.ts`, `doc-format.ts`, `company-docs.ts` | Lettura dei documenti (PDF con Claude, bilancio XBRL con la tassonomia itcc-ci), formati accettati, uso nei report |
 | `src/lib/commerce.ts`, `billing.ts`, `invoice.ts`, `aruba.ts`, `stripe.ts`, `ics.ts` | Ordini, fatture elettroniche, pagamenti, prenotazioni |
 | `src/app/` | Pagine e API (vedi i flussi) |
