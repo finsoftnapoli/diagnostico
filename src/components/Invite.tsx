@@ -4,8 +4,10 @@ import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import ResendCode from "@/components/ResendCode";
 import { BRAND } from "@/config/brand";
 import { saveDraft } from "@/lib/draft";
+import { otpSendError } from "@/lib/otp-errors";
 import { emptyResponses } from "@/lib/scoring";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
@@ -71,15 +73,20 @@ export default function Invite() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- da eseguire una sola volta all'apertura
   }, []);
 
-  async function send() {
-    if (!info) return;
-    setBusy(true);
+  async function sendEmail(): Promise<{ error: string | null; wait?: number }> {
+    if (!info) return { error: "Invito non valido" };
     const { error } = await supabaseBrowser().auth.signInWithOtp({
       email: info.email,
       options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/invito?t=${token}` },
     });
+    return error ? otpSendError(error.message) : { error: null };
+  }
+
+  async function send() {
+    setBusy(true);
+    const r = await sendEmail();
     setBusy(false);
-    if (error) return setMessage("Non siamo riusciti a inviare l'email. Riprova tra qualche minuto.");
+    if (r.error && !r.wait) return setMessage(r.error);
     setPhase("sent");
   }
 
@@ -96,19 +103,17 @@ export default function Invite() {
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
       <Users className="size-8 text-navy" aria-hidden strokeWidth={1.5} />
-      <h1 className="mt-3 text-3xl font-semibold text-navy">
-        {info ? `Diagnostico di ${info.company}` : "Invito"}
-      </h1>
+      <h1 className="mt-3 text-3xl font-semibold text-navy">{info ? `Diagnostico di ${info.company}` : "Invito"}</h1>
       {info && !message && phase === "start" && (
         <>
           <p className="mt-4 text-muted">
             {info.name ? `${info.name}, sei` : "Sei"} stato invitato a compilare il diagnostico gestionale di{" "}
-            <strong className="text-ink">{info.company}</strong> su {BRAND.name}. Le risposte dei diversi responsabili
-            permettono di confrontare le visioni del management.
+            <strong className="text-ink">{info.company}</strong> su {BRAND.name}. Le risposte dei diversi responsabili permettono di
+            confrontare le visioni del management.
           </p>
           <p className="mt-3 text-sm text-muted">
-            Per iniziare confermiamo il tuo indirizzo <strong className="text-ink">{info.email}</strong>: ti inviamo un
-            messaggio con un link e un codice.
+            Per iniziare confermiamo il tuo indirizzo <strong className="text-ink">{info.email}</strong>: ti inviamo un messaggio con un
+            link e un codice.
           </p>
           <button
             onClick={send}
@@ -122,15 +127,24 @@ export default function Invite() {
       {info && phase === "sent" && (
         <form onSubmit={verify} className="mt-6 space-y-4">
           <p className="text-muted">
-            Abbiamo scritto a <strong className="text-ink">{info.email}</strong>: apri il link oppure inserisci qui il codice.
+            Abbiamo scritto a <strong className="text-ink">{info.email}</strong>: apri il link oppure inserisci qui il codice. Se non la
+            trovi, guarda anche nella posta indesiderata.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Codice</span>
-            <input required inputMode="numeric" autoComplete="one-time-code" className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={code} onChange={(e) => setCode(e.target.value)} />
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              className="mt-1 w-full border border-line rounded-lg px-3 py-2"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
           </label>
           <button disabled={busy} className="w-full bg-navy text-white font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60">
             {busy ? "Attendere…" : "Conferma"}
           </button>
+          <ResendCode onResend={sendEmail} />
         </form>
       )}
       {phase === "accepting" && <p className="mt-6 text-muted">Preparazione del diagnostico…</p>}

@@ -3,6 +3,7 @@
 import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { MailCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import ResendCode from "@/components/ResendCode";
 import { BRAND } from "@/config/brand";
 import { patchDraft, type Draft } from "@/lib/draft";
 import { saveDraftAndSendLink } from "@/lib/emailLink";
@@ -101,12 +102,19 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       {phase === "email" && (
         <form onSubmit={sendLink} className="mt-6 space-y-4">
           <p className="text-muted">
-            Indica la tua email aziendale: ti inviamo un messaggio per confermarla. Così salviamo il profilo, ti inviamo il
-            report approfondito entro 2 giorni lavorativi e potrai ritrovarlo, confrontarlo nel tempo e invitare i colleghi.
+            Indica la tua email aziendale: ti inviamo un messaggio per confermarla. Così salviamo il profilo, ti inviamo il report
+            approfondito entro 2 giorni lavorativi e potrai ritrovarlo, confrontarlo nel tempo e invitare i colleghi.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Email</span>
-            <input type="email" required autoComplete="email" className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              type="email"
+              required
+              autoComplete="email"
+              className="mt-1 w-full border border-line rounded-lg px-3 py-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </label>
           <Submit busy={busy}>Conferma l&apos;email</Submit>
         </form>
@@ -114,24 +122,46 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       {phase === "sent" && (
         <form onSubmit={verify} className="mt-6 space-y-4">
           <p className="text-muted">
-            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Apri il link contenuto nell&apos;email, oppure
-            inserisci qui il codice se l&apos;email ne contiene uno. Se non la trovi, controlla nella posta indesiderata.
+            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Apri il link contenuto nell&apos;email, oppure inserisci qui il
+            codice se l&apos;email ne contiene uno. Se non la trovi, controlla nella posta indesiderata.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Codice</span>
-            <input required inputMode="numeric" autoComplete="one-time-code" className="mt-1 w-full border border-line rounded-lg px-3 py-2" value={code} onChange={(e) => setCode(e.target.value)} />
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              className="mt-1 w-full border border-line rounded-lg px-3 py-2"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
           </label>
           <Submit busy={busy}>Conferma e vedi i risultati</Submit>
+          <ResendCode
+            key={email}
+            onResend={async () => {
+              const res = await saveDraftAndSendLink({
+                email: email.trim(),
+                step: draft.step,
+                responses: draft.responses,
+                path: "/risultati",
+                param: "bozza",
+              });
+              if ("error" in res) return res;
+              patchDraft({ pending: { email: email.trim(), draftId: res.id } });
+              return { error: null };
+            }}
+          />
           <button
             type="button"
-            className="text-sm underline text-navy-soft"
+            className="block text-sm text-muted underline"
             onClick={() => {
               patchDraft({ pending: undefined });
               setPhase("email");
               setCode("");
             }}
           >
-            Cambia email o invia di nuovo
+            Usa un&apos;altra email
           </button>
         </form>
       )}

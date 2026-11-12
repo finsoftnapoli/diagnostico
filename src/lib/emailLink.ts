@@ -1,6 +1,7 @@
 "use client";
 
 import type { Responses } from "./types";
+import { otpSendError } from "./otp-errors";
 import { supabaseBrowser } from "./supabase/browser";
 
 /** Salva la bozza nel server e invia l'email con il link (e il codice) per tornare a `path?<param>=<id>`. */
@@ -10,7 +11,7 @@ export async function saveDraftAndSendLink(opts: {
   responses: Responses;
   path: string;
   param: string;
-}): Promise<{ id: string } | { error: string }> {
+}): Promise<{ id: string } | { error: string; wait?: number }> {
   const res = await fetch("/api/bozze", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -23,9 +24,6 @@ export async function saveDraftAndSendLink(opts: {
     email: opts.email,
     options: { shouldCreateUser: true, emailRedirectTo: redirect },
   });
-  if (error) {
-    if (/rate|too many|seconds/i.test(error.message)) return { error: "Hai richiesto troppi messaggi: attendi qualche minuto e riprova." };
-    return { error: "Non siamo riusciti a inviare l'email. Riprova tra poco." };
-  }
+  if (error) return otpSendError(error.message);
   return { id: json.id };
 }
