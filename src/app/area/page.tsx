@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SignOutButton from "@/components/SignOutButton";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import DocumentList, { type DocRow } from "@/components/DocumentList";
@@ -98,7 +99,7 @@ async function AreaContent() {
     <>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="text-3xl font-semibold text-navy">Area personale</h1>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted flex flex-wrap items-center gap-x-1">
           {user.email}
           {isStaff && (
             <>
@@ -108,6 +109,8 @@ async function AreaContent() {
               </Link>
             </>
           )}
+          {" · "}
+          <SignOutButton />
         </p>
       </div>
 

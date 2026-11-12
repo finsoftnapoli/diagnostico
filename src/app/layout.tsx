@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import AccountMenu from "@/components/AccountMenu";
 import HeaderAction from "@/components/HeaderAction";
 import { BRAND } from "@/config/brand";
 import { siteUrl } from "@/config/site";
@@ -37,6 +38,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </Link>
               <Suspense fallback={null}>
                 <HeaderAction />
+              </Suspense>
+              <Suspense fallback={null}>
+                <AccountMenu />
               </Suspense>
             </nav>
           </div>
