@@ -180,13 +180,15 @@ export function Radar({ items, size = 250 }: { items: RadarItem[]; size?: number
   const step = 360 / items.length;
   const pt = (i: number, v: number) => {
     const a = (-90 + i * step) * (Math.PI / 180);
-    return [cx + Math.cos(a) * R * (v / 100), cy + Math.sin(a) * R * (v / 100)] as const;
+    // il primo anello è il livello «Informale» (0 punti): anche i profili bassi hanno una forma
+    const f = (v + 100 / 3) / (400 / 3);
+    return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f] as const;
   };
   const poly = (vals: number[]) => vals.map((v, i) => pt(i, v).join(",")).join(" ");
   const hasRef = items.some((a) => a.ref !== null);
   return (
     <Svg width={width} height={size} viewBox={`0 0 ${width} ${size}`}>
-      {[25, 50, 75, 100].map((g) => (
+      {[0, 100 / 3, 200 / 3, 100].map((g) => (
         <Polygon key={g} points={poly(items.map(() => g))} stroke={C.line} strokeWidth={0.6} fill={g === 100 ? C.white : "none"} />
       ))}
       {items.map((_, i) => {

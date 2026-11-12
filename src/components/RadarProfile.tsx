@@ -1,5 +1,6 @@
 "use client";
 
+import { LEVEL_NAMES } from "@/lib/levels";
 import { Legend, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer } from "recharts";
 import { AREA_SHORT } from "@/lib/areaIcons";
 import type { AreaResult } from "@/lib/scoring";
@@ -74,7 +75,15 @@ export default function RadarProfile({
               );
             }}
           />
-          <PolarRadiusAxis domain={[0, 100]} tickCount={5} tick={{ fontSize: 10, fill: "#8a93a0" }} axisLine={false} angle={67.5} />
+          {/* il primo anello è il livello «Informale» (0 punti), il bordo «Gestito e migliorato» (100): anche i profili bassi hanno una forma */}
+          <PolarRadiusAxis
+            domain={[-100 / 3, 100]}
+            ticks={[0, 100 / 3, 200 / 3, 100] as unknown as number[]}
+            tickFormatter={(v: number) => LEVEL_NAMES[Math.round(v / (100 / 3))]?.split(" ")[0] ?? ""}
+            tick={{ fontSize: 10, fill: "#8a93a0" }}
+            axisLine={false}
+            angle={67.5}
+          />
           {hasRef && (
             <Radar
               name={referenceLabel ?? "Riferimento"}

@@ -8,12 +8,13 @@ import type { ModuleResult } from "@/lib/module-scoring";
 import { AREAS } from "@/lib/questionnaire";
 import { SubareaIcon } from "@/lib/subareaIcons";
 import type { AreaCode } from "@/lib/types";
+import { BRAND } from "@/config/brand";
 import PdfDownload from "./PdfDownload";
 import RadarProfile from "./RadarProfile";
 import ScoreReading from "./ScoreReading";
 import SubareaDetail from "./SubareaDetail";
 
-/** Risultato di un modulo: Ottogramma dell'ambito subito, analisi scritta quando approvata dallo staff. */
+/** Risultato di un modulo: Ottogramma dell'ambito subito, analisi scritta quando è rilasciata. */
 export default function ModuleReport({
   area,
   company,
@@ -23,6 +24,7 @@ export default function ModuleReport({
   narrative,
   failed,
   pdfHref,
+  reviewed = false,
 }: {
   area: AreaCode;
   company: string;
@@ -34,6 +36,8 @@ export default function ModuleReport({
   failed?: boolean;
   /** Link al PDF impaginato, quando l'analisi è approvata. */
   pdfHref?: string;
+  /** Vero se un esperto ha rivisto e approvato il report prima dell'invio. */
+  reviewed?: boolean;
 }) {
   const a = AREAS.find((x) => x.code === area)!;
   const score = result.score;
@@ -115,7 +119,7 @@ export default function ModuleReport({
             referenceLabel={reference?.label}
           />
           <p className="mt-1 text-xs text-muted text-center">
-            Scala da 0 a 100. In evidenza i due sotto-ambiti più fragili.
+            Dal centro verso l&apos;esterno: da «Informale» a «Gestito e migliorato». In evidenza i due sotto-ambiti più fragili.
             {reference
               ? ` La linea tratteggiata è il ${reference.label.charAt(0).toLowerCase()}${reference.label.slice(1)} per l'intero ambito.`
               : ""}
@@ -147,7 +151,7 @@ export default function ModuleReport({
 
       {narrative && (
         <section className="mt-10 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
-          <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri esperti</p>
+          <p className="text-xs uppercase tracking-wide text-muted">{reviewed ? "Analisi rivista da un nostro esperto" : "Analisi"}</p>
           <h2 className="mt-1 text-2xl font-semibold text-navy">Sintesi</h2>
           <div className="mt-3 space-y-3 leading-relaxed">
             {narrative.summary.split(/\n\n+/).map((p) => (
@@ -161,6 +165,7 @@ export default function ModuleReport({
         area={area}
         result={result}
         reference={reference?.value ?? null}
+        reviewed={reviewed}
         expert={
           narrative ? Object.fromEntries(narrative.themes.map((t) => [t.theme, { diagnosis: t.diagnosis, actions: t.actions }])) : undefined
         }
@@ -226,8 +231,8 @@ export default function ModuleReport({
               </>
             ) : (
               <>
-                <strong className="text-navy">L&apos;analisi è in preparazione.</strong> I nostri esperti stanno preparando la lettura per
-                sotto-ambito, il piano di lavoro e gli indicatori: la riceverete via email entro 2 giorni lavorativi.
+                <strong className="text-navy">L&apos;analisi è in preparazione.</strong> Stiamo preparando la lettura per sotto-ambito, il
+                piano di lavoro e gli indicatori: la riceverete via email {BRAND.reportPromise}.
               </>
             )}
           </p>

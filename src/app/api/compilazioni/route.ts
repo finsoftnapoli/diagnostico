@@ -1,13 +1,24 @@
 // Registra una compilazione completata: verifica l'utente, ricalcola i punteggi nel server e salva tutto.
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { BRAND } from "@/config/brand";
 import { QUESTIONNAIRE_VERSION, QUESTIONS } from "@/lib/questionnaire";
 import { incompleteReason, sanitizeResponses } from "@/lib/sanitize";
 import { computeResult } from "@/lib/scoring";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
+import { siteUrl } from "@/config/site";
+import type { Responses } from "@/lib/types";
+import { completionEmail, isEmailConfigured, sendEmail } from "@/lib/email";
+import { generateNow } from "@/lib/report-jobs";
+import { levelShort } from "@/lib/score-meaning";
 
 const ENGINE_VERSION = `motore-${QUESTIONNAIRE_VERSION}`;
 const POLICY_VERSION = BRAND.privacyVersion;
+
+// la generazione del report parte in coda alla risposta
+export const maxDuration = 300;
+
+/** Compilazioni accettate per utente nelle 24 ore: ogni compilazione avvia la generazione di un report. */
+const DAILY_LIMIT = 5;
 
 export async function POST(request: Request) {
   const { data: auth } = await (await supabaseServer()).auth.getUser();
@@ -30,6 +41,27 @@ export async function POST(request: Request) {
 
   const db = supabaseService();
   const result = computeResult(responses);
+
+  // doppio invio (stesse risposte negli ultimi minuti): si restituisce la compilazione già salvata
+  const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const { data: recent } = await db
+    .from("assessments")
+    .select("id, company_id, responses, completed_at")
+    .eq("user_id", user.id)
+    .gte("completed_at", since)
+    .order("completed_at", { ascending: false });
+  const same = (recent ?? []).find(
+    (a) =>
+      Date.now() - new Date(a.completed_at as string).getTime() < 10 * 60 * 1000 &&
+      JSON.stringify((a.responses as Responses | null)?.levels) === JSON.stringify(responses.levels) &&
+      (a.responses as Responses | null)?.objectivesText === responses.objectivesText,
+  );
+  if (same) return NextResponse.json({ id: same.id, companyId: same.company_id, service: BRAND.name });
+  if ((recent ?? []).length >= DAILY_LIMIT) {
+    const { data: staff } = await db.from("staff").select("user_id").eq("user_id", user.id).maybeSingle();
+    if (!staff)
+      return NextResponse.json({ error: "Avete già inviato diversi diagnostici oggi: riprovate domani o scriveteci." }, { status: 429 });
+  }
 
   // azienda: (1) quella dell'invito, se l'utente ne è membro; (2) quella con la stessa partita IVA
   // di cui è amministratore; (3) altrimenti una nuova, di cui diventa amministratore
@@ -139,6 +171,31 @@ export async function POST(request: Request) {
       .update({ assessment_id: assessmentId, user_id: user.id, company_id: companyId, linked_at: now })
       .in("id", docIds)
       .is("assessment_id", null);
+
+  // dopo la risposta: email di conferma al cliente e generazione del report, che parte da solo se supera i controlli
+  after(async () => {
+    try {
+      if (isEmailConfigured() && user.email) {
+        const scored = result.areas.filter((a) => a.score !== null).sort((a, b) => (b.score as number) - (a.score as number));
+        await sendEmail({
+          to: user.email,
+          ...completionEmail({
+            company: companyName,
+            level: levelShort(result.overall),
+            strongest: scored.slice(0, 2).map((a) => a.name),
+            weakest: scored
+              .slice(-2)
+              .reverse()
+              .map((a) => a.name),
+            link: `${siteUrl()}/area/report/${assessmentId}`,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Email di conferma non inviata:", e instanceof Error ? e.message : e);
+    }
+    if (process.env.ANTHROPIC_API_KEY) await generateNow("assessments", assessmentId);
+  });
 
   return NextResponse.json({ id: assessmentId, companyId, service: BRAND.name });
 }

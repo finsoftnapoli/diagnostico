@@ -145,6 +145,85 @@ type OrderRow = {
  * Ordine pagato: attiva moduli e ore, conferma la prenotazione, emette la fattura, avvisa cliente e staff.
  * Idempotente: se l'ordine è già stato evaso non fa nulla.
  */
+/** Moduli e ore di consulenza che un ordine attiva. */
+async function entitlementsFor(db: Db, companyId: string, items: CartLine[]) {
+  const ents: Record<string, unknown>[] = [];
+  for (const l of items) {
+    if (l.sku === "modulo") ents.push({ kind: "area_module", area: l.area });
+    if (l.sku === "consulenza") ents.push({ kind: "consult_hours", quantity: 1 });
+    if (l.sku === "bundle") {
+      const owned = await ownedAreas(db, companyId);
+      for (const a of AREA_CODES) if (!owned.has(a)) ents.push({ kind: "area_module", area: a });
+      ents.push({ kind: "consult_hours", quantity: BUNDLE_HOURS });
+    }
+  }
+  return ents;
+}
+
+/**
+ * Accredito: lo staff attiva servizi senza pagamento (per esempio alle aziende che provano il servizio).
+ * Resta registrato come ordine a importo zero, senza fattura.
+ */
+export async function grantCredit(db: Db, p: { userId: string; companyId: string; lines: CartLine[]; origin: string }) {
+  const owned = await ownedAreas(db, p.companyId);
+  const checked = checkCart(p.lines, owned);
+  if ("error" in checked) throw new Error(checked.error);
+  const items = priceCart(checked.lines, areaName).lines.map((l) => ({ ...l, netCents: 0 }));
+  const ents = await entitlementsFor(db, p.companyId, checked.lines);
+  if (!ents.length) throw new Error("Tutti gli approfondimenti sono già attivi");
+  const { data: order, error } = await db
+    .from("orders")
+    .insert({
+      user_id: p.userId,
+      company_id: p.companyId,
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      payment_method: "omaggio",
+      items,
+      net_cents: 0,
+      vat_cents: 0,
+      total_cents: 0,
+      billing: { note: "Accredito dello staff" },
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`Accredito non registrato: ${error.message}`);
+  const { error: entError } = await db
+    .from("entitlements")
+    .insert(ents.map((e) => ({ ...e, company_id: p.companyId, user_id: p.userId, order_id: order.id })));
+  if (entError) {
+    await db.from("orders").delete().eq("id", order.id);
+    throw new Error(`Attivazione non riuscita: ${entError.message}`);
+  }
+  // avviso al cliente
+  try {
+    const { data: u } = await db.auth.admin.getUserById(p.userId);
+    const { data: c } = await db.from("companies").select("name").eq("id", p.companyId).maybeSingle();
+    if (isEmailConfigured() && u.user?.email) {
+      const list = items.map((l) => l.description);
+      const link = `${p.origin}/area/servizi`;
+      const company = (c?.name as string | undefined) ?? "la vostra azienda";
+      await sendEmail({
+        to: u.user.email,
+        subject: `Servizi attivati per ${company}`,
+        text: `Abbiamo attivato per ${company}, senza costi:\n${list.map((x) => `- ${x}`).join("\n")}\n\nLi trovate nell'area personale: ${link}\n\n${ownerSentence()}`,
+        html: emailLayout({
+          preheader: "Servizi attivati senza costi: li trovate nell'area personale.",
+          title: "Servizi attivati",
+          eyebrow: company,
+          body: `${para(`Abbiamo attivato per <strong>${esc(company)}</strong>, senza costi:`)}
+<ul style="margin:0 0 14px;padding-left:20px;font-size:15px;line-height:1.6;color:${C.ink}">${list.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+${para("Gli approfondimenti si compilano dall'area personale; le ore di consulenza si prenotano scegliendo uno degli orari disponibili.")}
+${emailButton(link, "Vai ai servizi")}`,
+        }),
+      });
+    }
+  } catch (e) {
+    console.error("Email di accredito non inviata:", e instanceof Error ? e.message : e);
+  }
+  return { id: order.id as string, items: items.map((l) => l.description) };
+}
+
 export async function fulfillOrder(db: Db, orderId: string, method: "stripe" | "bonifico", origin: string, paymentIntent?: string | null) {
   const { data } = await db
     .from("orders")
@@ -157,16 +236,7 @@ export async function fulfillOrder(db: Db, orderId: string, method: "stripe" | "
   const o = data as unknown as OrderRow;
 
   // moduli e ore di consulenza
-  const ents: Record<string, unknown>[] = [];
-  for (const l of o.items) {
-    if (l.sku === "modulo") ents.push({ kind: "area_module", area: l.area });
-    if (l.sku === "consulenza") ents.push({ kind: "consult_hours", quantity: 1 });
-    if (l.sku === "bundle") {
-      const owned = await ownedAreas(db, o.company_id);
-      for (const a of AREA_CODES) if (!owned.has(a)) ents.push({ kind: "area_module", area: a });
-      ents.push({ kind: "consult_hours", quantity: BUNDLE_HOURS });
-    }
-  }
+  const ents = await entitlementsFor(db, o.company_id, o.items);
   const { data: created, error: entError } = await db
     .from("entitlements")
     .insert(ents.map((e) => ({ ...e, company_id: o.company_id, user_id: o.user_id, order_id: o.id })))
@@ -221,6 +291,7 @@ export async function fulfillOrder(db: Db, orderId: string, method: "stripe" | "
 export async function issueInvoice(db: Db, orderId: string) {
   const { data: order } = await db.from("orders").select("id, items, billing, payment_method, paid_at, status").eq("id", orderId).single();
   if (!order || order.status !== "paid") throw new Error("Ordine non pagato");
+  if (order.payment_method === "omaggio") throw new Error("Gli accrediti non si fatturano");
   const { data: existing } = await db
     .from("invoices")
     .select("id, number, status, xml, year, seq, issued_on")

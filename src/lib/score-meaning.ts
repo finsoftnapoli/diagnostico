@@ -14,6 +14,18 @@ const NUM = ["nessuno", "uno", "due", "tre", "quattro", "cinque", "sei", "sette"
 /** Numeri in lettere fino a dieci, se tutto il gruppo è piccolo; altrimenti in cifre, per coerenza. */
 const numIn = (n: number, total: number) => (total <= 10 ? NUM[n] : String(n));
 
+/** Il livello in due o tre parole, per i titoli: "Di base", "Tra Informale e Di base". */
+export function levelShort(score: number | null): string {
+  if (score === null) return "—";
+  const avg = 1 + score / (100 / 3);
+  const low = Math.min(3, Math.floor(avg));
+  const frac = avg - low;
+  if (avg >= 3.9) return LEVEL_NAMES[3];
+  if (frac < 0.2) return LEVEL_NAMES[low - 1];
+  if (frac > 0.8) return LEVEL_NAMES[low];
+  return `Tra ${LEVEL_NAMES[low - 1]} e ${LEVEL_NAMES[low]}`;
+}
+
 /** Livello medio equivalente a un punteggio, a parole: "pratiche in media Informali, con qualche elemento Di base". */
 export function levelEquivalent(score: number): string {
   const avg = 1 + score / (100 / 3); // 0 → 1, 100 → 4

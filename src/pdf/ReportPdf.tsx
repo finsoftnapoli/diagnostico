@@ -162,8 +162,8 @@ function Priorities({ d }: { d: ReportPdfData }) {
     <View>
       <Text style={s.h1}>Le priorità e da dove partire</Text>
       <Text style={[s.p, s.muted]}>
-        Gli ambiti in cui il divario dal livello più alto e il legame con le vostre ambizioni e sfide sono maggiori, con l&apos;analisi dei
-        nostri esperti e le azioni suggerite.
+        Gli ambiti in cui il divario dal livello più alto e il legame con le vostre ambizioni e sfide sono maggiori, con l&apos;analisi e le
+        azioni suggerite.
       </Text>
       {d.narrative.priorities.map((p, i) => {
         const area = d.areas.find((a) => a.code === p.area);
@@ -245,7 +245,7 @@ export default function ReportPdf({ d, siteUrl }: { d: ReportPdfData; siteUrl: s
         <Header d={d} />
         <HowToRead d={d} />
         <View break>
-          <Text style={s.eyebrow}>Analisi dei nostri esperti</Text>
+          <Text style={s.eyebrow}>{d.reviewed ? "Analisi rivista da un nostro esperto" : "Analisi"}</Text>
           <Text style={s.h1}>Sintesi per la direzione</Text>
           {d.sources.length > 0 && <Text style={[s.small, { marginBottom: 6 }]}>Tiene conto anche di: {t(d.sources.join(", "))}.</Text>}
           <Paragraphs text={n.executiveSummary} />

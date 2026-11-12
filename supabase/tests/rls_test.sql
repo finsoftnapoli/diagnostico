@@ -12,8 +12,42 @@ set role authenticated;
 -- Titolare Alfa crea l'azienda e la sua compilazione
 set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
 select public.create_company('Alfa Meccanica', 'diretto') as alfa \gset
-insert into public.assessments (company_id, user_id, questionnaire_version)
-  values (:'alfa', auth.uid(), '0.2');
+-- le compilazioni le scrive solo il server: un utente non può inserirne una, nemmeno nella propria azienda
+do $$ begin
+  insert into public.assessments (company_id, user_id, questionnaire_version, status)
+    values ((select id from public.companies limit 1), auth.uid(), '0.2', 'completed');
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+reset role;
+insert into public.assessments (company_id, user_id, questionnaire_version, report_narrative, report_status)
+  values (:'alfa', '00000000-0000-0000-0000-00000000000a', '0.2', '{"executiveSummary":"bozza"}', 'review');
+set role authenticated;
+-- il testo del report e l'esito dei controlli non si leggono dal database, nemmeno per la propria compilazione
+do $$ begin
+  perform report_narrative from public.assessments;
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+do $$ begin
+  perform report_checks from public.module_assessments;
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+do $$ begin
+  assert (select count(*) from public.assessments where report_status = 'review') = 1, 'le altre colonne restano leggibili';
+end $$;
+-- aperture e scarichi dei report: solo il server
+do $$ begin
+  perform 1 from public.report_events;
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
+do $$ begin
+  insert into public.report_events (kind, ref_id, event) values ('diagnostico', gen_random_uuid(), 'open');
+  raise exception 'non doveva riuscire';
+exception when insufficient_privilege then null;
+end $$;
 insert into public.invitations (company_id, email, assigned_areas, invited_by)
   values (:'alfa', 'cfo@alfa.it', array['FIN'], auth.uid()) returning token as tok \gset
 
@@ -45,8 +79,10 @@ end $$;
 -- Il CFO accetta l'invito e compila solo finanza
 set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
 select public.accept_invitation(:'tok');
+reset role;
 insert into public.assessments (company_id, user_id, questionnaire_version, mode, assigned_areas)
-  values (:'alfa', auth.uid(), '0.2', 'areas', array['FIN']);
+  values (:'alfa', '00000000-0000-0000-0000-00000000000b', '0.2', 'areas', array['FIN']);
+set role authenticated;
 do $$ begin
   assert (select count(*) from public.assessments) = 1, 'il CFO vede solo la propria compilazione';
   assert (select count(*) from public.company_members) = 2, 'il CFO vede i colleghi';

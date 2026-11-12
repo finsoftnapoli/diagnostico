@@ -1,4 +1,5 @@
 // Email di conferma dell'acquisto: riepilogo dell'ordine, prossimi passi per ciò che è stato attivato, fattura.
+import { BRAND } from "@/config/brand";
 import { BUNDLE_HOURS, euro, PRODUCTS, VAT_RATE, type PricedLine } from "@/config/offers";
 import { C, emailButton, emailLayout, esc, ownerSentence, para, stop } from "./email-layout";
 import { AREAS } from "./questionnaire";
@@ -46,8 +47,8 @@ function steps(p: PurchaseEmailInput): { title: string; text: string }[] {
     });
     out.push({ title: "Vedi subito l'Ottogramma dell'ambito", text: "I punteggi per sotto-ambito compaiono appena confermi le risposte." });
     out.push({
-      title: "Ricevi il report entro 2 giorni lavorativi",
-      text: "Piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire, validato da un nostro esperto.",
+      title: `Ricevi il report ${BRAND.reportPromise}`,
+      text: "Piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire, costruito sulla metodologia dei nostri esperti.",
     });
   }
   if (bundle)

@@ -13,6 +13,9 @@ import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "@/lib/ques
 import { areaReading, overallReading } from "@/lib/score-meaning";
 import { currentUser } from "@/lib/supabase/server";
 import type { AreaCode, Financials } from "@/lib/types";
+import GrantCredit from "@/components/GrantCredit";
+import ReleaseInfo from "@/components/ReleaseInfo";
+import { readReport, reportUsage } from "@/lib/report-access";
 
 export default function DetailPage({ params }: PageProps<"/admin/[id]">) {
   return (
@@ -39,6 +42,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
   const r = await getAssessment(id);
   if (!r) notFound();
+  const [release, usage] = await Promise.all([readReport("assessments", id), reportUsage("diagnostico", [id])]);
   const label = (list: { code: string; label: string }[], c: string) => list.find((x) => x.code === c)?.label ?? c;
   const names = Object.fromEntries(AREAS.map((a) => [a.code, a.name]));
   const bench = normativeBenchmark(r.profile?.["PR-02"]);
@@ -84,6 +88,16 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
 
         {/* contesto per chi rivede, sempre a portata */}
         <aside className="space-y-4 text-sm lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-1">
+          <ReleaseInfo
+            status={r.report_status}
+            checks={release.checks}
+            releasedBy={release.releasedBy}
+            releasedAt={release.releasedAt}
+            usage={usage.get(id)}
+          />
+          <Box title="Accredito di servizi">
+            <GrantCredit assessmentId={id} />
+          </Box>
           <Box title="Il quadro">
             <p>
               <span className="text-2xl font-semibold text-navy tabular-nums">{r.overall_score ?? "—"}</span>

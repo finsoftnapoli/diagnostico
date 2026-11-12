@@ -8,7 +8,8 @@ import type { ReportInputs } from "@/lib/company-docs";
 import type { ReportNarrative } from "@/lib/report";
 import { QUESTIONNAIRE_VERSION } from "@/lib/questionnaire";
 import { emptyResponses } from "@/lib/scoring";
-import { supabaseServer } from "@/lib/supabase/server";
+import { currentUser, supabaseServer } from "@/lib/supabase/server";
+import { readReport, trackReport } from "@/lib/report-access";
 import type { Responses } from "@/lib/types";
 
 export default function SavedReportPage({ params }: PageProps<"/area/report/[id]">) {
@@ -22,11 +23,18 @@ export default function SavedReportPage({ params }: PageProps<"/area/report/[id]
 async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const sb = await supabaseServer();
-  const { data: auth } = await sb.auth.getUser();
-  if (!auth.user) redirect(`/accedi?next=/area/report/${id}`);
+  const { user, isStaff } = await currentUser();
+  if (!user) redirect(`/accedi?next=/area/report/${id}`);
   // la regola di accesso restituisce la compilazione solo al suo autore, all'amministratore o allo staff
-  const { data } = await sb.from("assessments").select("id, responses, completed_at, user_id, company_id, report_status, report_narrative, report_inputs").eq("id", id).maybeSingle();
+  const { data } = await sb
+    .from("assessments")
+    .select("id, responses, completed_at, user_id, company_id, report_status, report_inputs")
+    .eq("id", id)
+    .maybeSingle();
   if (!data) notFound();
+  // il testo del report si legge dal server, solo quando è rilasciato; l'apertura da parte del cliente si registra
+  const report = data.report_status === "ready" ? await readReport("assessments", id) : null;
+  if (report?.narrative && !isStaff) await trackReport("diagnostico", id, user.id, "open");
   // un bilancio più recente archiviato dopo la compilazione è quello usato nel report approfondito
   const inputs = data.report_status === "ready" ? (data.report_inputs as ReportInputs | null) : null;
   const draft = {
@@ -67,14 +75,16 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
           ← Area personale
         </Link>
       </div>
-      {data.report_status === "ready" && data.report_narrative ? (
-        <Report draft={draft} narrative={data.report_narrative as ReportNarrative} sources={sourcesOf(inputs)} previous={previous} />
-      ) : (
-        <Ottogramma
+      {report?.narrative ? (
+        <Report
           draft={draft}
-          reportStatus={data.report_status === "failed" ? "failed" : "pending"}
+          narrative={report.narrative as ReportNarrative}
+          sources={sourcesOf(inputs)}
           previous={previous}
+          reviewed={report.releasedBy === "staff"}
         />
+      ) : (
+        <Ottogramma draft={draft} reportStatus={data.report_status === "failed" ? "failed" : "pending"} previous={previous} />
       )}
     </>
   );

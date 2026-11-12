@@ -24,12 +24,13 @@ import { financialKpis } from "@/lib/documents";
 import { buildInsights, LEVEL_NAMES, levelLabel, type ThemeView } from "@/lib/insights";
 import { AREAS } from "@/lib/questionnaire";
 import { computeResult, relevanceLabel } from "@/lib/scoring";
-import { areaReading } from "@/lib/score-meaning";
+import { areaReading, levelShort } from "@/lib/score-meaning";
 import type { AreaCode } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
 import type { ReportNarrative } from "@/lib/report";
 import InviteColleagues from "./InviteColleagues";
+import Offers from "./Offers";
 import PdfDownload from "./PdfDownload";
 import PrintButton from "./PrintButton";
 import Progress, { type PreviousResult } from "./Progress";
@@ -43,9 +44,12 @@ export default function Report({
   narrative,
   sources = [],
   previous,
+  reviewed = false,
 }: {
   draft: Draft;
   narrative?: ReportNarrative | null;
+  /** Vero se un esperto ha rivisto e approvato il report prima dell'invio. */
+  reviewed?: boolean;
   /** Documenti archiviati di cui il report approfondito ha tenuto conto. */
   sources?: string[];
   /** Diagnostico precedente della stessa azienda, per mostrare i progressi. */
@@ -90,12 +94,20 @@ export default function Report({
 
       {/* Indicatori */}
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <Kpi icon={Gauge} label="Punteggio complessivo" value={`${ins.overall ?? "—"}`} unit="/100" sub={ins.overallLabel} />
+        <Kpi
+          icon={Gauge}
+          label="Livello di maturità"
+          value={levelShort(ins.overall)}
+          unit=""
+          sub={ins.overall === null ? "" : `${ins.overall} punti su 100`}
+          words
+        />
         <Kpi
           icon={Scale}
           label={bench.label}
-          value={`${ins.benchmarkAvg}`}
-          unit="/100"
+          value={levelShort(ins.benchmarkAvg)}
+          unit=""
+          words
           sub={
             ins.deltaVsBenchmark === null
               ? ""
@@ -124,7 +136,7 @@ export default function Report({
         <div>
           <RadarProfile areas={res.areas} reference={bench.values} referenceLabel={bench.label} />
           <p className="mt-1 text-xs text-muted text-center">
-            Scala da 0 ({LEVEL_NAMES[0].toLowerCase()}) a 100 ({LEVEL_NAMES[3].toLowerCase()}). {bench.note}
+            Dal centro verso l&apos;esterno: da «{LEVEL_NAMES[0]}» a «{LEVEL_NAMES[3]}». {bench.note}
           </p>
         </div>
         <div>
@@ -166,7 +178,7 @@ export default function Report({
         </div>
       </section>
 
-      {narrative && <Narrative n={narrative} sources={sources} />}
+      {narrative && <Narrative n={narrative} sources={sources} reviewed={reviewed} />}
 
       {previous && (
         <Progress previous={previous} overall={ins.overall} scores={Object.fromEntries(res.areas.map((a) => [a.code, a.score]))} />
@@ -431,6 +443,13 @@ export default function Report({
         </div>
       )}
 
+      {/* Servizi di approfondimento: solo dopo il report */}
+      {narrative && (
+        <div className="no-print">
+          <Offers assessmentId={draft.savedId} priorities={res.priorities.map((p) => ({ code: p.code, name: p.name }))} />
+        </div>
+      )}
+
       {/* Invito */}
       <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
         <h2 className="text-xl font-semibold">{narrative ? "Il prossimo passo" : "Volete trasformare le priorità in un piano?"}</h2>
@@ -466,14 +485,29 @@ export default function Report({
   );
 }
 
-function Kpi({ icon: Icon, label, value, unit, sub }: { icon: typeof Gauge; label: string; value: string; unit: string; sub: string }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  unit,
+  sub,
+  words,
+}: {
+  icon: typeof Gauge;
+  label: string;
+  value: string;
+  unit: string;
+  sub: string;
+  /** Valore a parole (un livello) invece che in cifre. */
+  words?: boolean;
+}) {
   return (
     <div className="rounded-xl border border-line p-4">
       <p className="text-xs uppercase tracking-wide text-muted flex items-center gap-1.5">
         <Icon className="size-4" aria-hidden /> {label}
       </p>
       <p className="mt-2">
-        <span className="text-3xl font-semibold text-navy tabular-nums">{value}</span>
+        <span className={`font-semibold text-navy tabular-nums ${words ? "text-xl leading-tight" : "text-3xl"}`}>{value}</span>
         <span className="text-muted">{unit}</span>
       </p>
       <p className="text-sm text-muted">{sub}</p>
@@ -654,11 +688,11 @@ function priorityCards(res: ReturnType<typeof computeResult>, n: ReportNarrative
   return res.priorities.map((p) => ({ code: p.code, title: null as string | null, diagnosis: "", actions: [] as string[] }));
 }
 
-/** Analisi elaborata dall'AI a partire dai dati del diagnostico. */
-function Narrative({ n, sources }: { n: ReportNarrative; sources: string[] }) {
+/** Analisi scritta a partire dai dati del diagnostico. */
+function Narrative({ n, sources, reviewed }: { n: ReportNarrative; sources: string[]; reviewed: boolean }) {
   return (
     <section className="mt-8 rounded-xl border border-navy/30 bg-navy/[0.03] p-5 sm:p-7">
-      <p className="text-xs uppercase tracking-wide text-muted">Analisi dei nostri esperti</p>
+      <p className="text-xs uppercase tracking-wide text-muted">{reviewed ? "Analisi rivista da un nostro esperto" : "Analisi"}</p>
       <h2 className="mt-1 text-2xl font-semibold text-navy">Sintesi per la direzione</h2>
       {sources.length > 0 && <p className="mt-1 text-sm text-muted">Tiene conto anche di: {sources.join(", ")}.</p>}
       <div className="mt-4 space-y-3 leading-relaxed">

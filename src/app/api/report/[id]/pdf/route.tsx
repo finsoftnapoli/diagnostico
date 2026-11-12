@@ -7,6 +7,7 @@ import { realBenchmark } from "@/lib/benchmark-server";
 import type { ReportInputs } from "@/lib/company-docs";
 import type { ReportNarrative } from "@/lib/report";
 import { emptyResponses } from "@/lib/scoring";
+import { readReport, trackReport } from "@/lib/report-access";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import type { Responses } from "@/lib/types";
 import ReportPdf from "@/pdf/ReportPdf";
@@ -32,11 +33,14 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[id]/
   const sb = await supabaseServer();
   const { data } = await sb
     .from("assessments")
-    .select("id, responses, completed_at, report_status, report_narrative, report_inputs")
+    .select("id, responses, completed_at, report_status, report_inputs")
     .eq("id", id)
     .maybeSingle();
-  if (!data?.report_narrative || !data.completed_at) return new Response("Report non disponibile", { status: 404 });
-  if (data.report_status !== "ready" && !isStaff) return new Response("Il report non è ancora stato approvato", { status: 404 });
+  if (!data?.completed_at) return new Response("Report non disponibile", { status: 404 });
+  if (data.report_status !== "ready" && !isStaff) return new Response("Il report non è ancora disponibile", { status: 404 });
+  const report = await readReport("assessments", id);
+  if (!report.narrative) return new Response("Report non disponibile", { status: 404 });
+  if (!isStaff) await trackReport("diagnostico", id, user.id, "pdf");
 
   const inputs = data.report_inputs as ReportInputs | null;
   const r: Responses = {
@@ -47,7 +51,14 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[id]/
   };
   const band = r.profile["PR-02"];
   const bench = (band ? medianBenchmark(await realBenchmark(band)) : null) ?? normativeBenchmark(band);
-  const d = reportPdfData(r, data.report_narrative as ReportNarrative, bench, data.completed_at as string, sourcesOf(inputs));
+  const d = reportPdfData(
+    r,
+    report.narrative as ReportNarrative,
+    bench,
+    data.completed_at as string,
+    sourcesOf(inputs),
+    report.releasedBy === "staff",
+  );
   const pdf = await renderToBuffer(<ReportPdf d={d} siteUrl={siteUrl()} />);
 
   const slug = d.company

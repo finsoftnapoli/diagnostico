@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { BRAND } from "@/config/brand";
 
-export const metadata: Metadata = { title: "Informativa privacy", description: "Come trattiamo i dati personali e aziendali raccolti dal diagnostico, dai documenti caricati e dagli acquisti.", alternates: { canonical: "/privacy" } };
+export const metadata: Metadata = {
+  title: "Informativa privacy",
+  description: "Come trattiamo i dati personali e aziendali raccolti dal diagnostico, dai documenti caricati e dagli acquisti.",
+  alternates: { canonical: "/privacy" },
+};
 
 // BOZZA da sottoporre a revisione legale prima dell'apertura al pubblico.
 // I punti tra parentesi quadre vanno completati o verificati.
@@ -19,64 +23,61 @@ export default function Privacy() {
 
       <h1 className="mt-8 text-3xl font-semibold text-navy">Informativa sul trattamento dei dati personali</h1>
       <p className="mt-2 text-sm text-muted">
-        Ai sensi degli articoli 13 e 14 del Regolamento (UE) 2016/679 (GDPR) · Versione {BRAND.privacyVersion} · ultimo
-        aggiornamento {UPDATED}
+        Ai sensi degli articoli 13 e 14 del Regolamento (UE) 2016/679 (GDPR) · Versione {BRAND.privacyVersion} · ultimo aggiornamento{" "}
+        {UPDATED}
       </p>
 
       <Section n="1" title="Chi tratta i dati">
         <p>
-          Il titolare del trattamento è <strong>{BRAND.ownerLegal}</strong>, con sede in {BRAND.ownerAddress}, partita IVA{" "}
-          {BRAND.ownerVat}, PEC {BRAND.ownerPec} (di seguito «{BRAND.owner}»). Per qualsiasi domanda sul trattamento dei dati
-          e per esercitare i tuoi diritti puoi scrivere a{" "}
+          Il titolare del trattamento è <strong>{BRAND.ownerLegal}</strong>, con sede in {BRAND.ownerAddress}, partita IVA {BRAND.ownerVat},
+          PEC {BRAND.ownerPec} (di seguito «{BRAND.owner}»). Per qualsiasi domanda sul trattamento dei dati e per esercitare i tuoi diritti
+          puoi scrivere a{" "}
           <a className="underline" href={`mailto:${mail}`}>
             {mail}
           </a>
           .
         </p>
         <p>
-          Il servizio «{BRAND.name}» (di seguito «il servizio») è un diagnostico gestionale rivolto a imprese: chi lo
-          compila lo fa in qualità di titolare, amministratore, manager o collaboratore di un&apos;azienda.
+          Il servizio «{BRAND.name}» (di seguito «il servizio») è un diagnostico gestionale rivolto a imprese: chi lo compila lo fa in
+          qualità di titolare, amministratore, manager o collaboratore di un&apos;azienda.
         </p>
       </Section>
 
       <Section n="2" title="Quali dati trattiamo">
         <ul className="list-disc pl-5 space-y-2">
           <li>
-            <strong>Dati di contatto e di accesso:</strong> il tuo indirizzo email, usato per confermare l&apos;identità,
-            inviarti i link di accesso e ritrovare i tuoi risultati.
+            <strong>Dati di contatto e di accesso:</strong> il tuo indirizzo email, usato per confermare l&apos;identità, inviarti i link di
+            accesso e ritrovare i tuoi risultati.
           </li>
           <li>
-            <strong>Dati dell&apos;azienda:</strong> ragione sociale, partita IVA, settore, dimensione, regione, assetto di
-            controllo, il tuo ruolo in azienda. Sono in prevalenza dati dell&apos;impresa; diventano dati personali quando
-            riguardano una ditta individuale o permettono di identificare una persona.
+            <strong>Dati dell&apos;azienda:</strong> ragione sociale, partita IVA, settore, dimensione, regione, assetto di controllo, il
+            tuo ruolo in azienda. Sono in prevalenza dati dell&apos;impresa; diventano dati personali quando riguardano una ditta
+            individuale o permettono di identificare una persona.
           </li>
           <li>
-            <strong>Risposte al questionario:</strong> le scelte sugli 8 ambiti di gestione, gli obiettivi, le sfide e i
-            testi liberi che scrivi. Ti chiediamo di non inserire nei testi liberi dati di altre persone o informazioni
-            sensibili.
+            <strong>Risposte al questionario:</strong> le scelte sugli 8 ambiti di gestione, gli obiettivi, le sfide e i testi liberi che
+            scrivi. Ti chiediamo di non inserire nei testi liberi dati di altre persone o informazioni sensibili.
           </li>
           <li>
-            <strong>Documenti facoltativi:</strong> se carichi la visura camerale o il bilancio, li conserviamo in un
-            archivio privato e li leggiamo in modo automatico per estrarre i dati anagrafici, di bilancio e di governance
-            dell&apos;azienda. Dei soci e degli amministratori indicati nella visura estraiamo solo nome e ruolo, che
-            mostriamo esclusivamente a te per suggerirti chi invitare: non li salviamo nel nostro database e non li usiamo
-            per contattare queste persone. Dalla tua area personale puoi aggiungere altri documenti dell&apos;azienda
-            (visure e bilanci aggiornati, business plan, altri documenti): ne estraiamo una sintesi dei contenuti
-            gestionali, senza dati di persone, usata per i report approfonditi della tua azienda.
+            <strong>Documenti facoltativi:</strong> se carichi la visura camerale o il bilancio, li conserviamo in un archivio privato e li
+            leggiamo in modo automatico per estrarre i dati anagrafici, di bilancio e di governance dell&apos;azienda. Dei soci e degli
+            amministratori indicati nella visura estraiamo solo nome e ruolo, che mostriamo esclusivamente a te per suggerirti chi invitare:
+            non li salviamo nel nostro database e non li usiamo per contattare queste persone. Dalla tua area personale puoi aggiungere
+            altri documenti dell&apos;azienda (visure e bilanci aggiornati, business plan, altri documenti): ne estraiamo una sintesi dei
+            contenuti gestionali, senza dati di persone, usata per i report approfonditi della tua azienda.
           </li>
           <li>
-            <strong>Dati dei colleghi che inviti:</strong> nome, ruolo ed email delle persone che scegli di invitare, usati
-            solo per inviare l&apos;invito e, se lo accettano, per collegare le loro risposte allo spazio della tua azienda.
+            <strong>Dati dei colleghi che inviti:</strong> nome, ruolo ed email delle persone che scegli di invitare, usati solo per inviare
+            l&apos;invito e, se lo accettano, per collegare le loro risposte allo spazio della tua azienda.
           </li>
           <li>
-            <strong>Dati di acquisto e prenotazione:</strong> dati di fatturazione dell&apos;azienda (ragione sociale,
-            partita IVA, sede, codice destinatario o PEC), ordini e fatture, risposte ai moduli di approfondimento e,
-            per le consulenze, data e ora prenotate e i temi che indichi. I dati della carta di pagamento sono trattati
-            solo da Stripe e non arrivano a noi.
+            <strong>Dati di acquisto e prenotazione:</strong> dati di fatturazione dell&apos;azienda (ragione sociale, partita IVA, sede,
+            codice destinatario o PEC), ordini e fatture, risposte ai moduli di approfondimento e, per le consulenze, data e ora prenotate e
+            i temi che indichi. I dati della carta di pagamento sono trattati solo da Stripe e non arrivano a noi.
           </li>
           <li>
-            <strong>Dati tecnici:</strong> indirizzo IP, tipo di browser, data e ora delle richieste, dati necessari alla
-            verifica di sicurezza contro gli accessi automatici e ai cookie tecnici descritti al punto 9.
+            <strong>Dati tecnici:</strong> indirizzo IP, tipo di browser, data e ora delle richieste, dati necessari alla verifica di
+            sicurezza contro gli accessi automatici e ai cookie tecnici descritti al punto 9.
           </li>
         </ul>
       </Section>
@@ -130,30 +131,34 @@ export default function Privacy() {
 
       <Section n="4" title="Come elaboriamo il profilo e i report">
         <p>
-          Profilo, priorità e report sono elaborati con metodologie e sistemi proprietari a partire dalle informazioni che
-          fornisci, anche con strumenti di intelligenza artificiale di fornitori esterni (indicati al punto 6), e ogni
-          report è validato da un nostro esperto prima dell&apos;invio. Si tratta di un&apos;autovalutazione orientativa:
-          non è una consulenza, non è un rating e non produce decisioni che abbiano effetti giuridici o analogamente
-          significativi su di te (art. 22 GDPR). I fornitori non usano i dati che ricevono per addestrare i propri
-          modelli. [Da verificare nei termini vigenti, insieme ai tempi di conservazione presso il fornitore.]
+          Profilo, priorità e report sono elaborati con metodologie e sistemi proprietari a partire dalle informazioni che fornisci, anche
+          con strumenti di intelligenza artificiale di fornitori esterni (indicati al punto 6), e ogni report è sottoposto a controlli di
+          qualità prima dell&apos;invio; un nostro esperto lo rivede quando i controlli lo richiedono e può sempre intervenire. Si tratta di
+          un&apos;autovalutazione orientativa: non è una consulenza, non è un rating e non produce decisioni che abbiano effetti giuridici o
+          analogamente significativi su di te (art. 22 GDPR). I fornitori non usano i dati che ricevono per addestrare i propri modelli. [Da
+          verificare nei termini vigenti, insieme ai tempi di conservazione presso il fornitore.]
         </p>
       </Section>
 
       <Section n="5" title="Se conferire i dati è obbligatorio">
         <p>
-          Email, dati dell&apos;azienda indicati come obbligatori e risposte al questionario sono necessari per fornire il
-          servizio: senza di essi non possiamo produrre il profilo. Il caricamento dei documenti e il consenso alle
-          comunicazioni sono facoltativi e non influiscono sul servizio.
+          Email, dati dell&apos;azienda indicati come obbligatori e risposte al questionario sono necessari per fornire il servizio: senza
+          di essi non possiamo produrre il profilo. Il caricamento dei documenti e il consenso alle comunicazioni sono facoltativi e non
+          influiscono sul servizio.
         </p>
       </Section>
 
       <Section n="6" title="A chi comunichiamo i dati">
         <p>
-          I dati non sono venduti né ceduti a terzi per loro finalità. Sono trattati da personale autorizzato di Finsoft e
-          da fornitori che ci supportano nella gestione del servizio, nominati responsabili del trattamento (art. 28 GDPR):
+          I dati non sono venduti né ceduti a terzi per loro finalità. Sono trattati da personale autorizzato di Finsoft e da fornitori che
+          ci supportano nella gestione del servizio, nominati responsabili del trattamento (art. 28 GDPR):
         </p>
         <ul className="mt-2 list-disc pl-5 space-y-1">
-          <li>Supabase: database, archivio dei documenti e accesso, con server nell&apos;Unione europea (Francoforte) [durante la fase di prova il database è a Londra, Regno Unito, paese con decisione di adeguatezza: va spostato prima dell&apos;apertura al pubblico];</li>
+          <li>
+            Supabase: database, archivio dei documenti e accesso, con server nell&apos;Unione europea (Francoforte) [durante la fase di
+            prova il database è a Londra, Regno Unito, paese con decisione di adeguatezza: va spostato prima dell&apos;apertura al
+            pubblico];
+          </li>
           <li>Vercel: hosting del sito, con elaborazione nell&apos;Unione europea (Francoforte);</li>
           <li>Anthropic: strumenti di intelligenza artificiale per l&apos;analisi dei documenti e dei report;</li>
           <li>Resend: invio delle email del servizio;</li>
@@ -163,48 +168,49 @@ export default function Privacy() {
           <li>Google (Workspace): gestione della corrispondenza con te.</li>
         </ul>
         <p className="mt-2">
-          Alcuni fornitori hanno sede negli Stati Uniti. In questi casi il trasferimento avviene sulla base del Data Privacy
-          Framework UE-USA, per i fornitori certificati, o delle clausole contrattuali tipo approvate dalla Commissione
-          europea (art. 45 e 46 GDPR). [Da verificare per ciascun fornitore nei rispettivi accordi sul trattamento dei
-          dati.] L&apos;elenco aggiornato è disponibile su richiesta.
+          Alcuni fornitori hanno sede negli Stati Uniti. In questi casi il trasferimento avviene sulla base del Data Privacy Framework
+          UE-USA, per i fornitori certificati, o delle clausole contrattuali tipo approvate dalla Commissione europea (art. 45 e 46 GDPR).
+          [Da verificare per ciascun fornitore nei rispettivi accordi sul trattamento dei dati.] L&apos;elenco aggiornato è disponibile su
+          richiesta.
         </p>
       </Section>
 
       <Section n="7" title="Per quanto tempo li conserviamo">
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            Documenti caricati: 24 mesi dall&apos;ultimo accesso al servizio, per gli approfondimenti e per aggiornare i dati
-            estratti; puoi eliminarli prima in qualsiasi momento dalla tua area personale. I documenti caricati senza
-            completare il diagnostico sono eliminati dopo 30 giorni.
+            Documenti caricati: 24 mesi dall&apos;ultimo accesso al servizio, per gli approfondimenti e per aggiornare i dati estratti; puoi
+            eliminarli prima in qualsiasi momento dalla tua area personale. I documenti caricati senza completare il diagnostico sono
+            eliminati dopo 30 giorni.
           </li>
           <li>
-            Dati di bilancio estratti: riguardano l&apos;azienda e sono conservati per statistiche e confronti aggregati;
-            per le ditte individuali, in cui riguardano una persona, sono resi anonimi dopo 24 mesi.
+            Dati di bilancio estratti: riguardano l&apos;azienda e sono conservati per statistiche e confronti aggregati; per le ditte
+            individuali, in cui riguardano una persona, sono resi anonimi dopo 24 mesi.
           </li>
           <li>Ordini, dati di fatturazione e fatture: 10 anni, come richiesto dalla normativa fiscale e civilistica.</li>
-          <li>Inviti ai colleghi non accettati: 14 giorni, poi scadono; i dati dell&apos;invito sono eliminati dopo 6 mesi. [Da confermare.]</li>
+          <li>
+            Inviti ai colleghi non accettati: 14 giorni, poi scadono; i dati dell&apos;invito sono eliminati dopo 6 mesi. [Da confermare.]
+          </li>
           <li>Bozze del questionario salvate per riprendere più tardi: 30 giorni.</li>
           <li>
-            Account, compilazioni e report: finché usi il servizio e fino a 24 mesi dall&apos;ultimo accesso, poi sono
-            cancellati o resi anonimi. [Periodo da confermare.]
+            Account, compilazioni e report: finché usi il servizio e fino a 24 mesi dall&apos;ultimo accesso, poi sono cancellati o resi
+            anonimi. [Periodo da confermare.]
           </li>
           <li>Dati per le comunicazioni: fino alla revoca del consenso e comunque non oltre 24 mesi dall&apos;ultimo contatto.</li>
           <li>Registro dei consensi: per il tempo necessario a dimostrare il consenso raccolto.</li>
-          
+
           <li>Dati anonimi e aggregati: possono essere conservati senza limiti, perché non riferibili a persone.</li>
         </ul>
       </Section>
 
       <Section n="8" title="I tuoi diritti">
         <p>
-          Puoi chiedere in ogni momento l&apos;accesso ai tuoi dati, la rettifica, la cancellazione, la limitazione del
-          trattamento, la portabilità e opporti ai trattamenti basati sul legittimo interesse (artt. 15-22 GDPR), scrivendo a{" "}
+          Puoi chiedere in ogni momento l&apos;accesso ai tuoi dati, la rettifica, la cancellazione, la limitazione del trattamento, la
+          portabilità e opporti ai trattamenti basati sul legittimo interesse (artt. 15-22 GDPR), scrivendo a{" "}
           <a className="underline" href={`mailto:${mail}`}>
             {mail}
           </a>
-          . Puoi revocare il consenso alle comunicazioni senza pregiudicare la liceità del trattamento precedente. Se ritieni
-          che il trattamento violi la normativa, puoi presentare reclamo al Garante per la protezione dei dati personali
-          (www.garanteprivacy.it).
+          . Puoi revocare il consenso alle comunicazioni senza pregiudicare la liceità del trattamento precedente. Se ritieni che il
+          trattamento violi la normativa, puoi presentare reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it).
         </p>
       </Section>
 
@@ -214,33 +220,32 @@ export default function Privacy() {
           <li>cookie di sessione per mantenerti collegato dopo la conferma dell&apos;email;</li>
           <li>un cookie tecnico che ricorda per alcune ore l&apos;esito della verifica di sicurezza;</li>
           <li>
-            la memoria locale del browser, per salvare le risposte mentre compili e permetterti di riprendere: resta sul tuo
-            dispositivo e puoi cancellarla dalle impostazioni del browser;
+            la memoria locale del browser, per salvare le risposte mentre compili e permetterti di riprendere: resta sul tuo dispositivo e
+            puoi cancellarla dalle impostazioni del browser;
           </li>
           <li>
-            la verifica di sicurezza di Cloudflare, che analizza segnali tecnici del browser per distinguere le persone dai
-            programmi automatici, senza finalità pubblicitarie.
+            la verifica di sicurezza di Cloudflare, che analizza segnali tecnici del browser per distinguere le persone dai programmi
+            automatici, senza finalità pubblicitarie.
           </li>
         </ul>
         <p className="mt-2">
-          Non usiamo cookie di profilazione o pubblicitari. Se in futuro introdurremo strumenti di analisi statistica, lo
-          indicheremo qui e chiederemo il consenso quando necessario.
+          Non usiamo cookie di profilazione o pubblicitari. Se in futuro introdurremo strumenti di analisi statistica, lo indicheremo qui e
+          chiederemo il consenso quando necessario.
         </p>
       </Section>
 
       <Section n="10" title="Dati di altre persone">
         <p>
-          Se nei testi liberi o nei documenti compaiono dati di altre persone, li trattiamo solo per fornire il servizio e
-          non le contattiamo mai di nostra iniziativa: scriviamo a un collega solo se sei tu a chiedere di invitarlo. Ti
-          chiediamo di inserire solo le informazioni necessarie.
+          Se nei testi liberi o nei documenti compaiono dati di altre persone, li trattiamo solo per fornire il servizio e non le
+          contattiamo mai di nostra iniziativa: scriviamo a un collega solo se sei tu a chiedere di invitarlo. Ti chiediamo di inserire solo
+          le informazioni necessarie.
         </p>
       </Section>
 
       <Section n="11" title="Modifiche">
         <p>
-          Possiamo aggiornare questa informativa, per esempio quando introduciamo nuove funzioni. La versione in vigore è
-          sempre pubblicata in questa pagina, con la data dell&apos;ultimo aggiornamento; le modifiche sostanziali ti saranno
-          comunicate.
+          Possiamo aggiornare questa informativa, per esempio quando introduciamo nuove funzioni. La versione in vigore è sempre pubblicata
+          in questa pagina, con la data dell&apos;ultimo aggiornamento; le modifiche sostanziali ti saranno comunicate.
         </p>
       </Section>
     </div>

@@ -1,10 +1,11 @@
-// Report di un modulo in PDF, impaginato sul server. Per il cliente solo quando l'analisi è approvata;
+// Report di un modulo in PDF, impaginato sul server. Per il cliente solo quando l'analisi è rilasciata;
 // lo staff può scaricarlo anche in revisione, come anteprima.
 import { renderToBuffer } from "@react-pdf/renderer";
 import { siteUrl } from "@/config/site";
 import { moduleContext } from "@/lib/module-context";
 import type { ModuleNarrative } from "@/lib/module-report";
 import { computeModule, emptyModuleResponses, type ModuleResponses } from "@/lib/module-scoring";
+import { readReport, trackReport } from "@/lib/report-access";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import type { AreaCode } from "@/lib/types";
 import ModulePdf from "@/pdf/ModulePdf";
@@ -21,11 +22,14 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/moduli/[id]
   const sb = await supabaseServer();
   const { data: m } = await sb
     .from("module_assessments")
-    .select("id, area, status, responses, report_status, report_narrative, completed_at, company_id, companies(name)")
+    .select("id, area, status, responses, report_status, completed_at, company_id, companies(name)")
     .eq("id", id)
     .maybeSingle();
-  if (!m?.report_narrative || m.status !== "completed" || !m.completed_at) return new Response("Report non disponibile", { status: 404 });
-  if (m.report_status !== "ready" && !isStaff) return new Response("L'analisi non è ancora stata approvata", { status: 404 });
+  if (!m || m.status !== "completed" || !m.completed_at) return new Response("Report non disponibile", { status: 404 });
+  if (m.report_status !== "ready" && !isStaff) return new Response("L'analisi non è ancora disponibile", { status: 404 });
+  const report = await readReport("module_assessments", id);
+  if (!report.narrative) return new Response("Report non disponibile", { status: 404 });
+  if (!isStaff) await trackReport("modulo", id, user.id, "pdf");
 
   const area = m.area as AreaCode;
   const { diagnosticScore, reference } = await moduleContext(sb, m.company_id as string, area);
@@ -35,7 +39,8 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/moduli/[id]
     result: computeModule(area, { ...emptyModuleResponses(), ...(m.responses as ModuleResponses) }),
     diagnosticScore,
     reference,
-    narrative: m.report_narrative as ModuleNarrative,
+    narrative: report.narrative as ModuleNarrative,
+    reviewed: report.releasedBy === "staff",
     completedAt: m.completed_at as string,
   });
   const pdf = await renderToBuffer(<ModulePdf d={d} siteUrl={siteUrl()} />);

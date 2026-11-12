@@ -4,10 +4,16 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { listAssessments, listToReview, priorities } from "@/lib/admin";
 import { currentUser } from "@/lib/supabase/server";
+import { reportUsage } from "@/lib/report-access";
 
 export const metadata: Metadata = { title: "Area riservata" };
 
-const REPORT_STATE: Record<string, string> = { pending: "in coda", review: "da rivedere", ready: "inviato", failed: "non riuscito" };
+const REPORT_STATE: Record<string, string> = {
+  pending: "in preparazione",
+  review: "trattenuto, da rivedere",
+  ready: "inviato",
+  failed: "non riuscito",
+};
 
 export default function AdminPage() {
   return (
@@ -24,6 +30,10 @@ async function AdminList() {
   if (!user) redirect("/accedi?next=/admin");
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
   const [rows, toReview] = await Promise.all([listAssessments(), listToReview()]);
+  const usage = await reportUsage(
+    "diagnostico",
+    rows.map((r) => r.id),
+  );
   return (
     <>
       <nav className="mb-8 flex flex-wrap gap-4 text-sm">
@@ -50,7 +60,11 @@ async function AdminList() {
                   <span className="text-muted"> · completato il {new Date(t.date).toLocaleDateString("it-IT")}</span>
                 </span>
                 <span className="flex items-center gap-3">
-                  {t.failed && <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">Generazione non riuscita</span>}
+                  {t.failed && (
+                    <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+                      Generazione non riuscita
+                    </span>
+                  )}
                   <Link href={t.href} className="underline text-navy-soft">
                     {t.failed ? "Apri e rigenera" : "Rivedi e approva"}
                   </Link>
@@ -92,7 +106,12 @@ async function AdminList() {
                 <td className="py-2 pr-4">{r.profile?.["PR-02"] ?? ""}</td>
                 <td className="py-2 pr-4 tabular-nums">{r.overall_score}</td>
                 <td className="py-2 pr-4">{priorities(r).join(" · ")}</td>
-                <td className="py-2 whitespace-nowrap">{REPORT_STATE[r.report_status] ?? r.report_status}</td>
+                <td className="py-2 whitespace-nowrap">
+                  {REPORT_STATE[r.report_status] ?? r.report_status}
+                  {r.report_status === "ready" && (
+                    <span className="text-muted">{usage.get(r.id)?.opens ? " · letto" : " · non ancora letto"}</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

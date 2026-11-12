@@ -14,7 +14,7 @@ In prova su Vercel con database Supabase di test. Funziona:
 | Area | Cosa c'è |
 |---|---|
 | Sito pubblico | Pagina iniziale, 8 pagine degli ambiti (`/ambiti/...`), il nostro metodo (`/metodo`), informativa privacy e condizioni di vendita in bozza, sitemap, robots, dati strutturati, anteprima social |
-| Diagnostico gratuito | Questionario in 5 sezioni (consensi, profilo, ambizioni, 24 domande, sfide) con salvataggio automatico e "salva e continua più tardi" via email; verifica anti-bot Cloudflare Turnstile; partita IVA verificata su VIES |
+| Diagnostico gratuito | Questionario a una domanda per schermata (avvio con consensi, 24 domande, ambizioni, sfide, dati dell'azienda alla fine) con l'Ottogramma che si disegna mentre si risponde (`src/lib/flow.ts`, `LiveOttogramma`), salvataggio automatico e "salva e continua più tardi" via email; verifica anti-bot Cloudflare Turnstile; partita IVA verificata su VIES |
 | Documenti | Visura e bilancio in PDF letti con Claude durante il questionario (precompilano il profilo), anche trascinando il file; bilancio anche in XBRL (il file del Registro Imprese), letto direttamente senza AI; dall'area personale anche bilanci e visure aggiornati, business plan e altri documenti, usati nei report successivi |
 | Risultati | Ottogramma subito dopo la conferma dell'email: punteggi, confronto di fascia, evidenze chiave, offerte; report approfondito scritto dall'AI in differita, rivisto e approvato dallo staff, poi inviato per email; PDF impaginato dal sito (`/api/report/<id>/pdf`, copertina, guida alla lettura, priorità, dettaglio) e, per i moduli, `/api/moduli/<id>/pdf`; punteggi spiegati in parole; registro "voi" in tutti i report |
 | Più manager | Inviti ai colleghi (suggeriti dalla visura), spazio aziendale con confronto delle visioni nell'area personale |
@@ -52,8 +52,13 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
   Nessun punteggio è calcolato dall'AI.
 - **Resend** (email del servizio e codici di accesso), **Cloudflare Turnstile** (verifica anti-bot), **Stripe**
   (pagamenti), **Aruba Fatturazione Elettronica** (invio allo SDI), Google Meet o simili per le videochiamate.
-- Attività pianificate (Vercel Cron, protette da `CRON_SECRET`): `/api/cron/report` alle 7:00 genera i report in coda
-  e avvisa lo staff; `/api/cron/pulizia` alle 3:30 elimina bozze scadute e documenti da non conservare.
+- Report: la generazione parte all'invio della compilazione (`after()` in `/api/compilazioni` e `/api/moduli/<id>`); il report passa
+  dai controlli di `src/lib/release-checks.ts` e da una seconda lettura indipendente (`src/lib/release.ts`): se li supera
+  parte da solo verso il cliente, altrimenti resta "da rivedere" e lo staff riceve un avviso con i motivi
+  (`REPORT_AUTO_RELEASE=0` riporta tutto alla revisione). Il testo del report si legge solo dal server
+  (`src/lib/report-access.ts`), che registra anche aperture e scarichi (`report_events`, visibili nell'area staff).
+- Attività pianificate (Vercel Cron, protette da `CRON_SECRET`): `/api/cron/report` alle 7:00 riprende i report rimasti in coda
+  e ricorda allo staff quelli trattenuti; `/api/cron/pulizia` alle 3:30 elimina bozze scadute e documenti da non conservare.
 
 ### Flussi principali
 
@@ -79,7 +84,8 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 | `src/lib/questionnaire.ts`, `modules.ts` | Domande del diagnostico e dei moduli (generati dagli script, non modificare a mano) |
 | `src/lib/scoring.ts`, `module-scoring.ts` | Motori di punteggio e priorità |
 | `src/lib/insights.ts` | Evidenze, prontezza per le ambizioni, cause delle sfide, prossimi passi |
-| `src/lib/report-narrative.ts`, `module-report.ts`, `report-jobs.ts`, `narrative-spec.ts`, `narrative-checks.ts` | Report scritti dall'AI, controllo di completezza, coda di generazione e revisione |
+| `src/lib/report-narrative.ts`, `module-report.ts`, `report-jobs.ts`, `narrative-spec.ts`, `narrative-checks.ts`, `release-checks.ts`, `release.ts`, `report-access.ts` | Report scritti dall'AI, controlli prima del rilascio, seconda lettura, coda di generazione, lettura protetta e tracciamento |
+| `src/app/api/admin/accrediti`, `grantCredit` in `src/lib/commerce.ts` | Accredito di servizi senza pagamento dall'area staff (ordine a importo zero, senza fattura) |
 | `src/lib/score-meaning.ts`, `src/pdf/` | Lettura dei punteggi in parole; report del diagnostico e dei moduli in PDF (@react-pdf/renderer, elementi comuni in `kit.tsx`, font Inter in `src/pdf/fonts`) |
 | `src/lib/output-quality.test.ts`, `src/lib/fixtures/` | Controllo automatico dei testi che il cliente legge (refusi meccanici, valori mancanti, registro) su profili di risposta diversi |
 | `src/lib/documents.ts`, `xbrl.ts`, `doc-format.ts`, `company-docs.ts` | Lettura dei documenti (PDF con Claude, bilancio XBRL con la tassonomia itcc-ci), formati accettati, uso nei report |
@@ -122,4 +128,4 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 - Nomi di soci e amministratori letti dalla visura restano nel browser di chi carica il documento: mai nel database.
 - I testi rivolti agli utenti parlano di "esperti" (chi valida i report e fa le consulenze), di "Ottogramma" (il profilo) e
   di "metodologia, algoritmi e sistemi proprietari": nessun dettaglio pubblico su formule o uso dell'AI, salvo il minimo
-  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono "entro 2 giorni lavorativi".
+  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono con `BRAND.reportPromise` ("entro 24 ore").

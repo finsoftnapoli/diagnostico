@@ -27,7 +27,7 @@ import { normalizeVat } from "@/lib/vat";
 import { parseXbrl, xbrlDiagnostics, xmlText } from "@/lib/xbrl";
 
 export const maxDuration = 60;
-const MODEL = "claude-sonnet-5-5";
+const MODEL = process.env.REPORT_MODEL ?? "claude-sonnet-5-5";
 /** Documenti caricabili dall'area personale per utente nelle ultime 24 ore. */
 const DAILY_LIMIT = 20;
 const UUID = "[0-9a-f-]{36}";

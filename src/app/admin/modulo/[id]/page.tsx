@@ -8,6 +8,8 @@ import { MODULE_SPEC } from "@/lib/narrative-spec";
 import { AREAS } from "@/lib/questionnaire";
 import { currentUser, supabaseService } from "@/lib/supabase/server";
 import type { AreaCode } from "@/lib/types";
+import ReleaseInfo from "@/components/ReleaseInfo";
+import { readReport, reportUsage } from "@/lib/report-access";
 
 export default function AdminModulePage({ params }: PageProps<"/admin/modulo/[id]">) {
   return (
@@ -34,6 +36,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
   const r = { ...emptyModuleResponses(), ...(m.responses as ModuleResponses) };
   const res = computeModule(area, r);
   const themes = res.themes;
+  const [release, usage] = await Promise.all([readReport("module_assessments", id), reportUsage("modulo", [id])]);
   return (
     <>
       <Link href="/admin" className="text-sm underline text-navy-soft">
@@ -46,6 +49,17 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         Modulo {m.status === "completed" ? `inviato il ${new Date(m.completed_at as string).toLocaleString("it-IT")}` : "in compilazione"} ·
         punteggio {m.score ?? "—"}
       </p>
+      {m.status === "completed" && (
+        <div className="mt-4 max-w-2xl">
+          <ReleaseInfo
+            status={m.report_status as string}
+            checks={release.checks}
+            releasedBy={release.releasedBy}
+            releasedAt={release.releasedAt}
+            usage={usage.get(id)}
+          />
+        </div>
+      )}
       {m.status === "completed" && (
         <NarrativeEditor
           endpoint={`/api/admin/report/modulo/${m.id}`}

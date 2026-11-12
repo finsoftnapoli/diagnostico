@@ -1,6 +1,7 @@
 // Revisione dei report da parte dello staff: salva le correzioni, rigenera, approva e invia al cliente.
 import { NextResponse } from "next/server";
 import { cleanNarrative, DIAGNOSTIC_SPEC, MODULE_SPEC } from "@/lib/narrative-spec";
+import { siteUrl } from "@/config/site";
 import { generateAssessmentReport, generateModuleReportFor, notifyReportReady } from "@/lib/report-jobs";
 import { currentUser, supabaseService } from "@/lib/supabase/server";
 
@@ -18,7 +19,11 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/repor
   const db = supabaseService();
   const { data: row } = await db
     .from(table)
-    .select(tipo === "diagnostico" ? "id, user_id, company_id, responses, report_attempts, report_status, report_narrative" : "id, report_attempts, report_status, report_narrative")
+    .select(
+      tipo === "diagnostico"
+        ? "id, user_id, company_id, responses, report_attempts, report_status, report_narrative"
+        : "id, report_attempts, report_status, report_narrative",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!row) return NextResponse.json({ error: "Report non trovato" }, { status: 404 });
@@ -27,9 +32,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/repor
   if (body.action === "regenerate") {
     if (!process.env.ANTHROPIC_API_KEY) return NextResponse.json({ error: "API non configurata" }, { status: 503 });
     const narrative =
-      tipo === "diagnostico"
-        ? await generateAssessmentReport(db, row as never)
-        : await generateModuleReportFor(db, row as never);
+      tipo === "diagnostico" ? await generateAssessmentReport(db, row as never) : await generateModuleReportFor(db, row as never);
     if (!narrative) return NextResponse.json({ error: "Generazione non riuscita, riprova" }, { status: 502 });
     return NextResponse.json({ narrative, status: "review" });
   }
@@ -48,9 +51,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/repor
     })
     .eq("id", id);
   if (error) return NextResponse.json({ error: "Salvataggio non riuscito" }, { status: 500 });
-  if (approve)
-    await notifyReportReady(db, table, id, new URL(request.url).origin).catch((e) =>
+  if (approve) {
+    // rilasciato da un esperto: il report lo dichiara (colonne assenti finché la migrazione non è eseguita)
+    await db.from(table).update({ report_released_by: "staff", report_released_at: now }).eq("id", id);
+    await notifyReportReady(db, table, id, siteUrl()).catch((e) =>
       console.error("Email al cliente non inviata:", e instanceof Error ? e.message : e),
     );
+  }
   return NextResponse.json({ narrative, status: approve ? "ready" : r.report_status });
 }

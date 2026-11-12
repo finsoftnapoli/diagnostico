@@ -232,8 +232,8 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
         <Layers className="size-5" aria-hidden strokeWidth={1.75} /> Approfondimenti per ambito
       </h2>
       <p className="mt-1 text-sm text-muted max-w-3xl">
-        L&apos;Ottogramma dell&apos;ambito: 8 sotto-ambiti con punteggi immediati e un report con piano di lavoro e indicatori rivisto dai
-        nostri esperti. {euro(p.price)} + IVA per ambito.
+        L&apos;Ottogramma dell&apos;ambito: 8 sotto-ambiti con punteggi immediati e un report con piano di lavoro e indicatori, costruito
+        sul metodo dei nostri esperti. {euro(p.price)} + IVA per ambito.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {ordered.map((c) => {

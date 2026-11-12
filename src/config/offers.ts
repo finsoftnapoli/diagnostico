@@ -29,7 +29,7 @@ export const PRODUCTS: Record<Sku, Product> = {
     bullets: [
       "L'Ottogramma dell'ambito: 8 sotto-ambiti, 16-18 domande di dettaglio",
       "Punteggio per sotto-ambito, subito, e confronto con il diagnostico",
-      "Report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire, rivisto dai nostri esperti",
+      "Report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire",
     ],
   },
   consulenza: {

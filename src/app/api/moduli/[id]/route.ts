@@ -1,8 +1,12 @@
 // Salva le risposte di un modulo di approfondimento; con "complete" calcola i punteggi e lo chiude.
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { computeModule, moduleIncomplete, sanitizeModuleResponses } from "@/lib/module-scoring";
+import { generateNow } from "@/lib/report-jobs";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
 import type { AreaCode } from "@/lib/types";
+
+// la generazione del report parte in coda alla risposta
+export const maxDuration = 300;
 
 export async function PATCH(request: Request, ctx: RouteContext<"/api/moduli/[id]">) {
   const { id } = await ctx.params;
@@ -42,6 +46,8 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/moduli/[id
       .eq("id", id)
       .eq("status", "in_progress");
     if (error) return NextResponse.json({ error: "Invio non riuscito, riprova" }, { status: 500 });
+    // dopo la risposta: generazione del report, che parte da solo se supera i controlli
+    if (process.env.ANTHROPIC_API_KEY) after(() => generateNow("module_assessments", id));
     return NextResponse.json({ ok: true, completed: true });
   }
   await db.from("module_assessments").update({ responses, updated_at: now }).eq("id", id);

@@ -137,7 +137,7 @@ function Profile({ d }: { d: ModulePdfData }) {
   );
 }
 
-function SubCard({ x }: { x: ModulePdfSub }) {
+function SubCard({ x, reviewed }: { x: ModulePdfSub; reviewed: boolean }) {
   return (
     <View style={{ marginBottom: 14 }}>
       <View
@@ -169,7 +169,9 @@ function SubCard({ x }: { x: ModulePdfSub }) {
       </View>
       {x.expert && (
         <View style={{ marginTop: 8 }}>
-          <Text style={[s.eyebrow, { color: C.navySoft, marginBottom: 2 }]}>Lettura dei nostri esperti</Text>
+          <Text style={[s.eyebrow, { color: C.navySoft, marginBottom: 2 }]}>
+            {reviewed ? "Lettura rivista da un nostro esperto" : "Lettura e interventi suggeriti"}
+          </Text>
           <Paragraphs text={x.expert.diagnosis} />
           {x.expert.actions.length > 0 && <Bullets items={x.expert.actions} marker={(k) => `${k + 1}.`} />}
         </View>
@@ -215,7 +217,7 @@ export default function ModulePdf({ d, siteUrl }: { d: ModulePdfData; siteUrl: s
 
       <Page size="A4" style={s.page}>
         <Header left={`${d.brand} · ${d.reportName} · ${d.areaName}`} right={d.company} />
-        <Text style={s.eyebrow}>Analisi dei nostri esperti</Text>
+        <Text style={s.eyebrow}>{d.reviewed ? "Analisi rivista da un nostro esperto" : "Analisi"}</Text>
         <Text style={s.h1}>Sintesi</Text>
         <Paragraphs text={n.summary} />
         <Profile d={d} />
@@ -226,7 +228,7 @@ export default function ModulePdf({ d, siteUrl }: { d: ModulePdfData; siteUrl: s
             Per ogni tema, la situazione che avete indicato come più vicina a quella di oggi e il passo che porta al livello successivo.
           </Text>
           {d.subs.map((x) => (
-            <SubCard key={x.code} x={x} />
+            <SubCard key={x.code} x={x} reviewed={d.reviewed} />
           ))}
         </View>
 

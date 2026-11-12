@@ -2,6 +2,7 @@
 
 import { ArrowRight, Clock3, Gauge, Info, Scale, TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { levelShort } from "@/lib/score-meaning";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
 import { bandText, type Benchmark, medianBenchmark, normativeBenchmark, type RealBenchmark } from "@/config/benchmark";
@@ -11,7 +12,6 @@ import { AREAS } from "@/lib/questionnaire";
 import { computeResult } from "@/lib/scoring";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode } from "@/lib/types";
-import Offers from "./Offers";
 import Progress, { type PreviousResult } from "./Progress";
 import InviteColleagues from "./InviteColleagues";
 import RadarProfile from "./RadarProfile";
@@ -50,7 +50,6 @@ export default function Ottogramma({
   const res = useMemo(() => computeResult(r), [r]);
   const ins = useMemo(() => buildInsights(r, res, bench), [r, res, bench]);
   const company = r.profile["PR-11"];
-  const priorities = res.priorities.map((p) => ({ code: p.code, name: p.name }));
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -64,12 +63,20 @@ export default function Ottogramma({
       {reportStatus !== "none" && <ReportBanner status={reportStatus} href={reportHref} />}
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <Kpi icon={Gauge} label="Punteggio complessivo" value={`${ins.overall ?? "—"}`} unit="/100" sub={ins.overallLabel} />
+        <Kpi
+          icon={Gauge}
+          label="Livello di maturità"
+          value={levelShort(ins.overall)}
+          unit=""
+          sub={ins.overall === null ? "" : `${ins.overall} punti su 100`}
+          words
+        />
         <Kpi
           icon={Scale}
           label={bench.label}
-          value={`${ins.benchmarkAvg}`}
-          unit="/100"
+          value={levelShort(ins.benchmarkAvg)}
+          unit=""
+          words
           sub={
             ins.deltaVsBenchmark === null
               ? ""
@@ -95,7 +102,7 @@ export default function Ottogramma({
         <div>
           <RadarProfile areas={res.areas} reference={bench.values} referenceLabel={bench.label} />
           <p className="mt-1 text-xs text-muted text-center">
-            Scala da 0 ({LEVEL_NAMES[0].toLowerCase()}) a 100 ({LEVEL_NAMES[3].toLowerCase()}). {bench.note}
+            Dal centro verso l&apos;esterno: da «{LEVEL_NAMES[0]}» a «{LEVEL_NAMES[3]}». {bench.note}
           </p>
         </div>
         <div>
@@ -141,8 +148,6 @@ export default function Ottogramma({
         <Progress previous={previous} overall={ins.overall} scores={Object.fromEntries(res.areas.map((a) => [a.code, a.score]))} />
       )}
 
-      <Offers assessmentId={draft.savedId} priorities={priorities} />
-
       {isSupabaseConfigured() && draft.savedId && !r.context && <InviteColleagues people={r.people ?? []} />}
 
       <p className="mt-10 text-xs text-muted flex gap-2 max-w-3xl">
@@ -159,8 +164,8 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
     return (
       <div className="mt-6 rounded-xl border border-navy bg-navy/5 p-4 flex flex-wrap items-center gap-3">
         <p className="flex-1 text-sm">
-          <strong className="text-navy">Il report approfondito è pronto.</strong> Analisi delle priorità, interventi suggeriti e
-          osservazioni dei nostri esperti.
+          <strong className="text-navy">Il report approfondito è pronto.</strong> Analisi delle priorità, interventi suggeriti e primi passi
+          per ciascun tema.
         </p>
         <Link href={href} className="inline-flex items-center gap-1.5 bg-navy text-white text-sm font-semibold px-4 py-2 rounded-lg">
           Apri il report <ArrowRight className="size-4" aria-hidden />
@@ -177,22 +182,36 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
     <div className="mt-6 rounded-xl border border-line bg-paper p-4 flex items-start gap-3">
       <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
       <p className="text-sm">
-        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> I nostri esperti stanno preparando l&apos;analisi
-        delle aree di priorità con gli interventi suggeriti: lo riceverete via email entro 2 giorni lavorativi e lo ritroverete
-        nell&apos;area personale.
+        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> Stiamo preparando l&apos;analisi delle priorità con
+        gli interventi suggeriti: lo riceverete via email {BRAND.reportPromise} e lo ritroverete nell&apos;area personale.
       </p>
     </div>
   );
 }
 
-function Kpi({ icon: Icon, label, value, unit, sub }: { icon: typeof Gauge; label: string; value: string; unit: string; sub: string }) {
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  unit,
+  sub,
+  words,
+}: {
+  icon: typeof Gauge;
+  label: string;
+  value: string;
+  unit: string;
+  sub: string;
+  /** Valore a parole (un livello) invece che in cifre. */
+  words?: boolean;
+}) {
   return (
     <div className="rounded-xl border border-line p-4">
       <p className="text-xs uppercase tracking-wide text-muted flex items-center gap-1.5">
         <Icon className="size-4" aria-hidden /> {label}
       </p>
       <p className="mt-2">
-        <span className="text-3xl font-semibold text-navy tabular-nums">{value}</span>
+        <span className={`font-semibold text-navy tabular-nums ${words ? "text-xl leading-tight" : "text-3xl"}`}>{value}</span>
         <span className="text-muted">{unit}</span>
       </p>
       <p className="text-sm text-muted">{sub}</p>

@@ -1,12 +1,13 @@
 "use client";
 
 import type { AuthChangeEvent } from "@supabase/supabase-js";
-import { MailCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import LiveOttogramma from "./LiveOttogramma";
 import ResendCode from "@/components/ResendCode";
 import { BRAND } from "@/config/brand";
 import { patchDraft, type Draft } from "@/lib/draft";
 import { saveDraftAndSendLink } from "@/lib/emailLink";
+import { liveAreas } from "@/lib/flow";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 type Phase = "checking" | "email" | "sent" | "saving";
@@ -96,14 +97,17 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
-      <MailCheck className="size-8 text-navy" aria-hidden strokeWidth={1.5} />
-      <h1 className="mt-3 text-3xl font-semibold text-navy">Il tuo {BRAND.reportName} è pronto</h1>
+      <div className="flex justify-center" aria-hidden>
+        <LiveOttogramma areas={liveAreas(draft.responses)} size={190} />
+      </div>
+      <h1 className="mt-4 text-3xl font-semibold text-navy">Il vostro {BRAND.reportName} è completo</h1>
       {phase === "checking" && <p className="mt-6 text-muted">Un momento…</p>}
       {phase === "email" && (
         <form onSubmit={sendLink} className="mt-6 space-y-4">
           <p className="text-muted">
-            Indica la tua email aziendale: ti inviamo un messaggio per confermarla. Così salviamo il profilo, ti inviamo il report
-            approfondito entro 2 giorni lavorativi e potrai ritrovarlo, confrontarlo nel tempo e invitare i colleghi.
+            Manca un passo per leggerlo: indicate l&apos;email aziendale e confermatela con il codice che vi inviamo. Vedrete subito le
+            evidenze, il confronto con aziende simili e le priorità; {BRAND.reportPromise} riceverete il report approfondito, e potrete
+            ritrovare tutto nell&apos;area personale e invitare i colleghi.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Email</span>
@@ -122,8 +126,8 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       {phase === "sent" && (
         <form onSubmit={verify} className="mt-6 space-y-4">
           <p className="text-muted">
-            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Apri il link contenuto nell&apos;email, oppure inserisci qui il
-            codice se l&apos;email ne contiene uno. Se non la trovi, controlla nella posta indesiderata.
+            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Inserite qui il codice che trovate nell&apos;email, oppure
+            aprite il link da questo stesso browser. Se non la trovate, controllate nella posta indesiderata.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Codice</span>
@@ -136,7 +140,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
               onChange={(e) => setCode(e.target.value)}
             />
           </label>
-          <Submit busy={busy}>Conferma e vedi i risultati</Submit>
+          <Submit busy={busy}>Conferma e leggi i risultati</Submit>
           <ResendCode
             key={email}
             onResend={async () => {
@@ -172,7 +176,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
         </p>
       )}
       <p className="mt-8 text-xs text-muted">
-        Usiamo l&apos;email per l&apos;accesso e per le comunicazioni che hai scelto all&apos;inizio.
+        Usiamo l&apos;email per l&apos;accesso, per inviarvi il report e per le comunicazioni scelte all&apos;inizio.
       </p>
     </div>
   );

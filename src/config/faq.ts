@@ -14,7 +14,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Cosa ricevo alla fine?",
-    a: `Subito l'${BRAND.reportName}: il profilo a radar sugli 8 ambiti, il confronto con aziende della tua fascia di fatturato e le evidenze chiave. Entro 2 giorni lavorativi ricevi per email il report approfondito, con l'analisi delle priorità e gli interventi suggeriti, validato da un nostro esperto.`,
+    a: `Subito l'${BRAND.reportName}: il profilo a radar sugli 8 ambiti, il confronto con aziende della tua fascia di fatturato e le evidenze chiave. Poi, ${BRAND.reportPromise}, ricevi per email il report approfondito, con l'analisi delle priorità e gli interventi suggeriti, costruito sulla metodologia dei nostri esperti.`,
   },
   {
     q: "Come nascono punteggi e priorità?",

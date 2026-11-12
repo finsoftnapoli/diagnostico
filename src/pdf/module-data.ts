@@ -32,6 +32,8 @@ export interface ModulePdfSub {
 }
 
 export interface ModulePdfData {
+  /** Vero se un esperto ha rivisto e approvato il report prima dell'invio. */
+  reviewed: boolean;
   company: string;
   area: AreaCode;
   areaName: string;
@@ -60,6 +62,7 @@ export function modulePdfData(input: {
   reference: { value: number; label: string } | null;
   narrative: ModuleNarrative;
   completedAt: string;
+  reviewed?: boolean;
 }): ModulePdfData {
   const { area, result, diagnosticScore, reference, narrative } = input;
   const qs = MODULE_QUESTIONS[area];
@@ -82,6 +85,7 @@ export function modulePdfData(input: {
   const reading = moduleReading(score, reference?.value ?? null, levels);
 
   return {
+    reviewed: !!input.reviewed,
     company: input.company || "La vostra azienda",
     area,
     areaName: AREAS.find((a) => a.code === area)?.name ?? area,

@@ -23,6 +23,7 @@ export default function ScoreReading({
   lines?: string[];
 }) {
   if (overall === null) return null;
+  const close = reference !== null && Math.abs(reference - overall) < 30;
   const lines = given ?? (reference === null ? [] : overallReading(overall, reference, levels));
   return (
     <section className="mt-8 rounded-xl border border-line p-5 sm:p-6 print-keep">
@@ -33,8 +34,16 @@ export default function ScoreReading({
             <span key={b.from} className={`flex-1 ${b.cls}`} />
           ))}
         </div>
-        {reference !== null && <Marker value={reference} label={`Riferimento ${reference}`} tone="muted" />}
-        <Marker value={overall} label={`Voi ${overall}`} tone="navy" />
+        {/* quando i due valori sono vicini le etichette si aprono ai lati, per non sovrapporsi */}
+        {reference !== null && (
+          <Marker
+            value={reference}
+            label={`Riferimento ${reference}`}
+            tone="muted"
+            side={close ? (reference >= overall ? "right" : "left") : "center"}
+          />
+        )}
+        <Marker value={overall} label={`Voi ${overall}`} tone="navy" side={close ? (reference! >= overall ? "left" : "right") : "center"} />
         <div className="mt-2 grid grid-cols-4 text-[11px] text-muted">
           {LEVEL_NAMES.map((n, i) => (
             <span key={n} className={i === 3 ? "text-right" : i === 0 ? "" : "text-center"}>
@@ -66,11 +75,14 @@ export default function ScoreReading({
   );
 }
 
-function Marker({ value, label, tone }: { value: number; label: string; tone: "navy" | "muted" }) {
+function Marker({ value, label, tone, side }: { value: number; label: string; tone: "navy" | "muted"; side: "left" | "center" | "right" }) {
   const left = Math.min(98, Math.max(2, value));
+  const shift = side === "left" ? "-translate-x-[calc(50%+4px)]" : side === "right" ? "translate-x-[calc(50%+4px)]" : "";
   return (
     <div className="absolute -top-6 flex -translate-x-1/2 flex-col items-center" style={{ left: `${left}%` }}>
-      <span className={`whitespace-nowrap text-[11px] font-semibold ${tone === "navy" ? "text-navy" : "text-muted"}`}>{label}</span>
+      <span className={`whitespace-nowrap text-[11px] font-semibold ${shift} ${tone === "navy" ? "text-navy" : "text-muted"}`}>
+        {label}
+      </span>
       <span className={`mt-0.5 h-5 w-0.5 ${tone === "navy" ? "bg-navy" : "bg-ink/50"}`} />
     </div>
   );

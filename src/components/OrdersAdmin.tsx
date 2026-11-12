@@ -12,7 +12,10 @@ export interface OrderRow {
   items: { description: string; netCents: number }[];
   total_cents: number;
   billing: { denominazione: string; vat_number: string };
-  invoices: { id: string; number: string; status: string; error: string | null; issued_on: string }[] | { id: string; number: string; status: string; error: string | null; issued_on: string } | null;
+  invoices:
+    | { id: string; number: string; status: string; error: string | null; issued_on: string }[]
+    | { id: string; number: string; status: string; error: string | null; issued_on: string }
+    | null;
 }
 
 const STATUS: Record<string, string> = { pending: "in attesa", paid: "pagato", cancelled: "annullato", refunded: "rimborsato" };
@@ -28,7 +31,11 @@ export default function OrdersAdmin({ rows }: { rows: OrderRow[] }) {
   async function act(id: string, action: "paid" | "cancel" | "invoice") {
     if (action === "paid" && !confirm("Confermi di aver ricevuto il bonifico? Si attivano i servizi e si emette la fattura.")) return;
     setBusy(id + action);
-    const res = await fetch(`/api/admin/ordini/${id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action }) });
+    const res = await fetch(`/api/admin/ordini/${id}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
     const j = (await res.json().catch(() => ({}))) as { error?: string };
     setBusy(null);
     setMsg(res.ok ? "Fatto." : (j.error ?? "Non riuscito"));
@@ -71,7 +78,15 @@ export default function OrdersAdmin({ rows }: { rows: OrderRow[] }) {
                 <td className="py-2 pr-4 tabular-nums whitespace-nowrap">{eur(o.total_cents)}</td>
                 <td className="py-2 pr-4 whitespace-nowrap">
                   {STATUS[o.status] ?? o.status}
-                  {o.payment_method && <span className="block text-muted">{o.payment_method === "stripe" ? "carta / Stripe" : "bonifico"}</span>}
+                  {o.payment_method && (
+                    <span className="block text-muted">
+                      {o.payment_method === "stripe"
+                        ? "carta / Stripe"
+                        : o.payment_method === "omaggio"
+                          ? "accredito dello staff"
+                          : "bonifico"}
+                    </span>
+                  )}
                 </td>
                 <td className="py-2 pr-4">
                   {inv ? (
@@ -82,6 +97,8 @@ export default function OrdersAdmin({ rows }: { rows: OrderRow[] }) {
                         Scarica XML
                       </a>
                     </>
+                  ) : o.payment_method === "omaggio" ? (
+                    "non prevista"
                   ) : o.status === "paid" ? (
                     <span className="text-accent">non emessa</span>
                   ) : (
@@ -91,16 +108,28 @@ export default function OrdersAdmin({ rows }: { rows: OrderRow[] }) {
                 <td className="py-2 whitespace-nowrap space-y-1">
                   {o.status === "pending" && (
                     <>
-                      <button onClick={() => act(o.id, "paid")} disabled={!!busy} className="block px-3 py-1 rounded-lg border border-line hover:bg-paper">
+                      <button
+                        onClick={() => act(o.id, "paid")}
+                        disabled={!!busy}
+                        className="block px-3 py-1 rounded-lg border border-line hover:bg-paper"
+                      >
                         Bonifico ricevuto
                       </button>
-                      <button onClick={() => act(o.id, "cancel")} disabled={!!busy} className="block px-3 py-1 rounded-lg border border-line hover:bg-paper">
+                      <button
+                        onClick={() => act(o.id, "cancel")}
+                        disabled={!!busy}
+                        className="block px-3 py-1 rounded-lg border border-line hover:bg-paper"
+                      >
                         Annulla
                       </button>
                     </>
                   )}
-                  {o.status === "paid" && (!inv || inv.status !== "sent") && (
-                    <button onClick={() => act(o.id, "invoice")} disabled={!!busy} className="block px-3 py-1 rounded-lg border border-line hover:bg-paper">
+                  {o.status === "paid" && o.payment_method !== "omaggio" && (!inv || inv.status !== "sent") && (
+                    <button
+                      onClick={() => act(o.id, "invoice")}
+                      disabled={!!busy}
+                      className="block px-3 py-1 rounded-lg border border-line hover:bg-paper"
+                    >
                       {inv ? "Riprova l'invio" : "Emetti fattura"}
                     </button>
                   )}

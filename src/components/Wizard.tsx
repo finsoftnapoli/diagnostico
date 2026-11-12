@@ -1,38 +1,45 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check as CheckIcon, FileText, Info, Radar, ShieldCheck, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check as CheckIcon, Clock, FileText, Info, PauseCircle, Upload, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FileDrop from "@/components/FileDrop";
 import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
+import { acceptFor, docFormat, withType } from "@/lib/doc-format";
 import { clearDraft, loadDraft, saveDraft } from "@/lib/draft";
-import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS, QUESTIONS } from "@/lib/questionnaire";
+import {
+  firstIncomplete,
+  liveAreas,
+  minutesLeft,
+  missingProfileFields,
+  ORDERED_QUESTIONS,
+  stepProblem,
+  STEPS,
+  type LiveArea,
+  type Step,
+} from "@/lib/flow";
+import { LEVEL_NAMES } from "@/lib/levels";
+import { AREAS, ISSUES, OBJECTIVES, PROFILE_FIELDS } from "@/lib/questionnaire";
 import { MIN_TEXT } from "@/lib/sanitize";
-import HumanCheck, { isHumanCheckEnabled } from "./HumanCheck";
-import { emptyResponses } from "@/lib/scoring";
+import { areaReading } from "@/lib/score-meaning";
+import { computeResult, emptyResponses } from "@/lib/scoring";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode, Choice, Financials, Governance, Responses } from "@/lib/types";
 import { isValidItalianVat, normalizeVat } from "@/lib/vat";
-import FileDrop from "@/components/FileDrop";
-import { acceptFor, docFormat, withType } from "@/lib/doc-format";
+import HumanCheck, { isHumanCheckEnabled } from "./HumanCheck";
+import LiveOttogramma from "./LiveOttogramma";
 
-type Step = { kind: "intro" } | { kind: "profile" } | { kind: "objectives" } | { kind: "area"; area: AreaCode } | { kind: "issues" };
+const STEP_LABEL: Record<Exclude<Step["kind"], "question">, string> = {
+  start: "",
+  objectives: "Ambizioni",
+  issues: "Sfide",
+  profile: "La vostra azienda",
+};
 
-const STEPS: Step[] = [
-  { kind: "intro" },
-  { kind: "profile" },
-  { kind: "objectives" },
-  ...AREAS.map((a) => ({ kind: "area" as const, area: a.code })),
-  { kind: "issues" },
-];
-
-const SECTIONS: { kind: Step["kind"]; label: string }[] = [
-  { kind: "profile", label: "Azienda" },
-  { kind: "objectives", label: "Ambizioni" },
-  { kind: "area", label: "Come lavorate oggi" },
-  { kind: "issues", label: "Sfide" },
-];
+/** Nome del livello più vicino a un livello medio (1-4). */
+const nearestLevel = (level: number) => LEVEL_NAMES[Math.min(3, Math.max(0, Math.round(level) - 1))];
 
 export default function Wizard() {
   const router = useRouter();
@@ -42,11 +49,17 @@ export default function Wizard() {
     return d && !d.completedAt ? d : null;
   });
   const [r, setR] = useState<Responses>(() => initial?.responses ?? emptyResponses());
-  const [step, setStep] = useState(() => initial?.step ?? 0);
-  const [notice, setNotice] = useState<string | null>(() => ((initial?.step ?? 0) > 0 ? "Abbiamo ripreso da dove eri rimasto." : null));
+  // si riprende dal primo passo incompleto, qualunque versione del percorso abbia salvato la bozza
+  const [step, setStep] = useState(() => (initial ? firstIncomplete(initial.responses) : 0));
+  const [notice, setNotice] = useState<string | null>(() => (initial && step > 0 ? "Abbiamo ripreso da dove eravate rimasti." : null));
   const [error, setError] = useState<string | null>(null);
   const [human, setHuman] = useState(() => !isHumanCheckEnabled());
+  /** Ambito appena completato, di cui si mostra il riscontro prima di proseguire. */
+  const [areaDone, setAreaDone] = useState<AreaCode | null>(null);
+  const [showMissing, setShowMissing] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
+  /** Passo che avanza da solo appena la risposta è completa. */
+  const auto = useRef<number | null>(null);
 
   // salvataggio automatico a ogni modifica
   useEffect(() => {
@@ -61,7 +74,7 @@ export default function Wizard() {
       const sb = supabaseBrowser();
       const { data } = await sb.auth.getUser();
       if (!data.user) {
-        setNotice("Per riprendere apri il link dell'email da questo stesso browser.");
+        setNotice("Per riprendere aprite il link dell'email da questo stesso browser.");
         return;
       }
       const res = await fetch(`/api/bozze/${encodeURIComponent(id)}`);
@@ -70,46 +83,84 @@ export default function Wizard() {
         return;
       }
       const d = (await res.json()) as { step: number; responses: Responses };
-      setR({ ...emptyResponses(), ...d.responses });
-      setStep(Math.min(Math.max(d.step, 0), STEPS.length - 1));
-      setNotice("Bozza recuperata: riprendi da dove eri rimasto.");
+      const merged = { ...emptyResponses(), ...d.responses };
+      setR(merged);
+      setStep(firstIncomplete(merged));
+      setNotice("Bozza recuperata: riprendete da dove eravate rimasti.");
       window.history.replaceState(null, "", "/diagnostico");
     })();
   }, []);
 
-  const update = (patch: Partial<Responses>) => setR((prev) => ({ ...prev, ...patch }));
+  const update = useCallback((patch: Partial<Responses>) => setR((prev) => ({ ...prev, ...patch })), []);
   const cur = STEPS[step];
-  const progress = Math.round((step / (STEPS.length - 1)) * 100);
-  const missing = useMemo(() => (cur.kind === "intro" && !human ? "Attendi la verifica di sicurezza." : validate(cur, r)), [cur, r, human]);
+  const areas = useMemo(() => liveAreas(r), [r]);
   const onHuman = useCallback(() => setHuman(true), []);
+  const activeArea = cur.kind === "question" ? ORDERED_QUESTIONS[cur.index].area : null;
 
-  function go(delta: number) {
-    if (delta > 0 && missing) {
-      setError(missing);
+  function scrollTop() {
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function forward() {
+    const problem = cur.kind === "start" && !human ? "Attendete la verifica di sicurezza." : stepProblem(cur, r);
+    if (problem) {
+      setError(problem);
+      if (cur.kind === "profile") setShowMissing(true);
       return;
     }
     setError(null);
-    const next = step + delta;
-    if (next >= STEPS.length) {
+    auto.current = null;
+    if (step === STEPS.length - 1) {
       const textAreas = Array.from(new Set([...r.objectivesTextAreas, ...r.issuesTextAreas]));
       saveDraft({ step, responses: { ...r, textAreas }, completedAt: new Date().toISOString() });
       router.push("/risultati");
       return;
     }
-    setStep(Math.max(0, next));
-    topRef.current?.scrollIntoView({ behavior: "smooth" });
+    // all'ultima domanda di un ambito si mostra il riscontro, la prima volta che lo si completa
+    const next = STEPS[step + 1];
+    if (cur.kind === "question") {
+      const area = ORDERED_QUESTIONS[cur.index].area;
+      const lastOfArea = next.kind !== "question" || ORDERED_QUESTIONS[next.index].area !== area;
+      if (lastOfArea) setAreaDone(area);
+    }
+    setStep(step + 1);
+    scrollTop();
   }
+
+  function back() {
+    setError(null);
+    auto.current = null;
+    if (areaDone) setAreaDone(null);
+    setStep(Math.max(0, step - 1));
+    scrollTop();
+  }
+
+  /** Risposta a una domanda: se la completa, si passa da soli alla successiva. */
+  function answer(patch: Partial<Responses>) {
+    if (cur.kind === "question" && stepProblem(cur, r)) auto.current = step;
+    setError(null);
+    update(patch);
+  }
+
+  useEffect(() => {
+    if (auto.current !== step || stepProblem(STEPS[step], r)) return;
+    const t = window.setTimeout(forward, 450);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- avanza solo quando cambia la risposta del passo corrente
+  }, [r, step]);
 
   function restart() {
     clearDraft();
     setR(emptyResponses());
     setStep(0);
+    setAreaDone(null);
     setNotice(null);
   }
 
+  const side = cur.kind !== "start";
   return (
-    <div ref={topRef} className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
-      {cur.kind !== "intro" && <Progress step={step} r={r} progress={progress} />}
+    <div ref={topRef} className={`mx-auto px-4 py-6 sm:py-10 ${side ? "max-w-5xl" : "max-w-2xl"}`}>
+      {side && <Header step={step} cur={cur} areas={areas} active={areaDone ?? activeArea} done={areaDone} />}
 
       {notice && step > 0 && (
         <p className="mt-4 text-sm bg-paper border border-line rounded-lg px-3 py-2 flex flex-wrap gap-x-2">
@@ -120,164 +171,238 @@ export default function Wizard() {
         </p>
       )}
 
-      <div className="mt-8">
-        {cur.kind === "intro" && (
-          <>
-            <Intro r={r} update={update} />
-            <HumanCheck onVerified={onHuman} />
-          </>
-        )}
-        {cur.kind === "profile" && <Profile r={r} update={update} />}
-        {cur.kind === "objectives" && (
-          <Ranked
-            eyebrow="Ambizioni"
-            title="Dove volete portare l'azienda nei prossimi 2-3 anni?"
-            hint="Scegli fino a tre obiettivi, nell'ordine di importanza: il primo che selezioni è il più importante."
-            catalogue={OBJECTIVES}
-            selected={r.objectives}
-            onChange={(objectives) => update({ objectives })}
-            text={r.objectivesText}
-            onText={(objectivesText) => update({ objectivesText })}
-            textLabel="Racconta le vostre ambizioni: cosa volete ottenere e perché"
-            textPlaceholder="Per esempio: vogliamo crescere all'estero del 30% e, entro due anni, mio figlio entrerà in azienda; per questo devo delegare la parte commerciale, che oggi seguo da solo."
-            textAreas={r.objectivesTextAreas}
-            onTextAreas={(objectivesTextAreas) => update({ objectivesTextAreas })}
-          />
-        )}
-        {cur.kind === "area" && <AreaQuestions area={cur.area} r={r} update={update} />}
-        {cur.kind === "issues" && (
-          <Ranked
-            eyebrow="Sfide"
-            title="Quali sono oggi le sfide principali?"
-            hint="Scegli fino a tre criticità, nell'ordine di gravità: la prima che selezioni è la più pressante."
-            catalogue={ISSUES}
-            selected={r.issues}
-            onChange={(issues) => update({ issues })}
-            text={r.issuesText}
-            onText={(issuesText) => update({ issuesText })}
-            textLabel="Descrivi le sfide: cosa sta frenando l'azienda e quali conseguenze vedete"
-            textPlaceholder="Per esempio: scopriamo solo a fine anno se abbiamo guadagnato, la banca ci chiede previsioni di cassa che non sappiamo fare e i margini sulle commesse più grandi sono in calo."
-            textAreas={r.issuesTextAreas}
-            onTextAreas={(issuesTextAreas) => update({ issuesTextAreas })}
-          />
+      <div className={side ? "mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10 items-start" : "mt-2"}>
+        <div className="min-w-0">
+          {areaDone ? (
+            <AreaDone area={areaDone} r={r} areas={areas} onContinue={() => (setAreaDone(null), scrollTop())} next={cur} />
+          ) : (
+            <>
+              {cur.kind === "start" && (
+                <>
+                  <Start r={r} update={update} />
+                  <HumanCheck onVerified={onHuman} />
+                </>
+              )}
+              {cur.kind === "question" && <QuestionScreen index={cur.index} r={r} answer={answer} />}
+              {cur.kind === "objectives" && (
+                <Ranked
+                  eyebrow="Ambizioni"
+                  title="Dove volete portare l'azienda nei prossimi 2-3 anni?"
+                  hint="Scegliete fino a tre obiettivi, in ordine di importanza: il primo che toccate è il più importante."
+                  catalogue={OBJECTIVES}
+                  selected={r.objectives}
+                  onChange={(objectives) => update({ objectives })}
+                  text={r.objectivesText}
+                  onText={(objectivesText) => update({ objectivesText })}
+                  textPrompt="Pensate a dove volete essere tra due o tre anni: che cosa volete ottenere, e perché proprio adesso? Scrivetelo con parole vostre, come lo direste a un socio."
+                  textPlaceholder="Per esempio: vogliamo crescere all'estero del 30% e, entro due anni, mio figlio entrerà in azienda; per questo devo delegare la parte commerciale, che oggi seguo da solo."
+                  textAreas={r.objectivesTextAreas}
+                  onTextAreas={(objectivesTextAreas) => update({ objectivesTextAreas })}
+                />
+              )}
+              {cur.kind === "issues" && (
+                <Ranked
+                  eyebrow="Sfide"
+                  title="Quali sono oggi le sfide principali?"
+                  hint="Scegliete fino a tre criticità, in ordine di gravità: la prima che toccate è la più pressante."
+                  catalogue={ISSUES}
+                  selected={r.issues}
+                  onChange={(issues) => update({ issues })}
+                  text={r.issuesText}
+                  onText={(issuesText) => update({ issuesText })}
+                  textPrompt="Pensate a che cosa vi frena di più oggi, e a che cosa succede se tra un anno non è cambiato nulla. Bastano poche righe concrete."
+                  textPlaceholder="Per esempio: scopriamo solo a fine anno se abbiamo guadagnato, la banca ci chiede previsioni di cassa che non sappiamo fare e i margini sulle commesse più grandi sono in calo."
+                  textAreas={r.issuesTextAreas}
+                  onTextAreas={(issuesTextAreas) => update({ issuesTextAreas })}
+                />
+              )}
+              {cur.kind === "profile" && <Profile r={r} update={update} showMissing={showMissing} />}
+
+              {error && (
+                <p role="alert" className="mt-6 text-sm text-accent">
+                  {error}
+                </p>
+              )}
+
+              <div className="mt-8 flex justify-between gap-4">
+                {step > 0 ? (
+                  <button
+                    onClick={back}
+                    className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper inline-flex items-center gap-2"
+                  >
+                    <ArrowLeft className="size-4" aria-hidden /> Indietro
+                  </button>
+                ) : (
+                  <Link href="/" className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper">
+                    Annulla
+                  </Link>
+                )}
+                <button
+                  onClick={forward}
+                  className="px-6 py-2.5 rounded-lg bg-navy text-white font-semibold hover:bg-navy-soft inline-flex items-center gap-2"
+                >
+                  {step === STEPS.length - 1 ? "Concludi" : step === 0 ? "Inizia" : "Avanti"}
+                  <ArrowRight className="size-4" aria-hidden />
+                </button>
+              </div>
+              {step > 0 && <p className="mt-4 text-xs text-muted text-right">Le risposte si salvano da sole.</p>}
+            </>
+          )}
+        </div>
+
+        {side && (
+          <aside className="hidden lg:block sticky top-6">
+            <OttogrammaPanel areas={areas} active={areaDone ?? activeArea} />
+          </aside>
         )}
       </div>
-
-      {error && (
-        <p role="alert" className="mt-6 text-sm text-accent">
-          {error}
-        </p>
-      )}
-
-      <div className="mt-10 flex justify-between gap-4">
-        {step > 0 ? (
-          <button
-            onClick={() => go(-1)}
-            className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper inline-flex items-center gap-2"
-          >
-            <ArrowLeft className="size-4" aria-hidden /> Indietro
-          </button>
-        ) : (
-          <Link href="/" className="px-5 py-2.5 rounded-lg border border-line hover:bg-paper">
-            Annulla
-          </Link>
-        )}
-        <button
-          onClick={() => go(1)}
-          className="px-6 py-2.5 rounded-lg bg-navy text-white font-semibold hover:bg-navy-soft inline-flex items-center gap-2"
-        >
-          {step === STEPS.length - 1 ? "Vedi i risultati" : step === 0 ? "Inizia" : "Avanti"}
-          <ArrowRight className="size-4" aria-hidden />
-        </button>
-      </div>
-      {step > 0 && <p className="mt-4 text-xs text-muted text-right">Le risposte si salvano automaticamente.</p>}
     </div>
   );
 }
 
-function areaDone(area: AreaCode, r: Responses) {
-  return QUESTIONS.filter((q) => q.area === area).every((q) => r.levels[q.id] && r.checks[q.id]);
-}
-
-function Progress({ step, r, progress }: { step: number; r: Responses; progress: number }) {
-  const cur = STEPS[step];
+/** Avanzamento: dove si è, quanto manca, gli otto ambiti. Su telefono porta anche l'Ottogramma in piccolo. */
+function Header({
+  step,
+  cur,
+  areas,
+  active,
+  done,
+}: {
+  step: number;
+  cur: Step;
+  areas: LiveArea[];
+  active: AreaCode | null;
+  done: AreaCode | null;
+}) {
+  const progress = Math.round((step / (STEPS.length - 1)) * 100);
+  const label = done
+    ? `${areas.filter((a) => a.done).length} ambiti su ${areas.length}`
+    : cur.kind === "question"
+      ? `Domanda ${cur.index + 1} di ${ORDERED_QUESTIONS.length}`
+      : STEP_LABEL[cur.kind];
   return (
-    <div>
-      <ol className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-        {SECTIONS.map((s, i) => {
-          const active = s.kind === cur.kind;
-          const firstIdx = STEPS.findIndex((x) => x.kind === s.kind);
-          const done = step > firstIdx && !active;
-          return (
-            <li
-              key={s.kind}
-              className={`flex items-center gap-1.5 ${active ? "text-navy font-semibold" : done ? "text-ink" : "text-muted"}`}
-            >
-              <span
-                className={`size-5 rounded-full text-[11px] flex items-center justify-center ${
-                  active ? "bg-navy text-white" : done ? "bg-navy/15 text-navy" : "border border-line"
-                }`}
-              >
-                {done ? <CheckIcon className="size-3" aria-hidden /> : i + 1}
-              </span>
-              {s.label}
-            </li>
-          );
-        })}
-      </ol>
-      <div className="mt-3 h-1.5 bg-paper rounded-full" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-        <div className="h-1.5 bg-navy rounded-full transition-all" style={{ width: `${progress}%` }} />
-      </div>
-      {cur.kind === "area" && (
-        <div className="mt-4 grid grid-cols-8 gap-1.5" aria-label="Ambiti">
-          {AREAS.map((a) => {
-            const active = a.code === cur.area;
-            const done = areaDone(a.code, r);
+    <div className="flex items-center gap-4">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-3 text-sm">
+          <span className="font-semibold text-navy">{label}</span>
+          <span className="text-muted inline-flex items-center gap-1">
+            <Clock className="size-3.5" aria-hidden /> circa {minutesLeft(step)} min
+          </span>
+        </div>
+        <div className="mt-2 h-1.5 bg-paper rounded-full" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+          <div className="h-1.5 bg-navy rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="mt-3 grid grid-cols-8 gap-1.5" aria-label="Ambiti">
+          {areas.map((a) => {
+            const on = a.code === active;
             return (
               <div
                 key={a.code}
-                title={a.name}
-                className={`h-10 rounded-lg flex items-center justify-center border ${
-                  active ? "bg-navy text-white border-navy" : done ? "bg-navy/10 text-navy border-transparent" : "border-line text-muted"
+                title={AREAS.find((x) => x.code === a.code)?.name}
+                className={`h-8 rounded-lg flex items-center justify-center border transition-colors ${
+                  on ? "bg-navy text-white border-navy" : a.done ? "bg-navy/10 text-navy border-transparent" : "border-line text-muted"
                 }`}
               >
-                <AreaIcon code={a.code} className="size-4" />
+                {a.done && !on ? <CheckIcon className="size-4" aria-hidden /> : <AreaIcon code={a.code} className="size-4" />}
               </div>
             );
           })}
         </div>
+      </div>
+      <div className="lg:hidden w-20 shrink-0" aria-hidden>
+        <LiveOttogramma areas={areas} active={active} size={80} labels={false} />
+      </div>
+    </div>
+  );
+}
+
+function OttogrammaPanel({ areas, active }: { areas: LiveArea[]; active: AreaCode | null }) {
+  const done = areas.filter((a) => a.done);
+  return (
+    <div className="rounded-2xl border border-line bg-paper/60 p-5">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">Il vostro Ottogramma</p>
+      <div className="mt-2 flex justify-center">
+        <LiveOttogramma areas={areas} active={active} size={176} />
+      </div>
+      <p className="mt-2 text-sm text-muted">
+        {done.length === 0
+          ? "Si disegna mentre rispondete: un vertice per ogni ambito."
+          : done.length < areas.length
+            ? `${done.length} ${done.length === 1 ? "ambito" : "ambiti"} su ${areas.length}: più il vertice è lontano dal centro, più le pratiche sono mature.`
+            : "L'Ottogramma è completo. Mancano ambizioni, sfide e i dati dell'azienda."}
+      </p>
+      {done.length > 0 && (
+        <ul className="mt-3 space-y-1.5 text-sm">
+          {done.map((a) => (
+            <li key={a.code} className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2">
+                <AreaIcon code={a.code} className="size-4 text-navy" />
+                {AREA_SHORT[a.code]}
+              </span>
+              <span className="text-xs text-muted">{a.level ? nearestLevel(a.level) : ""}</span>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
 }
 
-function validate(s: Step, r: Responses): string | null {
-  switch (s.kind) {
-    case "intro":
-      return r.consents.service ? null : "Per proseguire accetta l'informativa e le condizioni del servizio.";
-    case "profile": {
-      const miss = PROFILE_FIELDS.filter((f) => f.required && !r.profile[f.id]?.trim());
-      if (miss.length) return `Completa: ${miss.map((f) => f.label.toLowerCase()).join(", ")}.`;
-      if (!isValidItalianVat(r.profile["PR-10"] ?? "")) return "Controlla la partita IVA: deve avere 11 cifre valide.";
-      return null;
-    }
-    case "objectives":
-      if (!r.objectives.length) return "Scegli almeno un obiettivo.";
-      if (r.objectivesText.trim().length < MIN_TEXT)
-        return `Racconta le vostre ambizioni in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
-      return null;
-    case "area": {
-      const qs = QUESTIONS.filter((q) => q.area === s.area);
-      if (qs.some((q) => !r.levels[q.id])) return "Scegli una situazione per ogni domanda.";
-      if (qs.some((q) => !r.checks[q.id])) return "Rispondi anche alle domande di verifica.";
-      return null;
-    }
-    case "issues":
-      if (!r.issues.length) return "Scegli almeno una sfida.";
-      if (r.issuesText.trim().length < MIN_TEXT)
-        return `Descrivi le sfide in almeno ${MIN_TEXT} caratteri: più dettagli ci dai, più utile sarà il report.`;
-      return null;
-  }
+/** Riscontro a fine ambito: il livello raggiunto e l'Ottogramma con il nuovo vertice. */
+function AreaDone({
+  area,
+  r,
+  areas,
+  onContinue,
+  next,
+}: {
+  area: AreaCode;
+  r: Responses;
+  areas: LiveArea[];
+  onContinue: () => void;
+  next: Step;
+}) {
+  const a = AREAS.find((x) => x.code === area)!;
+  const idx = AREAS.findIndex((x) => x.code === area);
+  const live = areas.find((x) => x.code === area)!;
+  const score = computeResult(r).areas.find((x) => x.code === area)?.score ?? null;
+  const levels = ORDERED_QUESTIONS.filter((q) => q.area === area).map((q) => r.levels[q.id]);
+  const nextArea = next.kind === "question" ? AREAS.find((x) => x.code === ORDERED_QUESTIONS[next.index].area) : null;
+  return (
+    <div className="rounded-2xl border border-navy/20 bg-navy/5 p-6 sm:p-8">
+      <p className="text-sm text-muted">
+        Ambito {idx + 1} di {AREAS.length} completato
+      </p>
+      <h1 className="mt-1 text-2xl sm:text-3xl font-semibold text-navy flex items-center gap-3">
+        <span className="shrink-0 size-10 rounded-xl bg-navy text-white flex items-center justify-center">
+          <AreaIcon code={area} className="size-5" />
+        </span>
+        {a.name}
+      </h1>
+      {live.level !== null && (
+        <p className="mt-4 inline-block rounded-full bg-white border border-navy/20 px-3 py-1 text-sm font-medium text-navy">
+          Livello più vicino: {nearestLevel(live.level)}
+        </p>
+      )}
+      <p className="mt-3 text-ink">{areaReading(score, null, levels)}</p>
+      <div className="mt-4 flex justify-center lg:hidden">
+        <LiveOttogramma areas={areas} active={area} size={170} />
+      </div>
+      <p className="mt-4 text-sm text-muted">
+        {nextArea
+          ? "Il vertice è sull'Ottogramma. Evidenze, confronto con aziende simili e priorità arrivano alla fine."
+          : "L'Ottogramma è completo. Ora due domande aperte su ambizioni e sfide: è da lì che nascono le priorità."}
+      </p>
+      <button
+        autoFocus
+        onClick={onContinue}
+        className="mt-6 px-6 py-2.5 rounded-lg bg-navy text-white font-semibold hover:bg-navy-soft inline-flex items-center gap-2"
+      >
+        {nextArea ? `Continua con ${nextArea.name}` : "Continua"}
+        <ArrowRight className="size-4" aria-hidden />
+      </button>
+    </div>
+  );
 }
 
 interface SectionProps {
@@ -285,42 +410,85 @@ interface SectionProps {
   update: (p: Partial<Responses>) => void;
 }
 
-function Intro({ r, update }: SectionProps) {
+/** Controllo della partita IVA sull'archivio pubblico: se la trova, compila ragione sociale e regione rimaste vuote. */
+function useVatLookup(r: Responses, update: (p: Partial<Responses>) => void) {
+  const [info, setInfo] = useState<string | null>(null);
+  async function check() {
+    const n = normalizeVat(r.profile["PR-10"] ?? "");
+    if (!isValidItalianVat(n)) {
+      setInfo(n ? "La partita IVA non sembra corretta." : null);
+      return;
+    }
+    setInfo("Partita IVA corretta.");
+    try {
+      const res = await fetch(`/api/piva?n=${n}`);
+      const j = (await res.json()) as { valid: boolean; checked?: boolean; name?: string | null; region?: string | null };
+      if (j.checked && !j.valid) setInfo("La partita IVA non risulta attiva nell'archivio europeo VIES.");
+      else if (j.name) {
+        setInfo(`Trovata: ${j.name}`);
+        update({
+          profile: {
+            ...r.profile,
+            "PR-10": n,
+            "PR-11": r.profile["PR-11"]?.trim() || j.name,
+            "PR-04": r.profile["PR-04"] || j.region || "",
+          },
+        });
+      }
+    } catch {
+      /* verifica online non disponibile: basta il controllo formale */
+    }
+  }
+  return { info, check };
+}
+
+function Start({ r, update }: SectionProps) {
+  const vat = useVatLookup(r, update);
   return (
     <div>
-      <h1 className="text-3xl font-semibold text-navy">Prima di iniziare</h1>
+      <h1 className="text-3xl font-semibold text-navy">Circa 15 minuti, una domanda alla volta</h1>
       {r.context && (
         <p className="mt-4 rounded-lg border border-navy/30 bg-navy/5 px-4 py-3 text-sm">
-          Compili il diagnostico come collega per <strong>{r.context.companyName}</strong>
-          {r.context.companyName.endsWith(".") ? "" : "."} Il profilo dell&apos;azienda è già compilato; le tue risposte individuali saranno
+          Compilate il diagnostico come colleghi di <strong>{r.context.companyName}</strong>
+          {r.context.companyName.endsWith(".") ? "" : "."} Il profilo dell&apos;azienda è già compilato; le risposte individuali saranno
           visibili all&apos;amministratore dello spazio aziendale, che potrà confrontarle con quelle degli altri colleghi.
         </p>
       )}
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      <ul className="mt-6 space-y-3">
         {[
-          { icon: Radar, t: "Subito l'Ottogramma", d: "Profilo sugli 8 ambiti, confronto con aziende simili ed evidenze chiave." },
           {
-            icon: FileText,
-            t: "Report approfondito",
-            d: "Entro 2 giorni lavorativi, l'analisi delle priorità rivista dai nostri esperti.",
+            icon: CheckIcon,
+            t: "Per ogni tema scegliete la descrizione più vicina alla situazione di oggi, non a quella desiderata: un quadro onesto produce priorità più utili.",
           },
-          {
-            icon: ShieldCheck,
-            t: "Dati protetti",
-            d: "Server in Europa. Nessun dato della tua azienda è visibile ad altri, salvo i colleghi che inviti tu.",
-          },
-        ].map(({ icon: Icon, t, d }) => (
-          <div key={t} className="rounded-xl border border-line p-4">
-            <Icon className="size-5 text-navy" aria-hidden strokeWidth={1.75} />
-            <p className="mt-2 font-semibold">{t}</p>
-            <p className="mt-1 text-sm text-muted">{d}</p>
-          </div>
+          { icon: Users, t: "L'Ottogramma, il profilo della vostra azienda sugli 8 ambiti, si disegna mentre rispondete." },
+          { icon: PauseCircle, t: "Potete interrompere quando volete: le risposte si salvano da sole e riprendete da dove eravate." },
+        ].map(({ icon: Icon, t }, i) => (
+          <li key={i} className="flex gap-3">
+            <Icon className="size-5 shrink-0 text-navy mt-0.5" aria-hidden strokeWidth={1.75} />
+            <span>{t}</span>
+          </li>
         ))}
-      </div>
-      <p className="mt-6 text-muted">
-        Per ogni tema scegli la descrizione più vicina alla situazione di <strong className="text-ink">oggi</strong>, non a quella
-        desiderata: un quadro onesto produce priorità più utili.
-      </p>
+      </ul>
+
+      {!r.context && (
+        <label className="mt-8 block text-sm">
+          <span className="font-medium">
+            Partita IVA <span className="text-muted font-normal">(facoltativa ora)</span>
+          </span>
+          <input
+            className="mt-1 block w-full sm:w-64 border border-line rounded-lg px-3 py-2"
+            inputMode="numeric"
+            placeholder="11 cifre"
+            value={r.profile["PR-10"] ?? ""}
+            onChange={(e) => update({ profile: { ...r.profile, "PR-10": e.target.value } })}
+            onBlur={vat.check}
+          />
+          <span className="mt-1 block text-xs text-muted">
+            {vat.info ?? "Se la indicate adesso compiliamo noi alcuni dati dell'azienda; altrimenti ve la chiediamo alla fine."}
+          </span>
+        </label>
+      )}
+
       <div className="mt-8 space-y-4">
         <Check checked={r.consents.service} onChange={(v) => update({ consents: { ...r.consents, service: v, benchmark: v } })}>
           Ho letto l&apos;
@@ -336,8 +504,8 @@ function Intro({ r, update }: SectionProps) {
       </div>
       <p className="mt-6 text-xs text-muted flex gap-2">
         <Info className="size-4 shrink-0" aria-hidden />
-        Il diagnostico fa parte di un programma di ricerca sulla gestione delle imprese italiane: i dati raccolti servono anche a studi e
-        confronti, sempre in forma anonima e aggregata. Il risultato è un&apos;autovalutazione orientativa, non una consulenza né un rating.
+        Il diagnostico fa parte di un programma di ricerca sulla gestione delle imprese italiane. Il risultato è un&apos;autovalutazione
+        orientativa, non una consulenza né un rating.
       </p>
     </div>
   );
@@ -352,76 +520,156 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: (v
   );
 }
 
-function Profile({ r, update }: SectionProps) {
-  const set = (id: string, v: string) => update({ profile: { ...r.profile, [id]: v } });
-  const [vatInfo, setVatInfo] = useState<string | null>(null);
+/** Una domanda per schermata: la situazione più vicina, poi una verifica rapida. */
+function QuestionScreen({ index, r, answer }: { index: number; r: Responses; answer: (p: Partial<Responses>) => void }) {
+  const q = ORDERED_QUESTIONS[index];
+  const a = AREAS.find((x) => x.code === q.area)!;
+  const inArea = ORDERED_QUESTIONS.filter((x) => x.area === q.area);
+  const level = r.levels[q.id];
+  const checkRef = useRef<HTMLDivElement>(null);
 
-  async function checkVat() {
-    const n = normalizeVat(r.profile["PR-10"] ?? "");
-    if (!isValidItalianVat(n)) {
-      setVatInfo(n ? "La partita IVA non sembra corretta." : null);
-      return;
-    }
-    setVatInfo("Partita IVA corretta.");
-    try {
-      const res = await fetch(`/api/piva?n=${n}`);
-      const j = (await res.json()) as { valid: boolean; checked?: boolean; name?: string | null };
-      if (j.checked && !j.valid) setVatInfo("La partita IVA non risulta attiva nell'archivio europeo VIES.");
-      else if (j.name) {
-        setVatInfo(`Trovata: ${j.name}`);
-        if (!r.profile["PR-11"]?.trim()) update({ profile: { ...r.profile, "PR-10": n, "PR-11": j.name } });
-      }
-    } catch {
-      /* verifica online non disponibile: basta il controllo formale */
-    }
-  }
+  // scelta la situazione, la verifica entra in vista
+  useEffect(() => {
+    if (level && !r.checks[q.id]) checkRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo quando cambia la situazione scelta
+  }, [level, q.id]);
 
   return (
+    <fieldset key={q.id} className="question-in">
+      <legend className="sr-only">{q.text}</legend>
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-navy/10 text-navy font-medium px-2.5 py-1">
+          <AreaIcon code={q.area} className="size-4" />
+          {a.name}
+        </span>
+        <span>
+          {inArea.indexOf(q) + 1} di {inArea.length} · {q.theme}
+        </span>
+      </p>
+      <h1 className="mt-4 text-xl sm:text-2xl font-semibold text-ink leading-snug">{q.text}</h1>
+      <div className="mt-5 space-y-2.5">
+        {q.levels.map((txt, i) => {
+          const lvl = i + 1;
+          const on = level === lvl;
+          return (
+            <label
+              key={lvl}
+              className={`flex gap-3 items-start border rounded-xl px-4 py-3.5 cursor-pointer leading-snug transition ${
+                on ? "border-navy bg-navy/5 shadow-sm" : "border-line hover:border-navy-soft hover:bg-paper/60"
+              }`}
+            >
+              <input
+                type="radio"
+                name={q.id}
+                className="sr-only"
+                checked={on}
+                onChange={() => answer({ levels: { ...r.levels, [q.id]: lvl } })}
+              />
+              <span
+                className={`mt-0.5 shrink-0 size-5 rounded-full border-2 flex items-center justify-center ${
+                  on ? "border-navy bg-navy text-white" : "border-line"
+                }`}
+                aria-hidden
+              >
+                {on && <CheckIcon className="size-3" strokeWidth={3} />}
+              </span>
+              <span>{txt}</span>
+            </label>
+          );
+        })}
+      </div>
+      <div
+        ref={checkRef}
+        className={`mt-5 rounded-xl bg-paper px-4 py-4 transition-opacity ${level ? "opacity-100" : "opacity-50"}`}
+        aria-disabled={!level}
+      >
+        <p className="text-sm">
+          <span className="font-medium">Una verifica rapida · </span>
+          {q.check.text}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {q.check.options.map((o) => {
+            const on = r.checks[q.id] === o;
+            return (
+              <button
+                key={o}
+                onClick={() => answer({ checks: { ...r.checks, [q.id]: o } })}
+                aria-pressed={on}
+                className={`text-sm px-4 py-2 rounded-full border ${
+                  on ? "bg-navy text-white border-navy" : "bg-white border-line hover:border-navy-soft"
+                }`}
+              >
+                {o}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </fieldset>
+  );
+}
+
+function Profile({ r, update, showMissing }: SectionProps & { showMissing: boolean }) {
+  const set = (id: string, v: string) => update({ profile: { ...r.profile, [id]: v } });
+  const vat = useVatLookup(r, update);
+  const missing = showMissing ? missingProfileFields(r) : [];
+  return (
     <div>
-      <p className="text-sm text-muted">Sezione 1</p>
-      <h1 className="text-3xl font-semibold text-navy">La tua azienda</h1>
+      <p className="text-sm text-muted">Ultimo passo</p>
+      <h1 className="text-3xl font-semibold text-navy">La vostra azienda</h1>
       <p className="mt-2 text-muted">
-        Con la partita IVA possiamo completare il profilo con i dati pubblici dell&apos;azienda e confrontarti con aziende simili per
-        settore e dimensione.
+        Questi dati servono a confrontarvi con aziende simili per settore e dimensione e a intestare il report.
+        {r.profile["PR-11"]?.trim() ? " Alcuni campi sono già compilati: controllateli." : ""}
       </p>
       {isSupabaseConfigured() && <DocUpload r={r} update={update} />}
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
-        {PROFILE_FIELDS.map((f) => (
-          <label key={f.id} className="block text-sm">
-            <span className="font-medium">
-              {f.label}
-              {f.required ? <span className="text-accent"> *</span> : <span className="text-muted"> (facoltativo)</span>}
-            </span>
-            {f.type === "select" ? (
-              <select
-                className="mt-1 w-full border border-line rounded-lg px-3 py-2 bg-white"
-                value={r.profile[f.id] ?? ""}
-                onChange={(e) => set(f.id, e.target.value)}
-              >
-                <option value="">Seleziona…</option>
-                {f.options?.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                className="mt-1 w-full border border-line rounded-lg px-3 py-2"
-                inputMode={f.type === "number" || f.id === "PR-10" ? "numeric" : "text"}
-                autoComplete={f.id === "PR-11" ? "organization" : undefined}
-                placeholder={f.id === "PR-10" ? "11 cifre" : undefined}
-                value={r.profile[f.id] ?? ""}
-                onChange={(e) => set(f.id, e.target.value)}
-                onBlur={f.id === "PR-10" ? checkVat : undefined}
-              />
-            )}
-            {f.id === "PR-10" && vatInfo && <span className="mt-1 block text-xs text-muted">{vatInfo}</span>}
-            {f.id === "PR-02" && (
-              <span className="mt-1 block text-xs text-muted">
-                Sui valori di confine vale la fascia superiore (con €5M esatti, €5-10M).
+        {PROFILE_FIELDS.map((f) => {
+          const bad = missing.includes(f.id);
+          const border = bad ? "border-accent" : "border-line";
+          return (
+            <label key={f.id} className="block text-sm">
+              <span className="font-medium">
+                {f.label}
+                {f.required ? <span className="text-accent"> *</span> : <span className="text-muted"> (facoltativo)</span>}
               </span>
-            )}
-          </label>
-        ))}
+              {f.type === "select" ? (
+                <select
+                  className={`mt-1 w-full border ${border} rounded-lg px-3 py-2 bg-white`}
+                  value={r.profile[f.id] ?? ""}
+                  onChange={(e) => set(f.id, e.target.value)}
+                  aria-invalid={bad}
+                >
+                  <option value="">Seleziona…</option>
+                  {f.options?.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  className={`mt-1 w-full border ${border} rounded-lg px-3 py-2`}
+                  inputMode={f.type === "number" || f.id === "PR-10" ? "numeric" : "text"}
+                  autoComplete={f.id === "PR-11" ? "organization" : undefined}
+                  placeholder={f.id === "PR-10" ? "11 cifre" : undefined}
+                  value={r.profile[f.id] ?? ""}
+                  onChange={(e) => set(f.id, e.target.value)}
+                  onBlur={f.id === "PR-10" ? vat.check : undefined}
+                  aria-invalid={bad}
+                />
+              )}
+              {bad && (
+                <span className="mt-1 block text-xs text-accent">
+                  {f.id === "PR-10" && r.profile["PR-10"]?.trim() ? "Non sembra corretta" : "Da compilare"}
+                </span>
+              )}
+              {f.id === "PR-10" && vat.info && !bad && <span className="mt-1 block text-xs text-muted">{vat.info}</span>}
+              {f.id === "PR-02" && (
+                <span className="mt-1 block text-xs text-muted">
+                  Sui valori di confine vale la fascia superiore (con €5M esatti, €5-10M).
+                </span>
+              )}
+            </label>
+          );
+        })}
       </div>
     </div>
   );
@@ -438,7 +686,7 @@ function Ranked(props: {
   onChange: (v: string[]) => void;
   text: string;
   onText: (v: string) => void;
-  textLabel: string;
+  textPrompt: string;
   textPlaceholder: string;
   textAreas: AreaCode[];
   onTextAreas: (v: AreaCode[]) => void;
@@ -454,7 +702,7 @@ function Ranked(props: {
   return (
     <div>
       <p className="text-sm text-muted">{props.eyebrow}</p>
-      <h1 className="text-3xl font-semibold text-navy">{props.title}</h1>
+      <h1 className="text-2xl sm:text-3xl font-semibold text-navy">{props.title}</h1>
       <p className="mt-2 text-muted">{props.hint}</p>
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
         {props.catalogue.map((c) => {
@@ -465,16 +713,14 @@ function Ranked(props: {
             <button
               key={c.code}
               onClick={() => toggle(c.code)}
-              disabled={full}
+              aria-disabled={full}
               aria-pressed={on}
               className={`text-left border rounded-xl px-3 py-3 flex items-center gap-3 transition ${
                 on ? "border-navy bg-navy/5 shadow-sm" : "border-line hover:border-navy-soft"
-              } ${full ? "opacity-40 cursor-not-allowed" : ""}`}
+              } ${full ? "text-muted" : ""}`}
             >
               <span
-                className={`shrink-0 size-9 rounded-lg flex items-center justify-center ${
-                  on ? "bg-navy text-white" : "bg-paper text-navy"
-                }`}
+                className={`shrink-0 size-9 rounded-lg flex items-center justify-center ${on ? "bg-navy text-white" : "bg-paper text-navy"}`}
               >
                 {on ? <span className="text-xs font-semibold">{RANK_LABEL[i]}</span> : <AreaIcon code={c.primary} className="size-4" />}
               </span>
@@ -483,132 +729,53 @@ function Ranked(props: {
           );
         })}
       </div>
-      <label className="block mt-8 text-sm font-medium">
-        {props.textLabel} <span className="text-accent">*</span>
-        <textarea
-          className="mt-1 w-full border border-line rounded-lg px-3 py-2 font-normal"
-          rows={4}
-          maxLength={1200}
-          placeholder={props.textPlaceholder}
-          value={props.text}
-          onChange={(e) => props.onText(e.target.value)}
-        />
-      </label>
-      <p className={`text-xs ${len >= MIN_TEXT ? "text-muted" : "text-accent/80"}`}>
-        {len >= MIN_TEXT ? "Grazie: più dettagli ci dai, più il report sarà su misura." : `Ancora ${MIN_TEXT - len} caratteri`}
-      </p>
-      {len > 0 && (
-        <div className="mt-4">
-          <p className="text-sm text-muted">A quali ambiti si riferisce soprattutto quello che hai scritto?</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {AREAS.map((a) => {
-              const on = props.textAreas.includes(a.code);
-              return (
-                <button
-                  key={a.code}
-                  onClick={() => toggleArea(a.code)}
-                  aria-pressed={on}
-                  className={`text-xs px-3 py-1.5 rounded-full border inline-flex items-center gap-1.5 ${
-                    on ? "bg-navy text-white border-navy" : "border-line"
-                  }`}
-                >
-                  <AreaIcon code={a.code} className="size-3.5" />
-                  {AREA_SHORT[a.code]}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {selected.length >= 3 && (
+        <p className="mt-2 text-xs text-muted">Ne avete scelti tre: per cambiarne uno, toccate prima quello da togliere.</p>
       )}
-    </div>
-  );
-}
 
-function LevelBar({ level, on }: { level: number; on: boolean }) {
-  return (
-    <span className="shrink-0 flex gap-0.5 mt-1" aria-hidden>
-      {[1, 2, 3, 4].map((i) => (
-        <span key={i} className={`w-1.5 h-3.5 rounded-sm ${i <= level ? (on ? "bg-navy" : "bg-navy/35") : "bg-line"}`} />
-      ))}
-    </span>
-  );
-}
-
-function AreaQuestions({ area, r, update }: SectionProps & { area: AreaCode }) {
-  const a = AREAS.find((x) => x.code === area)!;
-  const qs = QUESTIONS.filter((q) => q.area === area);
-  const idx = AREAS.findIndex((x) => x.code === area);
-  return (
-    <div>
-      <div className="flex items-start gap-4">
-        <span className="shrink-0 size-12 rounded-xl bg-navy text-white flex items-center justify-center">
-          <AreaIcon code={area} className="size-6" />
-        </span>
-        <div>
-          <p className="text-sm text-muted">
-            Ambito {idx + 1} di {AREAS.length}
-          </p>
-          <h1 className="text-3xl font-semibold text-navy leading-tight">{a.name}</h1>
-          <p className="mt-1 text-muted">{a.description}</p>
-        </div>
-      </div>
-      <div className="mt-8 space-y-6">
-        {qs.map((q, qi) => (
-          <fieldset key={q.id} className="rounded-xl border border-line p-4 sm:p-5">
-            <legend className="sr-only">{q.text}</legend>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted">
-              {qi + 1}/{qs.length} · {q.theme}
-            </p>
-            <p className="mt-1 font-semibold text-ink">{q.text}</p>
-            <div className="mt-3 space-y-2">
-              {q.levels.map((txt, i) => {
-                const lvl = i + 1;
-                const on = r.levels[q.id] === lvl;
+      <div className="mt-8 rounded-2xl border border-navy/20 bg-navy/5 p-4 sm:p-5">
+        <label className="block">
+          <span className="font-semibold text-navy">Prendetevi due minuti</span>
+          <span className="mt-1 block text-sm text-ink">
+            {props.textPrompt} <span className="text-accent">*</span>
+          </span>
+          <textarea
+            className="mt-3 w-full border border-line rounded-lg px-3 py-2 bg-white"
+            rows={5}
+            maxLength={1200}
+            placeholder={props.textPlaceholder}
+            value={props.text}
+            onChange={(e) => props.onText(e.target.value)}
+          />
+        </label>
+        <p className="mt-1 text-xs text-muted">
+          {len >= MIN_TEXT
+            ? "Grazie: più dettagli ci date, più il report sarà su misura."
+            : `Ancora ${MIN_TEXT - len} caratteri per proseguire.`}
+        </p>
+        {len > 0 && (
+          <div className="mt-4">
+            <p className="text-sm text-muted">A quali ambiti si riferisce soprattutto quello che avete scritto?</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {AREAS.map((a) => {
+                const on = props.textAreas.includes(a.code);
                 return (
-                  <label
-                    key={lvl}
-                    className={`flex gap-3 items-start border rounded-lg px-3 py-3 cursor-pointer text-sm leading-snug transition ${
-                      on ? "border-navy bg-navy/5" : "border-line hover:border-navy-soft"
+                  <button
+                    key={a.code}
+                    onClick={() => toggleArea(a.code)}
+                    aria-pressed={on}
+                    className={`text-xs px-3 py-1.5 rounded-full border inline-flex items-center gap-1.5 ${
+                      on ? "bg-navy text-white border-navy" : "bg-white border-line"
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name={q.id}
-                      className="sr-only"
-                      checked={on}
-                      onChange={() => update({ levels: { ...r.levels, [q.id]: lvl } })}
-                    />
-                    <LevelBar level={lvl} on={on} />
-                    <span className={on ? "text-ink" : ""}>{txt}</span>
-                  </label>
+                    <AreaIcon code={a.code} className="size-3.5" />
+                    {AREA_SHORT[a.code]}
+                  </button>
                 );
               })}
             </div>
-            <div className="mt-4 rounded-lg bg-paper px-3 py-3">
-              <p className="text-sm">
-                <span className="font-medium">Verifica rapida · </span>
-                {q.check.text}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {q.check.options.map((o) => {
-                  const on = r.checks[q.id] === o;
-                  return (
-                    <button
-                      key={o}
-                      onClick={() => update({ checks: { ...r.checks, [q.id]: o } })}
-                      aria-pressed={on}
-                      className={`text-sm px-3 py-1.5 rounded-full border ${
-                        on ? "bg-navy text-white border-navy" : "bg-white border-line hover:border-navy-soft"
-                      }`}
-                    >
-                      {o}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </fieldset>
-        ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -648,7 +815,7 @@ function DocUpload({ r, update }: SectionProps) {
       if (upErr)
         throw new Error(
           /mime/i.test(upErr.message)
-            ? "Formato del file non accettato dall'archivio: scrivici e lo abilitiamo."
+            ? "Formato del file non accettato dall'archivio: scriveteci e lo abilitiamo."
             : "Caricamento non riuscito, riprova",
         );
       // 2. lettura
@@ -691,7 +858,7 @@ function DocUpload({ r, update }: SectionProps) {
       if (j.governance?.organo) parts.push(`governance: ${j.governance.organo}`);
       setMsg((m) => ({
         ...m,
-        [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlla i campi qui sotto.` : "Letto: i campi erano già compilati.",
+        [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controllate i campi qui sotto.` : "Letto: i campi erano già compilati.",
       }));
     } catch (e) {
       setMsg((m) => ({ ...m, [kind]: e instanceof Error ? e.message : "Lettura non riuscita" }));
@@ -703,12 +870,12 @@ function DocUpload({ r, update }: SectionProps) {
   return (
     <div className="mt-6 rounded-xl border border-dashed border-navy/40 bg-paper p-4 sm:p-5">
       <p className="font-semibold flex items-center gap-2">
-        <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Hai a portata di mano visura e bilancio?
+        <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Avete a portata di mano visura e bilancio?
       </p>
       <p className="mt-1 text-sm text-muted">
-        Caricali con un clic o trascinandoli nei riquadri (facoltativo): la visura in PDF, il bilancio in PDF o nel formato XBRL del
+        Caricateli con un clic o trascinandoli nei riquadri (facoltativo): la visura in PDF, il bilancio in PDF o nel formato XBRL del
         Registro Imprese. Compiliamo noi i campi e il report includerà numeri chiave e governance. I file restano in un archivio privato e
-        puoi cancellarli in qualsiasi momento dalla tua area personale.
+        potete cancellarli in qualsiasi momento dall&apos;area personale.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {DOCS.map((d) => {

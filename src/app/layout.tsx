@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import AccountMenu from "@/components/AccountMenu";
+import MainNav from "@/components/MainNav";
 import HeaderAction from "@/components/HeaderAction";
 import { BRAND } from "@/config/brand";
 import { siteUrl } from "@/config/site";
@@ -27,15 +28,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               {BRAND.name}
             </Link>
             <nav aria-label="Principale" className="flex items-center gap-5 text-sm">
-              <Link href="/ambiti" className="hidden sm:inline text-muted hover:text-navy">
-                Gli 8 ambiti
-              </Link>
-              <Link href="/metodo" className="hidden sm:inline text-muted hover:text-navy">
-                Metodo
-              </Link>
-              <Link href="/area" className="hidden sm:inline text-muted hover:text-navy">
-                Area personale
-              </Link>
+              <Suspense fallback={null}>
+                <MainNav />
+              </Suspense>
               <Suspense fallback={null}>
                 <HeaderAction />
               </Suspense>
@@ -48,9 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex-1">{children}</main>
         <footer className="border-t border-line text-sm text-muted">
           <div className="mx-auto max-w-5xl px-4 py-6 flex flex-wrap gap-x-6 gap-y-2 justify-between">
-            <span>
-              Un servizio di {BRAND.owner}. Autovalutazione orientativa: non è una consulenza né un rating.
-            </span>
+            <span>Un servizio di {BRAND.owner}. Autovalutazione orientativa: non è una consulenza né un rating.</span>
             <span className="flex flex-wrap gap-x-4 gap-y-1">
               <Link href="/ambiti" className="hover:underline">
                 Gli 8 ambiti

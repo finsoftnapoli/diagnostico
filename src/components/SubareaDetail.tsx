@@ -32,12 +32,15 @@ export default function SubareaDetail({
   result,
   reference,
   expert,
+  reviewed = false,
 }: {
   area: AreaCode;
   result: ModuleResult;
   reference: number | null;
   /** Lettura degli esperti per sotto-ambito (nome → diagnosi e azioni), se il report è approvato. */
   expert?: Record<string, { diagnosis: string; actions: string[] }>;
+  /** Vero se un esperto ha rivisto il report prima dell'invio. */
+  reviewed?: boolean;
 }) {
   const [order, setOrder] = useState<"percorso" | "fragili">("percorso");
   const qs = MODULE_QUESTIONS[area];
@@ -138,7 +141,9 @@ export default function SubareaDetail({
 
               {expert?.[s.name]?.diagnosis && (
                 <div className="mt-4 rounded-lg bg-navy/[0.04] p-3 text-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-navy-soft">Lettura dei nostri esperti</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-navy-soft">
+                    {reviewed ? "Lettura rivista da un nostro esperto" : "Lettura e interventi suggeriti"}
+                  </p>
                   <p className="mt-1 leading-relaxed">{expert[s.name].diagnosis}</p>
                   {expert[s.name].actions.length > 0 && (
                     <ul className="mt-2 space-y-1">

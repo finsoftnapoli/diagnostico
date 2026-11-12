@@ -5,10 +5,12 @@ import { computeModule, type ModuleResponses } from "./module-scoring";
 import { MODULE_QUESTIONS, ROADMAP_HORIZONS } from "./modules";
 import { AREAS, ISSUES, OBJECTIVES } from "./questionnaire";
 import { areaReading, levelEquivalent, levelMix } from "./score-meaning";
+import { MODULE_SPEC } from "./narrative-spec";
+import { assessRelease, REPORT_MODEL as MODEL } from "./release";
+import { releaseChecks, type ReleaseVerdict } from "./release-checks";
 import type { supabaseService } from "./supabase/server";
 import type { AreaCode, Responses } from "./types";
 
-const MODEL = "claude-sonnet-5-5";
 type Db = ReturnType<typeof supabaseService>;
 
 export interface ModuleNarrative {
@@ -70,7 +72,8 @@ STRUTTURA (rispetta lo schema):
 - closing: un paragrafo sul prossimo passo e, con misura, sul valore di un confronto con un esperto.`;
 
 /** Genera il report di un modulo completato. Lancia un'eccezione se non riesce. */
-export async function generateModuleReport(db: Db, moduleId: string): Promise<ModuleNarrative> {
+/** Scrive il report del modulo e ne valuta il contenuto: l'esito dice se può partire senza revisione dello staff. */
+export async function generateModuleReport(db: Db, moduleId: string): Promise<{ narrative: ModuleNarrative; verdict: ReleaseVerdict }> {
   const { data: m } = await db
     .from("module_assessments")
     .select("id, user_id, company_id, area, responses, companies(name)")
@@ -107,7 +110,8 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<Mo
       res.score === null
         ? null
         : `${res.score} su 100 corrisponde a ${levelEquivalent(res.score)}. ${levelMix(res.themes.filter((t) => t.level !== null).map((t) => t.level as number))}.`,
-    punteggioAmbitoNelDiagnostico: (diag?.area_scores as { area: string; score: number | null }[] | undefined)?.find((s) => s.area === area)?.score ?? null,
+    punteggioAmbitoNelDiagnostico:
+      (diag?.area_scores as { area: string; score: number | null }[] | undefined)?.find((s) => s.area === area)?.score ?? null,
     sottoAmbiti: res.subs.map((sa) => ({
       nome: sa.name,
       descrizione: sa.description,
@@ -138,15 +142,22 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<Mo
 
   const client = new Anthropic();
   const applicable = res.subs.filter((sa) => sa.score !== null);
+  const checks = { spec: MODULE_SPEC, input, company: input.azienda.nome };
   let problem = "";
-  // una risposta formalmente valida ma incompleta si scarta e si riprova una volta
+  let feedback = "";
+  // una risposta incompleta, o che non supera i controlli sul contenuto, si riscrive una volta con le correzioni richieste
   for (let attempt = 1; attempt <= 2; attempt++) {
     const msg = await client.messages.create({
       model: MODEL,
       max_tokens: 16000,
       system: SYSTEM,
       output_config: { effort: "medium", format: { type: "json_schema", schema: MODULE_NARRATIVE_SCHEMA } },
-      messages: [{ role: "user", content: `Ecco i dati del modulo di approfondimento. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],
+      messages: [
+        {
+          role: "user",
+          content: `Ecco i dati del modulo di approfondimento. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}${feedback}`,
+        },
+      ],
     } as Anthropic.MessageCreateParamsNonStreaming);
     if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
     const text = msg.content.find((b) => b.type === "text");
@@ -158,10 +169,23 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<Mo
       const found = (n.themes ?? []).find((x) => x.theme === sa.name) ?? n.themes?.[i];
       return { theme: sa.name, diagnosis: found?.diagnosis ?? "", actions: found?.actions ?? [] };
     });
-    n.roadmap = ROADMAP_HORIZONS.map((h, i) => ({ horizon: h, actions: ((n.roadmap ?? []).find((x) => x.horizon === h) ?? n.roadmap?.[i])?.actions ?? [] }));
+    n.roadmap = ROADMAP_HORIZONS.map((h, i) => ({
+      horizon: h,
+      actions: ((n.roadmap ?? []).find((x) => x.horizon === h) ?? n.roadmap?.[i])?.actions ?? [],
+    }));
     problem = moduleNarrativeProblem(n);
-    if (!problem) return n;
-    console.warn(`Report del modulo incompleto (tentativo ${attempt}): ${problem}`);
+    if (problem) {
+      console.warn(`Report del modulo incompleto (tentativo ${attempt}): ${problem}`);
+      feedback = `\n\nUna versione precedente era incompleta (${problem}): scrivi tutte le sezioni per intero.`;
+      continue;
+    }
+    const blocking = releaseChecks({ ...checks, narrative: n }).blocking;
+    if (blocking.length && attempt === 1) {
+      console.warn(`Report del modulo da correggere: ${blocking.join(" | ")}`);
+      feedback = `\n\nUna versione precedente aveva questi problemi, da evitare nella nuova:\n- ${blocking.join("\n- ")}`;
+      continue;
+    }
+    return { narrative: n, verdict: await assessRelease({ ...checks, narrative: n }) };
   }
   throw new Error(`report incompleto: ${problem}`);
 }

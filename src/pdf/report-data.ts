@@ -33,6 +33,8 @@ export interface PdfArea {
 }
 
 export interface ReportPdfData {
+  /** Vero se un esperto ha rivisto e approvato il report prima dell'invio. */
+  reviewed: boolean;
   company: string;
   date: string;
   meta: string[];
@@ -62,6 +64,7 @@ export function reportPdfData(
   bench: Benchmark,
   completedAt: string,
   sources: string[],
+  reviewed = false,
 ): ReportPdfData {
   const res = computeResult(r);
   const ins = buildInsights(r, res, bench);
@@ -101,6 +104,7 @@ export function reportPdfData(
       : null;
 
   return {
+    reviewed,
     company: r.profile["PR-11"] || "La vostra azienda",
     date: new Date(completedAt).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" }),
     meta: [

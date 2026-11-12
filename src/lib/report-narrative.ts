@@ -9,9 +9,10 @@ import { AREAS } from "./questionnaire";
 import { computeResult } from "./scoring";
 import { areaReading, overallReading } from "./score-meaning";
 import { NARRATIVE_SCHEMA, type ReportNarrative } from "./report";
+import { DIAGNOSTIC_SPEC } from "./narrative-spec";
+import { assessRelease, REPORT_MODEL as MODEL } from "./release";
+import { releaseChecks, type ReleaseVerdict } from "./release-checks";
 import type { Responses } from "./types";
-
-const MODEL = "claude-sonnet-5-5";
 
 /** Dati, già calcolati, da passare al modello: niente di nuovo viene inventato. */
 const planInput = (p: PlanSummary) => ({
@@ -45,7 +46,11 @@ function buildInput(r0: Responses, bench: Benchmark, docs: ReportInputs | null) 
     },
     punteggioComplessivo: ins.overall,
     riferimentoFascia: ins.benchmarkAvg,
-    letturaPunteggioComplessivo: overallReading(ins.overall, ins.benchmarkAvg, ins.themes.map((t) => t.level)).join(" "),
+    letturaPunteggioComplessivo: overallReading(
+      ins.overall,
+      ins.benchmarkAvg,
+      ins.themes.map((t) => t.level),
+    ).join(" "),
     ambiti: res.areas.map((a) => {
       const levels = ins.themes.filter((t) => t.area === a.code).map((t) => t.level);
       return {
@@ -119,20 +124,29 @@ STRUTTURA (rispetta lo schema):
 - closing: un paragrafo che indica il prossimo passo e, con misura, il valore di un confronto con un esperto.`;
 
 /** Genera il report approfondito. Lancia un'eccezione se non riesce (il chiamante segna 'failed'). */
-export async function generateNarrative(r: Responses, docs: ReportInputs | null = null): Promise<ReportNarrative> {
+/** Scrive il report e ne valuta il contenuto: l'esito dice se può partire senza revisione dello staff. */
+export async function generateNarrative(
+  r: Responses,
+  docs: ReportInputs | null = null,
+): Promise<{ narrative: ReportNarrative; verdict: ReleaseVerdict }> {
   const bench = normativeBenchmark(r.profile["PR-02"]);
   const input = buildInput(r, bench, docs);
   const expected = computeResult(r).priorities.map((p) => p.code);
+  const labels = Object.fromEntries(AREAS.map((a) => [a.code, a.name]));
+  const checks = { spec: DIAGNOSTIC_SPEC, input, expected: { priorities: expected }, labels, company: r.profile["PR-11"] ?? null };
   const client = new Anthropic();
   let problem = "";
-  // una risposta formalmente valida ma incompleta si scarta e si riprova una volta
+  let feedback = "";
+  // una risposta incompleta, o che non supera i controlli sul contenuto, si riscrive una volta con le correzioni richieste
   for (let attempt = 1; attempt <= 2; attempt++) {
     const msg = await client.messages.create({
       model: MODEL,
       max_tokens: 16000,
       system: SYSTEM,
       output_config: { effort: "medium", format: { type: "json_schema", schema: NARRATIVE_SCHEMA } },
-      messages: [{ role: "user", content: `Ecco i dati del diagnostico. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}` }],
+      messages: [
+        { role: "user", content: `Ecco i dati del diagnostico. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}${feedback}` },
+      ],
     } as Anthropic.MessageCreateParamsNonStreaming);
     if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
     const text = msg.content.find((b) => b.type === "text");
@@ -142,8 +156,18 @@ export async function generateNarrative(r: Responses, docs: ReportInputs | null 
     const codes = new Set(AREAS.map((a) => a.code));
     narrative.priorities = (narrative.priorities ?? []).filter((p) => codes.has(p.area));
     problem = narrativeProblem(narrative, expected);
-    if (!problem) return narrative;
-    console.warn(`Report incompleto (tentativo ${attempt}): ${problem}`);
+    if (problem) {
+      console.warn(`Report incompleto (tentativo ${attempt}): ${problem}`);
+      feedback = `\n\nUna versione precedente era incompleta (${problem}): scrivi tutte le sezioni per intero.`;
+      continue;
+    }
+    const blocking = releaseChecks({ ...checks, narrative }).blocking;
+    if (blocking.length && attempt === 1) {
+      console.warn(`Report da correggere: ${blocking.join(" | ")}`);
+      feedback = `\n\nUna versione precedente aveva questi problemi, da evitare nella nuova:\n- ${blocking.join("\n- ")}`;
+      continue;
+    }
+    return { narrative, verdict: await assessRelease({ ...checks, narrative }) };
   }
   throw new Error(`report incompleto: ${problem}`);
 }
