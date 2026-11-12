@@ -58,7 +58,7 @@ export default function FileDrop({ onFile, disabled, accept = "application/pdf",
     >
       {children}
       {over && (
-        <span className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-navy text-sm font-semibold text-white">
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[inherit] bg-navy text-sm font-semibold text-white">
           Rilascia qui il file
         </span>
       )}

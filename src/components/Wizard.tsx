@@ -720,7 +720,7 @@ function DocUpload({ r, update }: SectionProps) {
                 onFile={(f) => void upload(d.kind, f)}
                 disabled={busy !== null}
                 activeClassName="border-navy ring-2 ring-navy/30 bg-paper"
-                className={`flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer transition ${
+                className={`flex min-h-28 items-center gap-3 rounded-xl border-2 border-dashed bg-white px-4 py-5 cursor-pointer transition ${
                   busy === d.kind ? "opacity-60 pointer-events-none" : "hover:border-navy-soft"
                 } ${done ? "border-navy" : "border-line"}`}
               >

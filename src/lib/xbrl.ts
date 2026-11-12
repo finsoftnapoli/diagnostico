@@ -4,8 +4,6 @@
 import type { BilancioData } from "./documents";
 import { isValidItalianVat, normalizeVat } from "./vat";
 
-type Ctx = { date: string; duration: boolean };
-
 const decode = (s: string) => {
   let out = s;
   // alcuni file codificano due volte i caratteri speciali (es. &amp;#39;)
@@ -21,8 +19,10 @@ const decode = (s: string) => {
   return out.trim();
 };
 
-/** Testo del file secondo la codifica dichiarata (UTF-8 se non indicata). */
+/** Testo del file secondo la codifica (BOM o dichiarazione XML; UTF-8 se non indicata). */
 export function xmlText(bytes: Uint8Array): string {
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) return new TextDecoder("utf-16le").decode(bytes);
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) return new TextDecoder("utf-16be").decode(bytes);
   const decl = new TextDecoder("latin1").decode(bytes.subarray(0, 200));
   const enc = decl.match(/encoding=["']([\w-]+)["']/i)?.[1]?.toLowerCase();
   const label = enc && /^(iso-8859-1|latin1|windows-1252|cp1252)$/.test(enc) ? "windows-1252" : "utf-8";
@@ -31,38 +31,62 @@ export function xmlText(bytes: Uint8Array): string {
 
 /** Vero se il testo sembra un'istanza XBRL. */
 export function looksLikeXbrl(text: string): boolean {
-  const head = text.slice(0, 4000).replace(/^﻿/, "").trimStart();
-  return head.startsWith("<") && /<(\w+:)?xbrl[\s>]/.test(head);
+  const head = text
+    .slice(0, 20000)
+    .replace(/^\uFEFF/, "")
+    .trimStart();
+  return head.startsWith("<") && /<([\w.-]+:)?xbrl[\s>]/.test(head);
 }
 
-/** Fatti dell'esercizio più recente, per nome dell'elemento (senza prefisso). */
-function currentFacts(xml: string): { facts: Map<string, string>; year: number | null } {
-  const contexts = new Map<string, Ctx>();
-  for (const m of xml.matchAll(/<(?:[\w-]+:)?context\b[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/(?:[\w-]+:)?context>/g)) {
+const attr = (attrs: string, name: string) => attrs.match(new RegExp(`\\b${name}\\s*=\\s*["']([^"']+)["']`))?.[1];
+
+/**
+ * Fatti dell'esercizio più recente, per nome dell'elemento (senza prefisso). La data di riferimento è la chiusura
+ * dell'ultimo stato patrimoniale (o conto economico) presente: il file può contenere altre date, per esempio quelle
+ * di approvazione o di deposito.
+ */
+function currentFacts(xml: string): { facts: Map<string, string>; anyDate: Map<string, string>; year: number | null } {
+  const contexts = new Map<string, string>();
+  for (const m of xml.matchAll(/<(?:[\w.-]+:)?context\b([^>]*)>([\s\S]*?)<\/(?:[\w.-]+:)?context>/g)) {
+    const id = attr(m[1], "id");
     const body = m[2];
-    if (/<(?:[\w-]+:)?(segment|scenario)\b/.test(body)) continue; // contesti con dimensioni: tabelle di dettaglio
-    const instant = body.match(/<(?:[\w-]+:)?instant>\s*([\d-]{10})/);
-    const end = body.match(/<(?:[\w-]+:)?endDate>\s*([\d-]{10})/);
-    if (instant) contexts.set(m[1], { date: instant[1], duration: false });
-    else if (end) contexts.set(m[1], { date: end[1], duration: true });
+    if (!id || /<(?:[\w.-]+:)?(segment|scenario)\b/.test(body)) continue; // contesti con dimensioni: tabelle di dettaglio
+    const date = body.match(/<(?:[\w.-]+:)?(?:instant|endDate)>\s*(\d{4}-\d{2}-\d{2})/)?.[1];
+    if (date) contexts.set(id, date);
   }
-  const dates = [...contexts.values()].map((c) => c.date).sort();
-  const latest = dates.at(-1) ?? null;
+  // tutti i fatti per nome e data
+  const byName = new Map<string, Map<string, string>>();
+  for (const m of xml.matchAll(/<([\w.-]+):([A-Za-z0-9_]+)\b([^>]*?)>([^<]*)<\/\1:\2>/g)) {
+    const ref = attr(m[3], "contextRef");
+    const date = ref ? contexts.get(ref) : undefined;
+    if (!date) continue;
+    const dates = byName.get(m[2]) ?? new Map<string, string>();
+    if (!dates.has(date)) dates.set(date, m[4]);
+    byName.set(m[2], dates);
+  }
+  const latestOf = (name: string) => [...(byName.get(name)?.keys() ?? [])].sort().at(-1);
+  const ref = latestOf("TotaleAttivo") ?? latestOf("TotaleValoreProduzione") ?? latestOf("TotalePatrimonioNetto");
   const facts = new Map<string, string>();
-  if (!latest) return { facts, year: null };
-  for (const m of xml.matchAll(/<([\w-]+):([A-Za-z0-9_]+)\b([^>]*?)>([^<]*)<\/\1:\2>/g)) {
-    const ref = m[3].match(/\bcontextRef="([^"]+)"/)?.[1];
-    const ctx = ref ? contexts.get(ref) : undefined;
-    if (!ctx || ctx.date !== latest) continue;
-    if (!facts.has(m[2])) facts.set(m[2], m[4]);
+  const anyDate = new Map<string, string>();
+  for (const [name, dates] of byName) {
+    if (ref && dates.has(ref)) facts.set(name, dates.get(ref)!);
+    anyDate.set(name, dates.get([...dates.keys()].sort().at(-1)!)!);
   }
-  return { facts, year: Number(latest.slice(0, 4)) };
+  return { facts, anyDate, year: ref ? Number(ref.slice(0, 4)) : null };
+}
+
+/** Riepilogo per i log quando un file non si legge: nessun dato dell'azienda, solo la struttura. */
+export function xbrlDiagnostics(xml: string): string {
+  const contexts = (xml.match(/<(?:[\w.-]+:)?context\b/g) ?? []).length;
+  const prefixes = [...new Set([...xml.matchAll(/<([\w.-]+):[A-Z][A-Za-z0-9_]+\b[^>]*contextRef/g)].map((m) => m[1]))].slice(0, 5);
+  const root = xml.slice(0, 20000).match(/<([\w.-]+:)?xbrl[\s>]/)?.[0] ?? "nessuna radice xbrl";
+  return `lunghezza ${xml.length}, radice ${root.trim()}, contesti ${contexts}, prefissi ${prefixes.join(",") || "nessuno"}, inizio ${JSON.stringify(xml.slice(0, 60))}`;
 }
 
 /** Converte un'istanza XBRL nei dati del bilancio; null se il file non contiene i prospetti. */
 export function parseXbrl(xml: string): BilancioData | null {
   if (!looksLikeXbrl(xml)) return null;
-  const { facts, year } = currentFacts(xml);
+  const { facts, anyDate, year } = currentFacts(xml);
   const has = (name: string) => facts.has(name);
   const num = (...names: string[]): number | null => {
     for (const n of names) {
@@ -73,8 +97,9 @@ export function parseXbrl(xml: string): BilancioData | null {
     }
     return null;
   };
+  // i dati anagrafici possono stare in un contesto con un'altra data
   const text = (name: string) => {
-    const v = facts.get(name);
+    const v = facts.get(name) ?? anyDate.get(name);
     return v ? decode(v) : null;
   };
 

@@ -248,16 +248,22 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
           }}
           disabled={busy}
           activeClassName="border-navy ring-2 ring-navy/30 bg-paper"
-          className={`sm:col-span-2 flex items-center gap-3 rounded-lg border bg-white px-3 py-3 cursor-pointer transition ${
-            busy ? "opacity-60 pointer-events-none" : "hover:border-navy-soft"
+          className={`sm:col-span-2 flex min-h-40 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed bg-white px-4 py-8 text-center cursor-pointer transition ${
+            busy ? "opacity-60 pointer-events-none" : "hover:border-navy-soft hover:bg-paper"
           } ${file ? "border-navy" : "border-line"}`}
         >
-          <span className="size-9 rounded-lg flex items-center justify-center bg-paper text-navy">
-            <Upload className="size-4" aria-hidden />
+          <span className="size-11 rounded-full flex items-center justify-center bg-paper text-navy">
+            {file ? <FileText className="size-5" aria-hidden /> : <Upload className="size-5" aria-hidden />}
           </span>
           <span className="text-sm">
-            <span className="font-medium block">{file ? file.name : "Scegli il file o trascinalo qui"}</span>
-            <span className="text-muted">{kind === "bilancio" ? "PDF o XBRL, fino a 20 MB" : "PDF, fino a 20 MB"}</span>
+            <span className="font-medium block">{file ? file.name : "Trascina qui il file oppure fai clic per sceglierlo"}</span>
+            <span className="text-muted">
+              {file
+                ? "Fai clic o trascina un altro file per cambiarlo"
+                : kind === "bilancio"
+                  ? "PDF o XBRL, fino a 20 MB"
+                  : "PDF, fino a 20 MB"}
+            </span>
           </span>
         </FileDrop>
       </div>

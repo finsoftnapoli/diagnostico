@@ -69,6 +69,21 @@ describe("bilancio XBRL", () => {
     });
   });
 
+  it("ignora date successive alla chiusura (approvazione, deposito) e accetta attributi tra apici singoli", () => {
+    const conAltreDate = ORDINARIO.replace(
+      "<itcc-ci:DatiAnagraficiDenominazione",
+      `${ctx("dep", "<xbrli:instant>2025-05-28</xbrli:instant>")}
+<itcc-ci:DatiAnagraficiPartitaIva contextRef='dep'>00743110157</itcc-ci:DatiAnagraficiPartitaIva>
+<itcc-ci:DataDepositoBilancio contextRef='dep'>2025-05-28</itcc-ci:DataDepositoBilancio>
+<itcc-ci:DatiAnagraficiDenominazione`,
+    ).replace(/contextRef="(\w+)"/g, "contextRef='$1'");
+    const b = parseXbrl(conAltreDate)!;
+    expect(b.anno_esercizio).toBe(2024);
+    expect(b.totale_attivo).toBe(8_000_000);
+    expect(b.ricavi).toBe(10_000_000);
+    expect(b.partita_iva).toBe("00743110157");
+  });
+
   it("negli schemi senza dettaglio dei debiti lascia vuoti i debiti finanziari", () => {
     const micro = ORDINARIO.replace(/<itcc-ci:Debiti[^\n]*\n/g, "");
     expect(parseXbrl(micro)!.debiti_finanziari).toBeNull();

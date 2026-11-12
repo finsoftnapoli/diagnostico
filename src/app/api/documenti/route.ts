@@ -24,7 +24,7 @@ import { isHuman } from "@/lib/human";
 import { companyOfMember } from "@/lib/supabase/membership";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
 import { normalizeVat } from "@/lib/vat";
-import { parseXbrl, xmlText } from "@/lib/xbrl";
+import { parseXbrl, xbrlDiagnostics, xmlText } from "@/lib/xbrl";
 
 export const maxDuration = 60;
 const MODEL = "claude-sonnet-5-5";
@@ -112,8 +112,10 @@ export async function POST(request: Request) {
   const discard = () => db.storage.from("documenti").remove([path]);
   let data: unknown;
   if (xbrl) {
-    data = parseXbrl(xmlText(bytes));
+    const xml = xmlText(bytes);
+    data = parseXbrl(xml);
     if (!data) {
+      console.error("Bilancio XBRL non letto:", xbrlDiagnostics(xml));
       await discard();
       return json({ error: "Il file non è un bilancio XBRL leggibile: scarica dal Registro Imprese il file .xbrl o carica il PDF." }, 422);
     }
