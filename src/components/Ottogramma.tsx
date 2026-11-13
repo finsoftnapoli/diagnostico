@@ -13,6 +13,7 @@ import { computeResult } from "@/lib/scoring";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { AreaCode } from "@/lib/types";
 import Progress, { type PreviousResult } from "./Progress";
+import Feedback from "./Feedback";
 import InviteColleagues from "./InviteColleagues";
 import RadarProfile from "./RadarProfile";
 import ScoreReading from "./ScoreReading";
@@ -149,6 +150,8 @@ export default function Ottogramma({
       )}
 
       {isSupabaseConfigured() && draft.savedId && !r.context && <InviteColleagues people={r.people ?? []} />}
+
+      {isSupabaseConfigured() && draft.savedId && <Feedback kind="ottogramma" refId={draft.savedId} />}
 
       <p className="mt-10 text-xs text-muted flex gap-2 max-w-3xl">
         <Info className="size-4 shrink-0" aria-hidden />

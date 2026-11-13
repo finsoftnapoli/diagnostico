@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@/lib/track";
 import { ArrowLeft, ArrowRight, Check as CheckIcon, Clock, FileText, Info, PauseCircle, Upload, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -93,6 +94,18 @@ export default function Wizard() {
 
   const update = useCallback((patch: Partial<Responses>) => setR((prev) => ({ ...prev, ...patch })), []);
   const cur = STEPS[step];
+  // misura del percorso: un evento per passo raggiunto, senza identificativi
+  useEffect(() => {
+    const c = STEPS[step];
+    if (c.kind === "start") return track("avvio");
+    if (c.kind === "question") {
+      if (c.index === 0) track("inizio");
+      else track("risposta", ORDERED_QUESTIONS[c.index - 1].id);
+      return;
+    }
+    track("risposta", ORDERED_QUESTIONS[ORDERED_QUESTIONS.length - 1].id);
+    track(c.kind === "objectives" ? "ambizioni" : c.kind === "issues" ? "sfide" : "azienda");
+  }, [step]);
   const areas = useMemo(() => liveAreas(r), [r]);
   const onHuman = useCallback(() => setHuman(true), []);
   const activeArea = cur.kind === "question" ? ORDERED_QUESTIONS[cur.index].area : null;

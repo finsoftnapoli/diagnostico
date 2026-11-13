@@ -1,0 +1,6 @@
+node_modules
+.next
+supabase/setup_completo.sql
+src/lib/questionnaire.ts
+src/lib/modules.ts
+package-lock.json

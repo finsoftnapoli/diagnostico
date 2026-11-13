@@ -1,4 +1,5 @@
 // L'amministratore dello spazio aziendale invita un collega: crea l'invito e invia l'email.
+import { siteUrl } from "@/config/site";
 import { NextResponse } from "next/server";
 import { invitationEmail, isEmailConfigured, sendEmail } from "@/lib/email";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
     .select("id", { count: "exact", head: true })
     .eq("invited_by", user.id)
     .gte("sent_at", since);
-  if ((sentToday ?? 0) >= 30) return NextResponse.json({ error: "Hai raggiunto il limite di inviti per oggi: riprova domani" }, { status: 429 });
+  if ((sentToday ?? 0) >= 30)
+    return NextResponse.json({ error: "Hai raggiunto il limite di inviti per oggi: riprova domani" }, { status: 429 });
 
   // un invito in sospeso per la stessa persona viene riutilizzato
   const { data: existing } = await sb
@@ -56,7 +58,7 @@ export async function POST(request: Request) {
     inv = data;
   }
 
-  const origin = new URL(request.url).origin;
+  const origin = siteUrl();
   const mail = invitationEmail({
     inviter: user.email,
     company: companyName,

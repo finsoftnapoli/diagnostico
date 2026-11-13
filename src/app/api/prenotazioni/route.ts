@@ -1,4 +1,5 @@
 // Prenotazione di una consulenza con un'ora già acquistata (per esempio dal percorso completo).
+import { siteUrl } from "@/config/site";
 import { NextResponse } from "next/server";
 import { bookWithCredit, sendBookingEmails } from "@/lib/commerce";
 import { companyOfMember } from "@/lib/supabase/membership";
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
   const db = supabaseService();
   const res = await bookWithCredit(db, { userId: auth.user.id, companyId: company.id, slotId: body.slotId, topic: body.topic ?? null });
   if ("error" in res) return NextResponse.json({ error: res.error }, { status: 409 });
-  await sendBookingEmails(db, res.id, new URL(request.url).origin).catch((e) =>
+  await sendBookingEmails(db, res.id, siteUrl()).catch((e) =>
     console.error("Email prenotazione non inviate:", e instanceof Error ? e.message : e),
   );
   return NextResponse.json({ id: res.id });

@@ -29,6 +29,7 @@ import type { AreaCode } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
 import type { ReportNarrative } from "@/lib/report";
+import Feedback from "./Feedback";
 import InviteColleagues from "./InviteColleagues";
 import Offers from "./Offers";
 import PdfDownload from "./PdfDownload";
@@ -440,6 +441,14 @@ export default function Report({
       {isSupabaseConfigured() && draft.savedId && !r.context && (
         <div className="no-print">
           <InviteColleagues people={r.people ?? []} />
+        </div>
+      )}
+
+      {/* Riscontro e domande */}
+      {narrative && draft.savedId && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Feedback kind="report" refId={draft.savedId} />
+          <Feedback kind="report" refId={draft.savedId} ask />
         </div>
       )}
 

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ExampleOttogramma from "@/components/ExampleOttogramma";
 import JsonLd from "@/components/JsonLd";
+import Observer from "@/components/Observer";
 import { areaPage } from "@/config/ambiti";
 import { BRAND } from "@/config/brand";
 import { FAQ } from "@/config/faq";
@@ -43,6 +44,7 @@ export default function Home() {
   const url = siteUrl();
   return (
     <div>
+      <Observer page="home" />
       <JsonLd
         data={[
           {

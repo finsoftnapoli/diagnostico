@@ -1,4 +1,5 @@
 // Genera i report approfonditi in differita e avvisa via email (Vercel Cron).
+import { siteUrl } from "@/config/site";
 import { NextResponse } from "next/server";
 import { generatePendingReports } from "@/lib/report-jobs";
 
@@ -9,6 +10,6 @@ export async function GET(request: Request) {
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`)
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   if (!process.env.ANTHROPIC_API_KEY) return NextResponse.json({ error: "API non configurata" }, { status: 503 });
-  const res = await generatePendingReports(new URL(request.url).origin);
+  const res = await generatePendingReports(siteUrl());
   return NextResponse.json(res);
 }

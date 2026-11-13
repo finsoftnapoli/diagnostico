@@ -1,4 +1,5 @@
 // Annullamento di una prenotazione: dal cliente fino a 24 ore prima, dallo staff sempre.
+import { siteUrl } from "@/config/site";
 import { NextResponse } from "next/server";
 import { cancelBooking } from "@/lib/commerce";
 import { currentUser, supabaseService } from "@/lib/supabase/server";
@@ -16,6 +17,6 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/prenotazi
   const starts = new Date((b.expert_slots as unknown as { starts_at: string }).starts_at);
   if (!isStaff && starts.getTime() - Date.now() < CANCEL_HOURS * 3600 * 1000)
     return NextResponse.json({ error: `Si può annullare fino a ${CANCEL_HOURS} ore prima: scrivici per spostarla` }, { status: 409 });
-  if (!(await cancelBooking(db, id, new URL(request.url).origin))) return NextResponse.json({ error: "Prenotazione già annullata" }, { status: 409 });
+  if (!(await cancelBooking(db, id, siteUrl()))) return NextResponse.json({ error: "Prenotazione già annullata" }, { status: 409 });
   return NextResponse.json({ ok: true });
 }

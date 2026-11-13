@@ -1,3 +1,4 @@
+import Observer from "@/components/Observer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </nav>
           </div>
         </header>
+        <Observer />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-line text-sm text-muted">
           <div className="mx-auto max-w-5xl px-4 py-6 flex flex-wrap gap-x-6 gap-y-2 justify-between">

@@ -7,7 +7,7 @@ percorso completo.
 
 Il piano di lavoro e le decisioni di prodotto sono nel documento "Diagnostico PMI — Piano per il sito operativo".
 
-## Stato (27 ottobre 2026)
+## Stato (13 novembre 2026)
 
 In prova su Vercel con database Supabase di test. Funziona:
 
@@ -21,6 +21,7 @@ In prova su Vercel con database Supabase di test. Funziona:
 | Vendite | Dati di fatturazione, acquisto con Stripe Checkout, attivazione di moduli e ore di consulenza, fattura elettronica FatturaPA (invio ad Aruba o coda da caricare a mano), prenotazione delle consulenze sugli orari dell'esperto con invito di calendario |
 | Approfondimenti | 8 moduli, ciascuno un Ottogramma dell'ambito con 8 sotto-ambiti e 16-18 domande; punteggi subito, report AI rivisto dallo staff |
 | Area staff | Compilazioni ed esportazione CSV, report da rivedere con editor, ordini e fatture, agenda delle consulenze |
+| Controlli e andamento | `/admin/controlli`: controlli di configurazione, passi del questionario in cui le persone si fermano (misure anonime, senza cookie né identificativi), riscontri e domande dei clienti, errori di browser e server, ultima copia di sicurezza. Copia giornaliera dei dati nel bucket privato `backup` (30 giorni). Verifiche automatiche a ogni invio su GitHub (`.github/workflows/verifiche.yml`) |
 
 Non ancora fatto: dominio e nome definitivi, migrazione del database a Francoforte, chiavi Stripe e dati del cedente,
 CRM, analytics, revisione legale. Dettagli nella sezione "Messa in produzione".
@@ -106,6 +107,8 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 | `expert_slots`, `bookings` | Orari dell'esperto e prenotazioni |
 | `module_assessments` | Moduli di approfondimento |
 | `interests` | Richieste di contatto della prima versione delle offerte (non più usata) |
+| `report_events` | Aperture e download dei report |
+| `feedback`, `funnel_events`, `error_log` | Riscontri dei clienti, misure anonime del percorso, errori (solo server e staff; misure ed errori cancellati dopo 90 giorni) |
 
 ## Messa in produzione
 

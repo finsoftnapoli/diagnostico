@@ -1,3 +1,4 @@
+import Feedback from "@/components/Feedback";
 import { ArrowRight, Clock3, Gauge } from "lucide-react";
 import Link from "next/link";
 import { AreaIcon } from "@/lib/areaIcons";
@@ -25,6 +26,7 @@ export default function ModuleReport({
   failed,
   pdfHref,
   reviewed = false,
+  id,
 }: {
   area: AreaCode;
   company: string;
@@ -38,6 +40,8 @@ export default function ModuleReport({
   pdfHref?: string;
   /** Vero se un esperto ha rivisto e approvato il report prima dell'invio. */
   reviewed?: boolean;
+  /** Identificativo del modulo, per i riscontri del cliente. */
+  id?: string;
 }) {
   const a = AREAS.find((x) => x.code === area)!;
   const score = result.score;
@@ -236,6 +240,12 @@ export default function ModuleReport({
               </>
             )}
           </p>
+        </div>
+      )}
+      {narrative && id && (
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 print:hidden">
+          <Feedback kind="modulo" refId={id} />
+          <Feedback kind="modulo" refId={id} ask />
         </div>
       )}
     </div>

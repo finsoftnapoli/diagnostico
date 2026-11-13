@@ -258,4 +258,19 @@ do $$ begin
   assert (select allowed_mime_types @> array['application/pdf', 'application/xml'] from storage.buckets where id = 'documenti'),
     'archivio documenti: PDF e XML ammessi';
 end $$;
+-- riscontri, misura del percorso e registro degli errori: solo il server
+set role authenticated;
+do $$ declare t text; begin
+  foreach t in array array['feedback', 'funnel_events', 'error_log'] loop
+    begin
+      execute format('select 1 from public.%I', t);
+      raise exception 'non doveva riuscire: %', t;
+    exception when insufficient_privilege then null;
+    end;
+  end loop;
+end $$;
+reset role;
+do $$ begin
+  assert (select not public from storage.buckets where id = 'backup'), 'archivio delle copie di sicurezza privato';
+end $$;
 select 'TUTTI I CONTROLLI SUPERATI' as esito;

@@ -44,6 +44,9 @@ async function AdminList() {
         <Link href="/admin/ordini" className="underline text-navy-soft">
           Ordini e fatture
         </Link>
+        <Link href="/admin/controlli" className="underline text-navy-soft">
+          Controlli e andamento
+        </Link>
       </nav>
       <section className="mb-12">
         <h2 className="text-xl font-semibold text-navy">

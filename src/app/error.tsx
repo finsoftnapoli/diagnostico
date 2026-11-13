@@ -1,8 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { BRAND } from "@/config/brand";
+import { reportClientError } from "@/lib/track";
 
-export default function Error({ retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export default function Error({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  useEffect(() => {
+    reportClientError(error.message || "Errore di pagina", error.digest ? `digest ${error.digest}` : error.stack);
+  }, [error]);
   return (
     <div className="mx-auto max-w-3xl px-4 py-20">
       <h1 className="text-3xl font-semibold text-navy">Qualcosa non ha funzionato</h1>

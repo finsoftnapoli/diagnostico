@@ -46,6 +46,7 @@ async function Module({ params }: { params: Promise<{ id: string }> }) {
   if (report?.narrative && !isStaff) await trackReport("modulo", id, user.id, "open");
   return (
     <ModuleReport
+      id={m.id}
       area={area}
       company={(m.companies as unknown as { name: string } | null)?.name ?? ""}
       result={computeModule(area, { ...emptyModuleResponses(), ...(m.responses as ModuleResponses) })}

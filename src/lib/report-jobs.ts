@@ -5,6 +5,7 @@ import { siteUrl } from "@/config/site";
 import { heldReportEmail, isEmailConfigured, reportReadyEmail, reviewDigestEmail, scheduledReportEmail, sendEmail } from "./email";
 import { generateModuleReport } from "./module-report";
 import { autoReleaseEnabled } from "./release";
+import { logError } from "./observe";
 import type { ReleaseVerdict } from "./release-checks";
 import { nextMorning, releaseLabel } from "./release-schedule";
 import { generateNarrative } from "./report-narrative";
@@ -134,6 +135,7 @@ export async function releaseDueReports(db: Db, origin: string) {
 async function saveFailed(db: Db, table: Table, id: string, attempts: number, opts: Options, e: unknown) {
   const why = e instanceof Error ? e.message : String(e);
   console.error("Generazione report non riuscita:", why);
+  await logError("server", `Generazione report non riuscita: ${why}`, `${table}/${id}`);
   await db.from(table).update({ report_status: "failed", report_attempts: attempts }).eq("id", id);
   // all'ultimo tentativo lo staff va avvisato: il report non arriverà da solo
   if (opts.release && attempts >= MAX_ATTEMPTS && isEmailConfigured())

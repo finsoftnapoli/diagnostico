@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@/lib/track";
 import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { useEffect, useRef, useState } from "react";
 import LiveOttogramma from "./LiveOttogramma";
@@ -41,6 +42,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Salvataggio non riuscito");
+      track("salvato");
       const next = patchDraft({ savedId: json.id, pending: undefined }) ?? { ...draft, savedId: json.id, pending: undefined };
       window.history.replaceState(null, "", "/risultati");
       onSaved(next);
@@ -53,11 +55,16 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
     }
   }
 
+  useEffect(() => {
+    track("anteprima");
+  }, []);
+
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controlla l'indirizzo email.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controllate l'indirizzo email.");
     setBusy(true);
+    track("codice");
     const res = await saveDraftAndSendLink({
       email: email.trim(),
       step: draft.step,

@@ -1,4 +1,5 @@
 // Azioni dello staff su un ordine: registrare un bonifico, annullare, emettere o reinviare la fattura.
+import { siteUrl } from "@/config/site";
 import { NextResponse } from "next/server";
 import { cancelOrder, fulfillOrder, issueInvoice } from "@/lib/commerce";
 import { currentUser, supabaseService } from "@/lib/supabase/server";
@@ -11,7 +12,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/admin/ordin
   if (!user || !isStaff) return NextResponse.json({ error: "Riservato allo staff" }, { status: 403 });
   const { action } = (await request.json().catch(() => ({}))) as { action?: string };
   const db = supabaseService();
-  const origin = new URL(request.url).origin;
+  const origin = siteUrl();
   if (action === "paid") {
     const r = await fulfillOrder(db, id, "bonifico", origin);
     if (r.alreadyDone) return NextResponse.json({ error: "Ordine non in attesa di pagamento" }, { status: 409 });
