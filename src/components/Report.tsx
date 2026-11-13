@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BRAND } from "@/config/brand";
+import { recommendationFor, SOURCES } from "@/config/recommendations";
 import { bandText, type Benchmark, medianBenchmark, normativeBenchmark, type RealBenchmark } from "@/config/benchmark";
 import { AREA_SHORT, AreaIcon } from "@/lib/areaIcons";
 import type { Draft } from "@/lib/draft";
@@ -698,6 +699,48 @@ function Verdict({ v }: { v: "base solida" | "da rafforzare" | "ostacolo" }) {
   return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>{v.charAt(0).toUpperCase() + v.slice(1)}</span>;
 }
 
+/** «Come fare»: la scheda di metodo che porta il tema al livello successivo. */
+function HowTo({ theme, level }: { theme: string; level: number }) {
+  const c = recommendationFor(theme, level);
+  if (!c) return null;
+  return (
+    <details className="no-print group mt-2 rounded-lg border border-line bg-white">
+      <summary className="cursor-pointer list-none px-3 py-2 text-sm font-medium text-navy flex items-center justify-between gap-2">
+        Come fare: {c.title.charAt(0).toLowerCase() + c.title.slice(1)}
+        <ArrowRight className="size-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden />
+      </summary>
+      <div className="px-3 pb-3 text-sm">
+        <ol className="space-y-1.5 list-decimal pl-5">
+          {c.actions.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ol>
+        <dl className="mt-3 space-y-1.5">
+          {(
+            [
+              ["Che cosa resta in azienda", c.tool],
+              ["Come capire se funziona", c.indicator],
+              ["Tempo tipico", c.time],
+              ["L'errore da evitare", c.pitfall],
+            ] as const
+          ).map(([k, v]) => (
+            <div key={k}>
+              <dt className="text-xs uppercase tracking-wide text-muted">{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        {c.sources?.length ? (
+          <p className="mt-3 text-xs text-muted">
+            Da sapere: {c.sources.map((k) => `${SOURCES[k].label}. ${SOURCES[k].note}`).join(" ")} Verificate con i vostri consulenti come
+            si applica al vostro caso.
+          </p>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
 function Step({ t }: { t: ThemeView }) {
   return (
     <li className="text-sm">
@@ -712,6 +755,7 @@ function Step({ t }: { t: ThemeView }) {
         </p>
       )}
       {t.sizeNote && <p className="mt-1 text-xs text-muted">Per un&apos;azienda della vostra dimensione: {t.sizeNote}</p>}
+      <HowTo theme={t.id} level={t.level} />
     </li>
   );
 }

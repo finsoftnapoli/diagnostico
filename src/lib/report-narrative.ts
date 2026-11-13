@@ -1,3 +1,4 @@
+import { recommendationFor } from "@/config/recommendations";
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { narrativeProblem } from "./narrative-checks";
@@ -73,6 +74,7 @@ function buildInput(r0: Responses, bench: Benchmark, docs: ReportInputs | null) 
         oggi: t.current,
         prossimoLivello: t.next,
         notaDimensione: t.sizeNote,
+        schedaDiMetodo: methodCard(t.id, t.level),
       })),
     })),
     prontezzaObiettivi: ins.readiness.map((x) => ({ obiettivo: x.label, punteggio: x.score, giudizio: x.verdict })),
@@ -98,6 +100,21 @@ function buildInput(r0: Responses, bench: Benchmark, docs: ReportInputs | null) 
   };
 }
 
+/** La scheda della libreria delle raccomandazioni per il passaggio al livello successivo, nei termini usati nel prompt. */
+function methodCard(theme: string, level: number) {
+  const c = recommendationFor(theme, level);
+  return c
+    ? {
+        obiettivo: c.title,
+        passi: c.actions,
+        strumento: c.tool,
+        comeCapireSeFunziona: c.indicator,
+        tempoTipico: c.time,
+        erroreDaEvitare: c.pitfall,
+      }
+    : null;
+}
+
 const SYSTEM = `Sei un consulente di direzione italiano che scrive il report di approfondimento di un diagnostico gestionale per una PMI. Scrivi in italiano, con tono executive, concreto e rispettoso, come un senior advisor. Dai del "voi" all'azienda.
 
 REGOLE FERME:
@@ -119,7 +136,7 @@ COME PARLARE DEI PUNTEGGI (importante: il lettore non sa cosa significhi "22"):
 STRUTTURA (rispetta lo schema):
 - executiveSummary: 2-3 paragrafi che inquadrano lo stato complessivo, l'equilibrio del profilo e il legame con ambizioni e sfide.
 - crossCutting: osservazioni trasversali (squilibri tra ambiti, effetti a catena, prontezza rispetto agli obiettivi).
-- priorities: per ciascuna priorità, una diagnosi del perché conta per QUESTA azienda e 2-4 azioni concrete, specifiche, realizzabili nella sua dimensione.
+- priorities: per ciascuna priorità, una diagnosi del perché conta per QUESTA azienda e 2-4 azioni concrete, specifiche, realizzabili nella sua dimensione. Dove i primi passi hanno una schedaDiMetodo, parti da lì: è il metodo dei nostri esperti per salire di un livello su quel tema. Adattala all'azienda (dimensione, settore, ambizioni, parole dei testi liberi), scegli i passi che servono davvero e non copiarla alla lettera; non nominarla e non citare norme o incentivi.
 - quickWins: 2-4 interventi rapidi e a basso costo da avviare subito.
 - closing: un paragrafo che indica il prossimo passo e, con misura, il valore di un confronto con un esperto.`;
 
