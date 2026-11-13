@@ -438,7 +438,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Visione e direzione",
       "text": "Quanto è chiara e condivisa la direzione dell'azienda per i prossimi 3-5 anni?",
       "levels": [
-        "La direzione è nella testa del titolare e cambia con le occasioni.",
+        "La direzione non è scritta: la conosce chi guida l'azienda e si adatta alle occasioni.",
         "Il vertice ha una visione chiara, ma i responsabili la conoscono solo a grandi linee.",
         "Visione e scelte di fondo (mercati, prodotti, dimensione) sono scritte e presentate ai responsabili.",
         "La direzione è scritta, condivisa e usata come criterio esplicito per dire sì o no a opportunità e investimenti."
@@ -599,7 +599,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Delega e autonomia",
       "text": "Quanto il vertice è coinvolto nelle decisioni operative quotidiane?",
       "levels": [
-        "Quasi tutte le decisioni, anche minori, passano dal titolare o dall'amministratore.",
+        "Quasi tutte le decisioni, anche minori, passano da chi guida l'azienda.",
         "I responsabili decidono su questioni minori, ma ogni eccezione risale al vertice.",
         "Limiti di autonomia chiari per area (spesa, prezzi, personale) e rispettati.",
         "Il vertice si concentra su strategia e sviluppo; le deleghe sono formalizzate e verificate con i risultati."
@@ -1308,7 +1308,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come gestite i clienti più importanti?",
       "levels": [
         "Come tutti gli altri.",
-        "Il titolare o un venditore li segue personalmente, senza un piano.",
+        "Li segue personalmente chi guida l'azienda o un venditore, senza un piano.",
         "Responsabile dedicato e piano annuale per ciascun cliente principale.",
         "Piani condivisi con i clienti principali, incontri periodici di verifica e misura di quota e redditività per cliente."
       ],
@@ -1384,7 +1384,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come si coordinano le diverse funzioni (commerciale, produzione, acquisti, amministrazione)?",
       "levels": [
         "Ognuno lavora per conto suo; i problemi emergono tra un ufficio e l'altro.",
-        "Ci si coordina tramite il titolare, che fa da collegamento.",
+        "Ci si coordina tramite chi guida l'azienda, che fa da collegamento.",
         "Momenti di coordinamento periodici e responsabilità chiare sui passaggi tra funzioni.",
         "Processi principali disegnati da un capo all'altro, con responsabili e indicatori comuni tra le funzioni coinvolte."
       ],
@@ -1413,7 +1413,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Gestione del personale",
       "text": "Come è organizzata la gestione del personale (amministrazione, regole interne, dati)?",
       "levels": [
-        "Se ne occupano il consulente del lavoro e il titolare.",
+        "Se ne occupano il consulente del lavoro e chi guida l'azienda.",
         "Una persona interna gestisce gli aspetti amministrativi.",
         "Funzione o referente dedicato con regolamenti interni, dati del personale aggiornati e indicatori di base.",
         "Funzione che partecipa alle decisioni di direzione, con indicatori su costo, produttività, assenze e uscite discussi regolarmente."
@@ -2276,7 +2276,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Raccolta delle idee",
       "text": "Come nascono e vengono raccolte le idee?",
       "levels": [
-        "Dal titolare o da qualche persona particolarmente intraprendente.",
+        "Da chi guida l'azienda o da qualche persona particolarmente intraprendente.",
         "Dalle richieste dei clienti, raccolte in modo informale.",
         "Canali definiti per raccogliere idee da persone, clienti e fornitori, con valutazione periodica.",
         "Processo continuo che coinvolge tutta l'azienda e dà riscontro a chi propone."

@@ -23,6 +23,7 @@ In prova su Vercel con database Supabase di test. Funziona:
 | Approfondimenti | 8 moduli, ciascuno un Ottogramma dell'ambito con 8 sotto-ambiti e 16-18 domande; punteggi subito, report AI rivisto dallo staff |
 | Area personale | Pagina di riepilogo: «Da fare adesso» (report in arrivo con giorno e ora, report pronto, approfondimenti da compilare, consulenza), report, approfondimenti e consulenze, management, documenti |
 | Promemoria | Uno solo per bozza lasciata a metà (dopo 2 giorni) e per invito senza risposta (dopo 5), dall'esecuzione del mattino (`src/lib/reminders.ts`, `REMINDERS=0` li disattiva) |
+| Libreria delle raccomandazioni | 72 schede di metodo in `src/config/recommendations.ts` (24 temi × 3 passaggi di livello: tre passi, strumento, indicatore, tempi, errore da evitare, riferimenti normativi con data di verifica). La generazione dei report parte dalle schede dei temi prioritari; il report online le mostra in «Come fare»; lo staff le consulta in `/admin/raccomandazioni` |
 | Area staff | Compilazioni ed esportazione CSV, report da rivedere con editor, ordini e fatture, agenda delle consulenze |
 | Controlli e andamento | `/admin/controlli`: controlli di configurazione, passi del questionario in cui le persone si fermano (misure anonime, senza cookie né identificativi), riscontri e domande dei clienti, errori di browser e server, ultima copia di sicurezza. Copia giornaliera dei dati nel bucket privato `backup` (30 giorni). Verifiche automatiche a ogni invio su GitHub (`.github/workflows/verifiche.yml`) |
 
@@ -125,7 +126,8 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
    (`ARUBA_ENV=prod`).
 5. Revisione legale di informativa e condizioni di vendita; completare i punti tra parentesi quadre.
 6. Tetto di spesa nella Console Anthropic; backup giornalieri Supabase (piano Pro); piano Vercel Pro per uso commerciale.
-7. Revisione delle domande dei moduli (Excel v0.2) e calibrazione dei parametri dopo le prime compilazioni reali.
+7. Revisione delle domande dei moduli (Excel v0.2: fatto solo l'allineamento dei termini, manca la revisione editoriale con i criteri della banca v0.5) e calibrazione dei parametri dopo le prime compilazioni reali.
+8. Riferimenti normativi della libreria delle raccomandazioni: ricontrollarli (ultima verifica novembre 2026).
 
 ## Regole
 
