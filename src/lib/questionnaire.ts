@@ -1,8 +1,8 @@
-// Generato da scripts/genera_domande.py (banca delle domande v0.4). Non modificare a mano:
+// Generato da scripts/genera_domande.py (banca delle domande v0.5). Non modificare a mano:
 // cambiare scripts/content.py e rigenerare.
 import type { Area, Question, Choice, ProfileField } from "./types";
 
-export const QUESTIONNAIRE_VERSION = "0.4";
+export const QUESTIONNAIRE_VERSION = "0.5";
 
 export const AREAS: Area[] = [
   {
@@ -52,12 +52,12 @@ export const QUESTIONS: Question[] = [
     "id": "STR-1",
     "area": "STR",
     "theme": "Direzione strategica",
-    "text": "Quale situazione descrive meglio il modo in cui l'azienda definisce i propri obiettivi per i prossimi anni?",
+    "text": "Come definite oggi gli obiettivi dell'azienda per i prossimi anni?",
     "levels": [
       "Non ci sono obiettivi espliciti oltre l'andamento dell'anno: le scelte si fanno quando si presentano.",
-      "Il titolare ha una visione chiara, ma non è scritta né tradotta in obiettivi per i responsabili.",
+      "Chi guida l'azienda ha in mente dove vuole arrivare, ma non è scritto né tradotto in obiettivi per i responsabili.",
       "Esiste un piano pluriennale scritto, con pochi obiettivi misurabili condivisi con i responsabili.",
-      "Il piano viene rivisto almeno una volta l'anno, gli obiettivi arrivano fino ai responsabili e i progressi sono verificati con regolarità."
+      "Il piano si rivede almeno una volta l'anno e i progressi sugli obiettivi si verificano con regolarità insieme ai responsabili."
     ],
     "check": {
       "text": "Esiste un piano strategico o industriale scritto, aggiornato negli ultimi 24 mesi?",
@@ -78,50 +78,49 @@ export const QUESTIONS: Question[] = [
     "id": "STR-2",
     "area": "STR",
     "theme": "Decisioni e delega",
-    "text": "Come vengono prese le decisioni in azienda?",
+    "text": "Come si prendono oggi le decisioni in azienda?",
     "levels": [
-      "Quasi tutte le decisioni, anche operative, passano dal titolare.",
-      "Alcune decisioni operative sono delegate, ma i confini non sono chiari e spesso si torna al titolare.",
-      "Ogni area ha un responsabile con un'autonomia decisionale definita; il titolare interviene solo sulle decisioni rilevanti.",
-      "La direzione si riunisce con regolarità su un ordine del giorno, le decisioni sono documentate e le deleghe hanno limiti chiari, anche di spesa."
+      "Quasi tutte le decisioni, anche operative, passano da chi guida l'azienda.",
+      "Alcune decisioni operative sono delegate, ma i confini non sono chiari e spesso si torna da chi guida l'azienda.",
+      "Ogni area ha un responsabile con un'autonomia definita; chi guida l'azienda interviene solo sulle decisioni rilevanti.",
+      "Le deleghe hanno limiti scritti, anche di spesa, e i responsabili decidono insieme in riunioni regolari di cui resta traccia."
     ],
     "check": {
-      "text": "Con che frequenza si riunisce la direzione con un ordine del giorno?",
+      "text": "Se chi guida l'azienda si assentasse per un mese, l'attività ordinaria proseguirebbe senza interruzioni?",
       "options": [
-        "Mai",
-        "Occasionalmente",
-        "Mensilmente",
-        "Settimanalmente"
+        "Sì",
+        "In parte",
+        "No"
       ],
       "flag": {
-        "minLevel": 4,
+        "minLevel": 3,
         "answers": [
-          "Mai",
-          "Occasionalmente"
+          "No"
         ]
       }
     },
-    "sizeNote": "€2-10M: il livello 4 può essere una riunione settimanale del titolare con 2-3 responsabili, senza comitato formale"
+    "sizeNote": "€2-10M: il livello 4 può essere una riunione settimanale di chi guida l'azienda con 2-3 responsabili, senza comitato formale"
   },
   {
     "id": "STR-3",
     "area": "STR",
-    "theme": "Governance e continuità",
-    "text": "Come è gestita la continuità dell'impresa (successione, regole tra soci, rischi principali)?",
+    "theme": "Continuità dell'impresa",
+    "text": "Come è preparata oggi l'azienda a un cambio di chi la guida o di una persona chiave?",
     "levels": [
-      "Il tema non è mai stato affrontato; gli organi societari esistono solo sulla carta.",
-      "Se ne parla tra soci o in famiglia, ma senza decisioni né documenti.",
-      "Esistono un piano di continuità per i ruoli chiave e una mappa dei rischi principali, rivisti di recente.",
-      "La successione è pianificata con tempi e ruoli, le regole tra soci sono formalizzate, i rischi sono monitorati periodicamente e c'è almeno una voce esterna indipendente (consigliere o advisory board)."
+      "Il tema non è stato ancora affrontato.",
+      "Se ne è parlato tra i soci, senza decisioni né documenti.",
+      "Per i ruoli chiave è stabilito chi subentra, e le regole tra i soci sono scritte.",
+      "La successione ha tempi e tappe definiti, le regole tra i soci si aggiornano e c'è una voce esterna indipendente (un consigliere o un comitato consultivo)."
     ],
     "check": {
-      "text": "È presente almeno un consigliere esterno o indipendente, o un advisory board?",
+      "text": "Esistono regole scritte tra i soci (patto parasociale, statuto con clausole specifiche o accordo di famiglia)?",
       "options": [
         "Sì",
-        "No"
+        "No",
+        "C'è un solo socio"
       ],
       "flag": {
-        "minLevel": 4,
+        "minLevel": 3,
         "answers": [
           "No"
         ]
@@ -133,26 +132,26 @@ export const QUESTIONS: Question[] = [
     "id": "FIN-1",
     "area": "FIN",
     "theme": "Pianificazione e budget",
-    "text": "Quale situazione descrive meglio la pianificazione economica dell'azienda?",
+    "text": "Come pianificate oggi i risultati economici dell'anno?",
     "levels": [
       "Non c'è un budget: si guarda il bilancio a fine anno.",
       "C'è un budget annuale di massima su fatturato e costi, raramente confrontato con i consuntivi.",
       "Il budget annuale è approvato e confrontato almeno ogni trimestre con i consuntivi, analizzando gli scostamenti.",
-      "Il budget è collegato al piano, le previsioni vengono aggiornate durante l'anno e si usano scenari per decidere."
+      "Il budget discende dal piano pluriennale e le previsioni si aggiornano durante l'anno, anche con scenari alternativi."
     ],
     "check": {
       "text": "Ogni quanto disponete di una situazione economica infrannuale affidabile?",
       "options": [
-        "Annuale",
-        "Semestrale",
-        "Trimestrale",
-        "Mensile"
+        "Solo a fine anno",
+        "Ogni sei mesi",
+        "Ogni trimestre",
+        "Ogni mese"
       ],
       "flag": {
         "minLevel": 3,
         "answers": [
-          "Annuale",
-          "Semestrale"
+          "Solo a fine anno",
+          "Ogni sei mesi"
         ]
       }
     },
@@ -162,17 +161,18 @@ export const QUESTIONS: Question[] = [
     "id": "FIN-2",
     "area": "FIN",
     "theme": "Gestione della liquidità",
-    "text": "Come prevedete e gestite la liquidità?",
+    "text": "Come prevedete e gestite oggi la liquidità?",
     "levels": [
       "Non c'è una previsione: la liquidità si gestisce quando emerge il bisogno.",
       "Si fanno previsioni occasionali, soprattutto prima di pagamenti importanti.",
       "C'è una previsione periodica, almeno mensile e a 3-6 mesi, con un responsabile.",
-      "La previsione è aggiornata di continuo, confrontata con il consuntivo, collegata a incassi e pagamenti e usata anche nel dialogo con le banche."
+      "La previsione si aggiorna ogni settimana, si confronta con quanto è accaduto e si usa per decidere e nel rapporto con le banche."
     ],
     "check": {
       "text": "Conoscete oggi il fabbisogno di cassa delle prossime 13 settimane?",
       "options": [
-        "Sì",
+        "Sì, con i numeri",
+        "A grandi linee",
         "No"
       ],
       "flag": {
@@ -188,7 +188,7 @@ export const QUESTIONS: Question[] = [
     "id": "FIN-3",
     "area": "FIN",
     "theme": "Marginalità e controllo di gestione",
-    "text": "Quanto conoscete i margini dell'azienda?",
+    "text": "Come misurate oggi i margini dell'azienda?",
     "levels": [
       "Si conosce solo il risultato complessivo dell'azienda.",
       "I margini per prodotto o cliente si stimano occasionalmente, su fogli di calcolo.",
@@ -215,11 +215,11 @@ export const QUESTIONS: Question[] = [
     "id": "MKT-1",
     "area": "MKT",
     "theme": "Clienti e posizionamento",
-    "text": "Quanto conoscete i vostri clienti e cosa vi distingue dalla concorrenza?",
+    "text": "Come conoscete oggi i vostri clienti e ciò che vi distingue dalla concorrenza?",
     "levels": [
-      "Si vende a chi arriva: non ci sono segmenti di clienti né una proposta di valore definita.",
+      "I clienti arrivano soprattutto per conoscenza o passaparola; non abbiamo definito a chi rivolgerci né perché sceglierci.",
       "Si conoscono i clienti principali e i loro motivi d'acquisto, senza analisi strutturate.",
-      "I segmenti prioritari sono definiti, con una proposta di valore per ciascuno e un'analisi periodica della concorrenza.",
+      "Abbiamo definito i gruppi di clienti prioritari e che cosa offriamo di distintivo a ciascuno; la concorrenza si analizza periodicamente.",
       "I clienti sono segmentati per valore e potenziale, l'offerta è differenziata e si raccolgono regolarmente i loro giudizi."
     ],
     "check": {
@@ -228,7 +228,8 @@ export const QUESTIONS: Question[] = [
         "Meno del 20%",
         "20-39%",
         "40-59%",
-        "60% o più"
+        "60% o più",
+        "Non lo sappiamo"
       ],
       "flag": null
     },
@@ -238,12 +239,12 @@ export const QUESTIONS: Question[] = [
     "id": "MKT-2",
     "area": "MKT",
     "theme": "Processo commerciale",
-    "text": "Come è organizzata l'attività commerciale?",
+    "text": "Come è organizzata oggi l'attività commerciale?",
     "levels": [
-      "Le vendite dipendono dal titolare e da pochi venditori, senza obiettivi né registrazione delle opportunità.",
+      "Le vendite passano da chi guida l'azienda o da pochi venditori; trattative e contatti non sono registrati.",
       "Ci sono obiettivi di fatturato per venditore; le opportunità sono seguite su agende o fogli personali.",
       "Le opportunità sono registrate in uno strumento condiviso (CRM), ci sono obiettivi per venditore e riunioni commerciali regolari.",
-      "Le opportunità sono gestite per fasi, con previsioni di vendita, analisi delle conversioni e dei motivi di perdita, e incentivi legati agli obiettivi."
+      "Le trattative sono gestite per fasi e se ne ricavano previsioni di vendita e tassi di successo; gli incentivi sono legati agli obiettivi."
     ],
     "check": {
       "text": "Le opportunità commerciali sono registrate in uno strumento condiviso?",
@@ -265,9 +266,9 @@ export const QUESTIONS: Question[] = [
     "id": "MKT-3",
     "area": "MKT",
     "theme": "Prezzi",
-    "text": "Come vengono decisi i prezzi?",
+    "text": "Come si decidono oggi i prezzi?",
     "levels": [
-      "Costo più margine o adeguamento alla concorrenza, caso per caso.",
+      "I prezzi si decidono caso per caso, senza una regola scritta.",
       "C'è un listino, ma gli sconti sono decisi dai venditori senza regole.",
       "C'è una politica di prezzo con regole di sconto e una verifica periodica rispetto a costi e concorrenza.",
       "I prezzi riflettono il valore per ciascun segmento, gli sconti sono monitorati e gli aggiornamenti seguono rapidamente i costi."
@@ -291,12 +292,12 @@ export const QUESTIONS: Question[] = [
     "id": "PER-1",
     "area": "PER",
     "theme": "Struttura e ruoli",
-    "text": "Quanto sono chiari ruoli e responsabilità?",
+    "text": "Come sono definiti oggi ruoli e responsabilità?",
     "levels": [
-      "I ruoli non sono definiti: chi c'è fa quello che serve.",
+      "I ruoli non sono scritti: ciascuno fa ciò che serve al momento.",
       "Esiste un organigramma, ma non è aggiornato e le responsabilità si sovrappongono.",
       "L'organigramma è aggiornato, i ruoli chiave hanno mansioni scritte e responsabilità chiare.",
-      "La struttura viene rivista quando cambia la strategia, i ruoli hanno obiettivi misurabili e nessun ruolo chiave è senza sostituto."
+      "La struttura si rivede quando cambia la strategia, i ruoli hanno obiettivi misurabili e per ogni ruolo chiave c'è un sostituto."
     ],
     "check": {
       "text": "Esiste un organigramma aggiornato negli ultimi 12 mesi?",
@@ -317,12 +318,12 @@ export const QUESTIONS: Question[] = [
     "id": "PER-2",
     "area": "PER",
     "theme": "Selezione e sviluppo",
-    "text": "Come trovate e fate crescere le persone?",
+    "text": "Come trovate e fate crescere oggi le persone?",
     "levels": [
       "Si assume quando serve, tramite conoscenze; la formazione è solo quella obbligatoria.",
       "Si usano annunci o agenzie; la formazione è occasionale, su richiesta.",
       "I fabbisogni di personale sono pianificati, selezione e inserimento seguono un processo definito, c'è un piano di formazione annuale.",
-      "Le competenze necessarie sono pianificate in base al piano, ci sono percorsi di crescita e si monitorano turnover e clima."
+      "Le competenze che serviranno sono pianificate a partire dal piano aziendale, ci sono percorsi di crescita e si misurano uscite e clima."
     ],
     "check": {
       "text": "Qual è stato il turnover volontario nell'ultimo anno?",
@@ -346,10 +347,10 @@ export const QUESTIONS: Question[] = [
     "id": "PER-3",
     "area": "PER",
     "theme": "Obiettivi e valutazione",
-    "text": "Come vengono definiti gli obiettivi e valutate le prestazioni?",
+    "text": "Come si definiscono oggi gli obiettivi delle persone e come se ne valutano i risultati?",
     "levels": [
       "Non ci sono obiettivi individuali né valutazioni.",
-      "La valutazione è informale, da parte del titolare; i premi sono discrezionali.",
+      "La valutazione è informale, fatta da chi guida l'azienda; i premi sono discrezionali.",
       "I responsabili hanno obiettivi annuali e un colloquio di valutazione; alcuni ruoli hanno una parte variabile.",
       "Gli obiettivi discendono dal piano, i colloqui sono regolari, la parte variabile è trasparente e la valutazione guida crescita e successione."
     ],
@@ -373,13 +374,13 @@ export const QUESTIONS: Question[] = [
   {
     "id": "OPS-1",
     "area": "OPS",
-    "theme": "Pianificazione e scorte",
-    "text": "Come pianificate produzione o erogazione dei servizi?",
+    "theme": "Pianificazione del lavoro",
+    "text": "Come pianificate oggi la produzione o l'erogazione dei servizi?",
     "levels": [
-      "Si lavora sull'urgenza; capacità e scorte sono gestite a vista.",
-      "C'è una pianificazione di breve su fogli di calcolo; le scorte si rivedono quando ci sono problemi.",
-      "Una pianificazione regolare collega vendite previste, capacità e acquisti; i livelli di scorta sono definiti.",
-      "Vendite, operations e finanza si allineano ogni mese; puntualità del servizio e rotazione delle scorte sono monitorate."
+      "Si lavora sulle urgenze: carichi di lavoro e, dove ci sono, scorte si gestiscono a vista.",
+      "C'è una pianificazione di breve periodo su fogli di calcolo; carichi e scorte si rivedono quando nascono problemi.",
+      "Una pianificazione regolare collega le vendite previste alla capacità disponibile (persone, impianti) e agli acquisti.",
+      "Vendite, produzione o erogazione e amministrazione si allineano ogni mese sui volumi previsti; puntualità e uso della capacità si misurano."
     ],
     "check": {
       "text": "Che quota degli ordini viene consegnata nei tempi promessi?",
@@ -403,7 +404,7 @@ export const QUESTIONS: Question[] = [
     "id": "OPS-2",
     "area": "OPS",
     "theme": "Processi e qualità",
-    "text": "Come gestite processi e qualità?",
+    "text": "Come gestite oggi processi e qualità?",
     "levels": [
       "I processi non sono documentati; i problemi si risolvono quando emergono.",
       "Alcune procedure sono scritte; i problemi di qualità si gestiscono caso per caso.",
@@ -411,12 +412,17 @@ export const QUESTIONS: Question[] = [
       "Il miglioramento continuo è strutturato, con obiettivi, progetti e revisioni periodiche, e coinvolge il personale."
     ],
     "check": {
-      "text": "Avete una certificazione del sistema qualità (per esempio ISO 9001)?",
+      "text": "Misurate con regolarità almeno un indicatore di qualità (reclami, scarti, rilavorazioni, errori)?",
       "options": [
         "Sì",
         "No"
       ],
-      "flag": null
+      "flag": {
+        "minLevel": 3,
+        "answers": [
+          "No"
+        ]
+      }
     },
     "sizeNote": null
   },
@@ -424,9 +430,9 @@ export const QUESTIONS: Question[] = [
     "id": "OPS-3",
     "area": "OPS",
     "theme": "Acquisti e fornitori",
-    "text": "Come gestite acquisti e fornitori?",
+    "text": "Come gestite oggi acquisti e fornitori?",
     "levels": [
-      "Si acquista per urgenza, dai fornitori storici, senza confronti.",
+      "Si acquista quando serve, dai fornitori abituali, senza confronti.",
       "Si confrontano i prezzi sugli acquisti principali; i fornitori non vengono valutati.",
       "I fornitori principali sono valutati su prezzo, qualità e puntualità; ci sono alternative per le forniture critiche.",
       "Ci sono strategie per categoria d'acquisto, contratti e prestazioni monitorati e piani di riserva per i rischi di fornitura."
@@ -451,7 +457,7 @@ export const QUESTIONS: Question[] = [
     "id": "DIG-1",
     "area": "DIG",
     "theme": "Sistemi gestionali",
-    "text": "Quale situazione descrive meglio i vostri sistemi informatici?",
+    "text": "Come sono organizzati oggi i vostri sistemi informatici?",
     "levels": [
       "Contabilità esterna e fogli di calcolo; i dati si ricopiano a mano.",
       "Un gestionale copre contabilità e fatturazione; il resto è su strumenti separati.",
@@ -477,7 +483,7 @@ export const QUESTIONS: Question[] = [
     "id": "DIG-2",
     "area": "DIG",
     "theme": "Dati e reporting",
-    "text": "Come usate i dati per gestire l'azienda?",
+    "text": "Come usate oggi i dati per gestire l'azienda?",
     "levels": [
       "I numeri si chiedono al commercialista o si estraggono a mano quando servono.",
       "Ci sono report periodici preparati a mano, spesso in ritardo o non coerenti tra loro.",
@@ -505,12 +511,12 @@ export const QUESTIONS: Question[] = [
     "id": "DIG-3",
     "area": "DIG",
     "theme": "Sicurezza informatica",
-    "text": "Come proteggete dati e sistemi?",
+    "text": "Come proteggete oggi dati e sistemi?",
     "levels": [
       "Nessuna misura specifica oltre l'antivirus.",
       "Backup e password sono gestiti, ma non in modo sistematico.",
       "I backup sono regolari e verificati, gli accessi controllati e il personale ha una formazione di base.",
-      "C'è un piano di sicurezza con un responsabile, prove periodiche di ripristino, procedure in caso di attacco e verifiche esterne."
+      "C'è un responsabile della sicurezza informatica, i ripristini si provano periodicamente e c'è una procedura scritta in caso di attacco."
     ],
     "check": {
       "text": "Avete provato a ripristinare i backup negli ultimi 12 mesi?",
@@ -532,7 +538,7 @@ export const QUESTIONS: Question[] = [
     "id": "INN-1",
     "area": "INN",
     "theme": "Nuovi prodotti e servizi",
-    "text": "Come nascono e si sviluppano nuovi prodotti o servizi?",
+    "text": "Come nascono e si sviluppano oggi nuovi prodotti o servizi?",
     "levels": [
       "Le novità nascono dalle richieste di singoli clienti, senza un processo.",
       "Le idee si raccolgono in modo informale; i progetti partono senza criteri di selezione.",
@@ -560,18 +566,19 @@ export const QUESTIONS: Question[] = [
   {
     "id": "INN-2",
     "area": "INN",
-    "theme": "Collaborazioni esterne",
-    "text": "Quanto collaborate con soggetti esterni per innovare (università, centri di ricerca, startup, fornitori, bandi)?",
+    "theme": "Tecnologie e intelligenza artificiale",
+    "text": "Come valutate e adottate oggi nuove tecnologie, compresa l'intelligenza artificiale?",
     "levels": [
-      "Nessuna collaborazione.",
-      "Collaborazioni occasionali, legate a singole occasioni.",
-      "Alcune collaborazioni attive e uso degli incentivi pubblici per progetti di innovazione.",
-      "Una rete stabile di partner, partecipazione regolare a bandi e progetti, ricerca sistematica di tecnologie e soluzioni."
+      "Le nuove tecnologie si adottano quando lo impongono clienti, fornitori o norme.",
+      "Qualcuno in azienda prova nuovi strumenti di propria iniziativa, senza un indirizzo comune.",
+      "Abbiamo individuato dove le nuove tecnologie possono migliorare prodotti o processi e avviato almeno un progetto con un responsabile.",
+      "C'è un programma con priorità, budget e regole d'uso; i risultati si misurano e le soluzioni che funzionano si estendono."
     ],
     "check": {
-      "text": "Negli ultimi 3 anni avete usato incentivi per progetti di innovazione o digitalizzazione?",
+      "text": "Nell'ultimo anno avete introdotto uno strumento di intelligenza artificiale in un processo di lavoro?",
       "options": [
-        "Sì",
+        "Sì, in uso",
+        "In prova",
         "No"
       ],
       "flag": {
@@ -581,15 +588,15 @@ export const QUESTIONS: Question[] = [
         ]
       }
     },
-    "sizeNote": null
+    "sizeNote": "€2-10M: per il livello 3 basta un progetto avviato, con un responsabile e un obiettivo"
   },
   {
     "id": "INN-3",
     "area": "INN",
     "theme": "Cultura della sperimentazione",
-    "text": "Come vengono accolte nuove idee e tentativi in azienda?",
+    "text": "Come vengono accolti oggi nuove idee e tentativi in azienda?",
     "levels": [
-      "Gli errori si evitano o si sanzionano; le nuove idee sono scoraggiate.",
+      "Le idee nuove restano a chi le ha: non c'è un momento né un modo per proporle.",
       "Le idee sono benvenute, ma raramente si traducono in prove concrete.",
       "Tempo e risorse sono dedicati a sperimentare su progetti selezionati, e le lezioni vengono condivise.",
       "Si sperimenta con regolarità con piccole prove, si impara dagli insuccessi e le idee migliori vengono riconosciute."
@@ -613,7 +620,7 @@ export const QUESTIONS: Question[] = [
     "id": "SOS-1",
     "area": "SOS",
     "theme": "Priorità e obiettivi di sostenibilità",
-    "text": "Come affrontate i temi di sostenibilità ambientale e sociale?",
+    "text": "Come affrontate oggi i temi di sostenibilità ambientale e sociale?",
     "levels": [
       "Il tema non è stato affrontato.",
       "Ci sono iniziative isolate (per esempio di risparmio energetico), senza obiettivi.",
@@ -638,19 +645,20 @@ export const QUESTIONS: Question[] = [
   {
     "id": "SOS-2",
     "area": "SOS",
-    "theme": "Energia ed emissioni",
-    "text": "Quanto conoscete e gestite consumi ed emissioni?",
+    "theme": "Energia, risorse ed emissioni",
+    "text": "Come misurate e gestite oggi consumi ed emissioni?",
     "levels": [
-      "Consumi ed emissioni non vengono misurati.",
+      "Consumi di energia e materiali non si misurano.",
       "I consumi energetici si conoscono dalle bollette, senza analisi.",
       "Consumi ed emissioni principali sono misurati e seguiti nel tempo; sono stati avviati interventi di efficienza.",
-      "C'è un bilancio delle emissioni con obiettivi di riduzione, e i fornitori sono valutati anche su criteri ambientali."
+      "C'è un calcolo delle emissioni con obiettivi di riduzione, e i risultati si verificano ogni anno."
     ],
     "check": {
       "text": "Avete calcolato le vostre emissioni di gas serra almeno una volta?",
       "options": [
         "Sì",
-        "No"
+        "No",
+        "Non lo so"
       ],
       "flag": {
         "minLevel": 4,
@@ -665,9 +673,9 @@ export const QUESTIONS: Question[] = [
     "id": "SOS-3",
     "area": "SOS",
     "theme": "Richieste di clienti, banche e filiera",
-    "text": "Come rispondete alle richieste di informazioni sulla sostenibilità da parte di clienti, banche o filiera?",
+    "text": "Come rispondete oggi alle richieste di informazioni sulla sostenibilità da clienti, banche o filiera?",
     "levels": [
-      "Quando arrivano, ci trovano impreparati.",
+      "Non abbiamo ancora risposto a richieste di questo tipo.",
       "Rispondiamo caso per caso, raccogliendo i dati al momento.",
       "I dati e i documenti principali sono raccolti e aggiornati, pronti per le richieste.",
       "Abbiamo un profilo di sostenibilità strutturato e verificato, che usiamo anche come vantaggio commerciale e nel rapporto con le banche."
@@ -764,6 +772,15 @@ export const OBJECTIVES: Choice[] = [
     "label": "Rispondere ai requisiti di sostenibilità di clienti, banche e filiera",
     "primary": "SOS",
     "secondary": []
+  },
+  {
+    "code": "OB-11",
+    "label": "Ridurre i costi e aumentare l'efficienza",
+    "primary": "OPS",
+    "secondary": [
+      "FIN",
+      "DIG"
+    ]
   }
 ];
 
@@ -799,7 +816,7 @@ export const ISSUES: Choice[] = [
   },
   {
     "code": "CR-05",
-    "label": "Decisioni tutte sul titolare",
+    "label": "Decisioni tutte su chi guida l'azienda",
     "primary": "STR",
     "secondary": [
       "PER"
@@ -856,6 +873,31 @@ export const ISSUES: Choice[] = [
     "primary": "INN",
     "secondary": [
       "MKT"
+    ]
+  },
+  {
+    "code": "CR-13",
+    "label": "Clienti che pagano in ritardo",
+    "primary": "FIN",
+    "secondary": [
+      "MKT"
+    ]
+  },
+  {
+    "code": "CR-14",
+    "label": "Dipendenza da pochi fornitori",
+    "primary": "OPS",
+    "secondary": [
+      "STR"
+    ]
+  },
+  {
+    "code": "CR-15",
+    "label": "Crescita che l'organizzazione fatica a reggere",
+    "primary": "PER",
+    "secondary": [
+      "STR",
+      "OPS"
     ]
   }
 ];
