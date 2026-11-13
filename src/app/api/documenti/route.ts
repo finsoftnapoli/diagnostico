@@ -88,9 +88,9 @@ export async function POST(request: Request) {
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .gte("created_at", since);
-    if ((count ?? 0) >= DAILY_LIMIT) return json({ error: "Hai raggiunto il limite di documenti per oggi: riprova domani" }, 429);
+    if ((count ?? 0) >= DAILY_LIMIT) return json({ error: "Avete raggiunto il limite di documenti per oggi: riprovate domani" }, 429);
   } else {
-    if (!isHuman(request)) return json({ error: "Verifica di sicurezza scaduta: ricarica la pagina" }, 403);
+    if (!isHuman(request)) return json({ error: "Verifica di sicurezza scaduta: ricaricate la pagina" }, 403);
     if (tipo !== "visura" && tipo !== "bilancio") return json({ error: "Tipo di documento non valido" }, 400);
     if (!new RegExp(`^in-attesa/\\d{4}-\\d{2}-\\d{2}/${UUID}-${tipo}\\.${ext}$`).test(path))
       return json({ error: "Documento non valido" }, 400);
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
       .is("user_id", null)
       .gte("created_at", hourAgo);
     if ((count ?? 0) >= ANON_HOURLY_LIMIT)
-      return json({ error: "Servizio di lettura momentaneamente occupato: compila i campi a mano o riprova più tardi" }, 429);
+      return json({ error: "Servizio di lettura momentaneamente occupato: compilate i campi a mano o riprovate più tardi" }, 429);
   }
 
   const { data: blob, error: dlError } = await db.storage.from("documenti").download(path);
@@ -117,7 +117,10 @@ export async function POST(request: Request) {
     if (!data) {
       console.error("Bilancio XBRL non letto:", xbrlDiagnostics(xml));
       await discard();
-      return json({ error: "Il file non è un bilancio XBRL leggibile: scarica dal Registro Imprese il file .xbrl o carica il PDF." }, 422);
+      return json(
+        { error: "Il file non è un bilancio XBRL leggibile: scaricate dal Registro Imprese il file .xbrl o caricate il PDF." },
+        422,
+      );
     }
   } else if (bytes.subarray(0, 5).toString() !== "%PDF-") {
     await discard();
@@ -130,7 +133,7 @@ export async function POST(request: Request) {
       // dall'area personale business plan e altri documenti si archiviano anche senza lettura
       if (!(area && (tipo === "business_plan" || tipo === "altro"))) {
         await discard();
-        return json({ error: "Non siamo riusciti a leggere il documento. Riprova o compila i campi a mano." }, 502);
+        return json({ error: "Non siamo riusciti a leggere il documento. Riprovate o compilate i campi a mano." }, 502);
       }
       data = null;
     }
@@ -188,7 +191,7 @@ export async function POST(request: Request) {
   if (error) {
     console.error("Archiviazione documento non riuscita:", error.message);
     await discard();
-    return json({ error: "Archiviazione non riuscita, riprova tra poco" }, 500);
+    return json({ error: "Archiviazione non riuscita, riprovate tra poco" }, 500);
   }
 
   // dall'area personale non servono i campi del profilo né le persone

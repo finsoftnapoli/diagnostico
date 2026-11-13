@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AREA_SHORT } from "@/lib/areaIcons";
-import type { LiveArea } from "@/lib/flow";
 import type { AreaCode } from "@/lib/types";
 
 /** Valori che raggiungono il bersaglio con una breve animazione. */
@@ -35,14 +34,23 @@ function useTween(target: number[], ms = 450): number[] {
  * L'Ottogramma che si disegna mentre si risponde: un vertice per ambito, alla distanza del livello medio
  * delle risposte date finora: il primo anello è il livello «Informale», il bordo «Gestito e migliorato».
  */
+/** Un vertice: l'ambito del diagnostico oppure, con `label`, il sotto-ambito di un approfondimento. */
+export interface LiveVertex {
+  code: string;
+  label?: string;
+  /** Livello medio delle risposte date finora (1-4), null se nessuna. */
+  level: number | null;
+  done: boolean;
+}
+
 export default function LiveOttogramma({
   areas,
   active,
   size = 300,
   labels = true,
 }: {
-  areas: LiveArea[];
-  active?: AreaCode | null;
+  areas: LiveVertex[];
+  active?: string | null;
   size?: number;
   labels?: boolean;
 }) {
@@ -70,7 +78,7 @@ export default function LiveOttogramma({
       width="100%"
       style={{ maxWidth: w }}
       role="img"
-      aria-label={`Ottogramma in costruzione: ${done} ambiti su ${n} completati`}
+      aria-label={`Ottogramma in costruzione: ${done} vertici su ${n} completati`}
     >
       {[0.25, 0.5, 0.75, 1].map((f) => (
         <polygon key={f} points={ring(f)} fill={f === 1 ? "var(--white)" : "none"} stroke="var(--line)" strokeWidth={1} />
@@ -109,17 +117,26 @@ export default function LiveOttogramma({
           const [x, y] = pt(i, 1.1);
           const anchor = Math.abs(x - cx) < 6 ? "middle" : x > cx ? "start" : "end";
           const on = a.code === active;
+          // le etichette lunghe (i sotto-ambiti degli approfondimenti) vanno su due righe
+          const text = a.label ?? AREA_SHORT[a.code as AreaCode];
+          const words = text.split(" ");
+          const cut = Math.ceil(words.length / 2);
+          const lines = text.length > 13 && words.length > 1 ? [words.slice(0, cut).join(" "), words.slice(cut).join(" ")] : [text];
           return (
             <text
               key={a.code}
               x={x}
-              y={y + 4}
+              y={y + 4 - (lines.length - 1) * 6}
               textAnchor={anchor}
               fontSize={11}
               fontWeight={on ? 700 : a.done ? 600 : 400}
               fill={on ? "var(--navy)" : a.done ? "var(--ink)" : "var(--muted)"}
             >
-              {AREA_SHORT[a.code]}
+              {lines.map((l, k) => (
+                <tspan key={k} x={x} dy={k === 0 ? 0 : 12}>
+                  {l}
+                </tspan>
+              ))}
             </text>
           );
         })}

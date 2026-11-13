@@ -1,5 +1,5 @@
 // Confronto tra le compilazioni dei membri di un'azienda: profilo medio e disallineamenti.
-import { AREAS, QUESTIONS } from "./questionnaire";
+import { AREAS, ISSUES, OBJECTIVES, QUESTIONS } from "./questionnaire";
 import type { AreaCode } from "./types";
 
 export interface MemberResult {
@@ -8,6 +8,9 @@ export interface MemberResult {
   completedAt: string;
   scores: Partial<Record<AreaCode, number | null>>;
   levels: Record<string, number>;
+  /** Ambizioni e sfide scelte da ciascuno, per vedere dove le visioni convergono. */
+  objectives?: string[];
+  issues?: string[];
 }
 
 export interface Misalignment {
@@ -51,4 +54,27 @@ export function misalignments(members: MemberResult[]): Misalignment[] {
     if (max - min > 1) out.push({ questionId: q.id, area: q.area, theme: q.theme, min, max, byMember });
   }
   return out.sort((a, b) => b.max - b.min - (a.max - a.min));
+}
+
+export interface ChoiceAlignment {
+  /** Scelte indicate da tutti. */
+  shared: string[];
+  /** Scelte indicate da più di una persona, non da tutte. */
+  partial: { label: string; by: string[] }[];
+  /** Scelte indicate da una sola persona. */
+  single: { label: string; by: string }[];
+}
+
+/** Convergenze e divergenze sulle ambizioni (o sulle sfide) scelte dai membri. Null se non ci sono almeno due risposte. */
+export function choiceAlignment(members: MemberResult[], kind: "objectives" | "issues"): ChoiceAlignment | null {
+  const who = members.filter((m) => m[kind]?.length);
+  if (who.length < 2) return null;
+  const out: ChoiceAlignment = { shared: [], partial: [], single: [] };
+  for (const c of kind === "objectives" ? OBJECTIVES : ISSUES) {
+    const by = who.filter((m) => m[kind]!.includes(c.code)).map((m) => m.label);
+    if (by.length === who.length) out.shared.push(c.label);
+    else if (by.length > 1) out.partial.push({ label: c.label, by });
+    else if (by.length === 1) out.single.push({ label: c.label, by: by[0] });
+  }
+  return out;
 }

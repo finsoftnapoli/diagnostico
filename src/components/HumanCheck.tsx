@@ -62,7 +62,7 @@ export default function HumanCheck({ onVerified }: { onVerified: () => void }) {
       <div ref={box} />
       {state === "waiting" && <p className="text-xs text-muted">Verifica di sicurezza in corso…</p>}
       {state === "error" && (
-        <p className="text-xs text-accent">Non siamo riusciti a completare la verifica di sicurezza: ricarica la pagina.</p>
+        <p className="text-xs text-accent">Non siamo riusciti a completare la verifica di sicurezza: ricaricate la pagina.</p>
       )}
     </div>
   );

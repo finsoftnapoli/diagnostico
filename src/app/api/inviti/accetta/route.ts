@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const { data: companyId, error } = await sb.rpc("accept_invitation", { p_token: t });
   if (error || !companyId) {
     const msg = /scaduto/.test(error?.message ?? "")
-      ? "L'invito è scaduto: chiedi a chi ti ha invitato di inviarne uno nuovo."
+      ? "L'invito è scaduto: chiedete a chi vi ha invitato di inviarne uno nuovo."
       : /altro indirizzo/.test(error?.message ?? "")
         ? "L'invito è stato inviato a un altro indirizzo email."
         : "Invito non valido o già utilizzato.";
@@ -29,7 +29,10 @@ export async function POST(request: Request) {
     .select("profile")
     .eq("company_id", companyId)
     .eq("status", "completed")
-    .in("user_id", (admins ?? []).map((a) => a.user_id))
+    .in(
+      "user_id",
+      (admins ?? []).map((a) => a.user_id),
+    )
     .order("completed_at", { ascending: false })
     .limit(1)
     .maybeSingle();

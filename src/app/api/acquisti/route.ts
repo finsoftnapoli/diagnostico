@@ -12,20 +12,26 @@ export async function POST(request: Request) {
   const user = auth.user;
   if (!user) return NextResponse.json({ error: "Accesso richiesto" }, { status: 401 });
   if (!isStripeConfigured())
-    return NextResponse.json({ error: `I pagamenti online non sono ancora attivi: scrivici a ${BRAND.contactEmail}` }, { status: 503 });
+    return NextResponse.json({ error: `I pagamenti online non sono ancora attivi: scriveteci a ${BRAND.contactEmail}` }, { status: 503 });
 
-  const body = (await request.json().catch(() => ({}))) as { companyId?: string; lines?: unknown; slotId?: string; topic?: string; acceptTerms?: boolean };
-  if (body.acceptTerms !== true)
-    return NextResponse.json({ error: "Per procedere accetta le condizioni di vendita" }, { status: 422 });
+  const body = (await request.json().catch(() => ({}))) as {
+    companyId?: string;
+    lines?: unknown;
+    slotId?: string;
+    topic?: string;
+    acceptTerms?: boolean;
+  };
+  if (body.acceptTerms !== true) return NextResponse.json({ error: "Per procedere accettate le condizioni di vendita" }, { status: 422 });
   const company = body.companyId ? await companyOfMember(user.id, body.companyId) : null;
   if (!company) return NextResponse.json({ error: "Azienda non trovata" }, { status: 404 });
   const db = supabaseService();
   const billing = await billingOf(db, company.id);
-  if (!billing) return NextResponse.json({ error: "Inserisci prima i dati di fatturazione", needBilling: true }, { status: 422 });
+  if (!billing) return NextResponse.json({ error: "Inserite prima i dati di fatturazione", needBilling: true }, { status: 422 });
   const cart = checkCart(body.lines, await ownedAreas(db, company.id));
   if ("error" in cart) return NextResponse.json({ error: cart.error }, { status: 422 });
   const slotId = body.slotId && /^[0-9a-f-]{36}$/i.test(body.slotId) ? body.slotId : null;
-  if (slotId && !cart.lines.some((l) => l.sku === "consulenza")) return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
+  if (slotId && !cart.lines.some((l) => l.sku === "consulenza"))
+    return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
 
   const order = await createOrder(db, {
     userId: user.id,
@@ -70,7 +76,7 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error("Sessione di pagamento non creata:", e instanceof Error ? e.message : e);
     await cancelOrder(db, order.id);
-    return NextResponse.json({ error: "Pagamento non disponibile, riprova tra poco" }, { status: 502 });
+    return NextResponse.json({ error: "Pagamento non disponibile, riprovate tra poco" }, { status: 502 });
   }
 }
 
@@ -83,7 +89,10 @@ export async function DELETE(request: Request) {
   const db = supabaseService();
   const { data: o } = await db.from("orders").select("id, user_id, status, stripe_session_id").eq("id", id).maybeSingle();
   if (!o || o.user_id !== auth.user.id || o.status !== "pending") return NextResponse.json({ ok: true });
-  if (o.stripe_session_id && isStripeConfigured()) await stripe().checkout.sessions.expire(o.stripe_session_id as string).catch(() => {});
+  if (o.stripe_session_id && isStripeConfigured())
+    await stripe()
+      .checkout.sessions.expire(o.stripe_session_id as string)
+      .catch(() => {});
   await cancelOrder(db, id);
   return NextResponse.json({ ok: true });
 }

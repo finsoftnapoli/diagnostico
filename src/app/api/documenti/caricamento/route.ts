@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     if (!(await companyOfMember(auth.user.id, companyId))) return NextResponse.json({ error: "Azienda non trovata" }, { status: 404 });
     path = `aziende/${companyId}/${day}/${randomUUID()}-${tipo}.${ext}`;
   } else {
-    if (!isHuman(request)) return NextResponse.json({ error: "Verifica di sicurezza scaduta: ricarica la pagina" }, { status: 403 });
+    if (!isHuman(request)) return NextResponse.json({ error: "Verifica di sicurezza scaduta: ricaricate la pagina" }, { status: 403 });
     if (tipo !== "visura" && tipo !== "bilancio") return NextResponse.json({ error: "Tipo di documento non valido" }, { status: 400 });
     path = `in-attesa/${day}/${randomUUID()}-${tipo}.${ext}`;
   }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabaseService().storage.from("documenti").createSignedUploadUrl(path);
   if (error || !data) {
     console.error("Preparazione caricamento non riuscita:", error?.message);
-    return NextResponse.json({ error: "Caricamento non disponibile, riprova tra poco" }, { status: 500 });
+    return NextResponse.json({ error: "Caricamento non disponibile, riprovate tra poco" }, { status: 500 });
   }
   return NextResponse.json({ path: data.path, token: data.token });
 }

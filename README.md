@@ -17,9 +17,12 @@ In prova su Vercel con database Supabase di test. Funziona:
 | Diagnostico gratuito | Questionario a una domanda per schermata (avvio con consensi, 24 domande, ambizioni, sfide, dati dell'azienda alla fine) con l'Ottogramma che si disegna mentre si risponde (`src/lib/flow.ts`, `LiveOttogramma`), salvataggio automatico e "salva e continua più tardi" via email; verifica anti-bot Cloudflare Turnstile; partita IVA verificata su VIES |
 | Documenti | Visura e bilancio in PDF letti con Claude durante il questionario (precompilano il profilo), anche trascinando il file; bilancio anche in XBRL (il file del Registro Imprese), letto direttamente senza AI; dall'area personale anche bilanci e visure aggiornati, business plan e altri documenti, usati nei report successivi |
 | Risultati | Ottogramma subito dopo la conferma dell'email: punteggi, confronto di fascia, evidenze chiave, offerte; report approfondito scritto dall'AI in differita, rivisto e approvato dallo staff, poi inviato per email; PDF impaginato dal sito (`/api/report/<id>/pdf`, copertina, guida alla lettura, priorità, dettaglio) e, per i moduli, `/api/moduli/<id>/pdf`; punteggi spiegati in parole; registro "voi" in tutti i report |
-| Più manager | Inviti ai colleghi (suggeriti dalla visura), spazio aziendale con confronto delle visioni nell'area personale |
+| Report interattivo | Indice che segue la lettura, Ottogramma esplorabile (si sceglie un ambito, anche dal grafico), azioni da spuntare con conteggio (`report_actions`), «Invia il report a…»: link in sola lettura a `/condiviso/<link>` con scadenza a 7, 30 o 90 giorni, solo sintesi o report completo, revocabile, con numero di aperture; del link si conserva solo l'impronta (`src/lib/share.ts`). Report di esempio pubblico in `/esempio` (azienda di fantasia, `src/lib/example-report.ts`) |
+| Più manager | Inviti ai colleghi (suggeriti dalla visura), spazio aziendale nell'area personale con confronto delle visioni: profili sovrapposti, temi su cui le risposte divergono, ambizioni e sfide indicate da tutti, da alcuni, da uno solo |
 | Vendite | Dati di fatturazione, acquisto con Stripe Checkout, attivazione di moduli e ore di consulenza, fattura elettronica FatturaPA (invio ad Aruba o coda da caricare a mano), prenotazione delle consulenze sugli orari dell'esperto con invito di calendario |
 | Approfondimenti | 8 moduli, ciascuno un Ottogramma dell'ambito con 8 sotto-ambiti e 16-18 domande; punteggi subito, report AI rivisto dallo staff |
+| Area personale | Pagina di riepilogo: «Da fare adesso» (report in arrivo con giorno e ora, report pronto, approfondimenti da compilare, consulenza), report, approfondimenti e consulenze, management, documenti |
+| Promemoria | Uno solo per bozza lasciata a metà (dopo 2 giorni) e per invito senza risposta (dopo 5), dall'esecuzione del mattino (`src/lib/reminders.ts`, `REMINDERS=0` li disattiva) |
 | Area staff | Compilazioni ed esportazione CSV, report da rivedere con editor, ordini e fatture, agenda delle consulenze |
 | Controlli e andamento | `/admin/controlli`: controlli di configurazione, passi del questionario in cui le persone si fermano (misure anonime, senza cookie né identificativi), riscontri e domande dei clienti, errori di browser e server, ultima copia di sicurezza. Copia giornaliera dei dati nel bucket privato `backup` (30 giorni). Verifiche automatiche a ogni invio su GitHub (`.github/workflows/verifiche.yml`) |
 
@@ -108,6 +111,7 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 | `module_assessments` | Moduli di approfondimento |
 | `interests` | Richieste di contatto della prima versione delle offerte (non più usata) |
 | `report_events` | Aperture e download dei report |
+| `report_shares`, `report_actions` | Link di condivisione dei report (solo l'impronta del link) e azioni spuntate; solo server |
 | `feedback`, `funnel_events`, `error_log` | Riscontri dei clienti, misure anonime del percorso, errori (solo server e staff; misure ed errori cancellati dopo 90 giorni) |
 
 ## Messa in produzione

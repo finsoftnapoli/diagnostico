@@ -47,6 +47,17 @@ export default function Services({ data }: { data: ServicesData }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [terms, setTerms] = useState(false);
+  const [termsMissing, setTermsMissing] = useState(false);
+  const termsBox = data.paymentsActive ? (
+    <Terms
+      checked={terms}
+      missing={termsMissing && !terms}
+      onChange={(v) => {
+        setTerms(v);
+        setTermsMissing(false);
+      }}
+    />
+  ) : null;
 
   // ritorno dal pagamento: l'attivazione arriva da Stripe dopo pochi secondi
   useEffect(() => {
@@ -64,13 +75,12 @@ export default function Services({ data }: { data: ServicesData }) {
     setError(null);
     if (!billing) {
       setEditBilling(true);
-      setError("Inserisci i dati di fatturazione per procedere.");
+      setError("Inserite i dati di fatturazione per procedere.");
       document.getElementById("fatturazione")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
     if (!terms) {
-      setError("Per procedere accetta le condizioni di vendita.");
-      document.getElementById("condizioni")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTermsMissing(true);
       return;
     }
     setBusy("checkout");
@@ -88,7 +98,7 @@ export default function Services({ data }: { data: ServicesData }) {
   return (
     <div className="mt-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-3xl font-semibold text-navy">I tuoi servizi</h1>
+        <h1 className="text-3xl font-semibold text-navy">I vostri servizi</h1>
         {data.companies.length > 1 && (
           <select
             value={data.company.id}
@@ -109,36 +119,24 @@ export default function Services({ data }: { data: ServicesData }) {
         <div className="mt-6 rounded-xl border border-navy bg-navy/5 p-4 text-sm flex gap-3">
           <Check className="size-5 text-navy shrink-0" aria-hidden />
           <p>
-            <strong className="text-navy">Pagamento ricevuto, grazie.</strong> I servizi si attivano in pochi secondi; riceverai una email
-            di conferma e la fattura elettronica tramite il Sistema di Interscambio.
+            <strong className="text-navy">Pagamento ricevuto, grazie.</strong> I servizi si attivano in pochi secondi; riceverete
+            un&apos;email di conferma e la fattura elettronica tramite il Sistema di Interscambio.
           </p>
         </div>
       )}
       {!data.paymentsActive && (
         <p className="mt-6 rounded-xl bg-paper p-4 text-sm">
-          I pagamenti online saranno attivi a breve. Nel frattempo scrivici a{" "}
+          I pagamenti online saranno attivi a breve. Nel frattempo scriveteci a{" "}
           <a className="underline" href={`mailto:${BRAND.contactEmail}`}>
             {BRAND.contactEmail}
           </a>{" "}
           per attivare un servizio.
         </p>
       )}
-      {data.paymentsActive && (
-        <label id="condizioni" className="mt-6 flex items-start gap-2 text-sm">
-          <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="mt-1" />
-          <span>
-            Acquisto per conto dell&apos;azienda indicata nei dati di fatturazione e accetto le{" "}
-            <Link href="/termini" target="_blank" className="underline">
-              condizioni di vendita
-            </Link>
-            .
-          </span>
-        </label>
-      )}
       {error && <p className="mt-4 text-sm text-accent">{error}</p>}
 
-      <Modules data={data} busy={busy} onBuy={checkout} />
-      <Consulting data={data} busy={busy} onBuy={checkout} setError={setError} />
+      <Modules data={data} busy={busy} onBuy={checkout} terms={termsBox} />
+      <Consulting data={data} busy={busy} onBuy={checkout} setError={setError} terms={termsBox} />
 
       <section id="fatturazione" className="mt-14">
         <h2 className="text-xl font-semibold text-navy flex items-center gap-2">
@@ -215,7 +213,33 @@ export default function Services({ data }: { data: ServicesData }) {
   );
 }
 
-function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | null; onBuy: (l: { sku: string; area?: string }[]) => void }) {
+/** Accettazione delle condizioni di vendita, accanto al pulsante di acquisto. */
+function Terms({ checked, missing, onChange }: { checked: boolean; missing: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className={`flex items-start gap-2 text-sm rounded-lg ${missing ? "bg-accent/5 outline outline-1 outline-accent/40 p-2" : ""}`}>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1" />
+      <span>
+        Acquisto per conto dell&apos;azienda indicata nei dati di fatturazione e accetto le{" "}
+        <Link href="/termini" target="_blank" className="underline">
+          condizioni di vendita
+        </Link>
+        .{missing && <strong className="block text-accent font-medium">Per procedere accettate le condizioni di vendita.</strong>}
+      </span>
+    </label>
+  );
+}
+
+function Modules({
+  data,
+  busy,
+  onBuy,
+  terms,
+}: {
+  data: ServicesData;
+  busy: string | null;
+  onBuy: (l: { sku: string; area?: string }[]) => void;
+  terms: React.ReactNode;
+}) {
   const owned = new Map(data.modules.map((m) => [m.area, m]));
   const [sel, setSel] = useState<Set<AreaCode>>(new Set());
   const ordered = useMemo(
@@ -269,13 +293,17 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
                 {on ? <Check className="size-4 text-navy" aria-hidden /> : <AreaIcon code={c} className="size-4 text-navy" />}{" "}
                 {AREA_SHORT[c]}
               </span>
-              <span className="text-muted">{prio ? "Tra le tue priorità" : "Disponibile"}</span>
+              <span className="text-muted">{prio ? "Tra le vostre priorità" : "Disponibile"}</span>
             </button>
           );
         })}
       </div>
+      {sel.size === 0 && !allOwned && data.paymentsActive && (
+        <p className="mt-3 text-sm text-muted">Scegliete uno o più ambiti qui sopra: il pulsante di acquisto compare con il totale.</p>
+      )}
+      {sel.size > 0 && <div className="mt-4 max-w-2xl">{terms}</div>}
       {sel.size > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
           <button
             onClick={() => onBuy([...sel].map((area) => ({ sku: "modulo", area })))}
             disabled={!!busy}
@@ -296,7 +324,7 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
             </p>
             {owned.size > 0 && (
               <p className="mt-1 text-sm text-muted">
-                Hai già {owned.size === 1 ? "1 approfondimento attivo" : `${owned.size} approfondimenti attivi`}: con il percorso si
+                Avete già {owned.size === 1 ? "1 approfondimento attivo" : `${owned.size} approfondimenti attivi`}: con il percorso si
                 attivano gli altri e le 2 ore di consulenza, allo stesso prezzo.
               </p>
             )}
@@ -308,13 +336,16 @@ function Modules({ data, busy, onBuy }: { data: ServicesData; busy: string | nul
               ))}
             </ul>
           </div>
-          <button
-            onClick={() => onBuy([{ sku: "bundle" }])}
-            disabled={!!busy}
-            className="inline-flex items-center justify-center gap-2 bg-navy text-white text-sm font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60"
-          >
-            Acquista il percorso <ArrowRight className="size-4" aria-hidden />
-          </button>
+          <div className="space-y-3 md:max-w-xs">
+            {sel.size === 0 && terms}
+            <button
+              onClick={() => onBuy([{ sku: "bundle" }])}
+              disabled={!!busy}
+              className="w-full inline-flex items-center justify-center gap-2 bg-navy text-white text-sm font-semibold px-5 py-2.5 rounded-lg disabled:opacity-60"
+            >
+              <CreditCard className="size-4" aria-hidden /> Acquista il percorso · {euro(withVat(b.price))} IVA inclusa
+            </button>
+          </div>
         </div>
       )}
     </section>
@@ -356,11 +387,13 @@ function Consulting({
   busy,
   onBuy,
   setError,
+  terms,
 }: {
   data: ServicesData;
   busy: string | null;
   onBuy: (l: { sku: string }[], extra: { slotId?: string; topic?: string }) => void;
   setError: (e: string | null) => void;
+  terms: React.ReactNode;
 }) {
   const router = useRouter();
   const [slot, setSlot] = useState<string | null>(null);
@@ -404,10 +437,10 @@ function Consulting({
         <UserRound className="size-5" aria-hidden strokeWidth={1.75} /> Consulenza senior da remoto
       </h2>
       <p className="mt-1 text-sm text-muted max-w-3xl">
-        Un&apos;ora in videochiamata con un nostro consulente senior sul tuo diagnostico. {euro(p.price)} + IVA, da pagare al momento della
-        prenotazione.{" "}
+        Un&apos;ora in videochiamata con un nostro consulente senior sul vostro diagnostico. {euro(p.price)} + IVA, da pagare al momento
+        della prenotazione.{" "}
         {data.hours > 0 && (
-          <strong className="text-navy">Hai {data.hours === 1 ? "1 ora disponibile" : `${data.hours} ore disponibili`}.</strong>
+          <strong className="text-navy">Avete {data.hours === 1 ? "1 ora disponibile" : `${data.hours} ore disponibili`}.</strong>
         )}
       </p>
 
@@ -437,16 +470,20 @@ function Consulting({
       )}
 
       {byDay.length === 0 ? (
-        <p className="mt-4 text-sm text-muted">
-          Al momento non ci sono orari disponibili nelle prossime settimane: scrivici a{" "}
-          <a className="underline" href={`mailto:${BRAND.contactEmail}`}>
-            {BRAND.contactEmail}
-          </a>{" "}
-          e ti proporremo una data.
-        </p>
+        <div className="mt-4 rounded-xl bg-paper p-4 text-sm flex flex-wrap items-center justify-between gap-3">
+          <p>
+            Al momento non ci sono orari liberi nelle prossime settimane: chiedeteci una data e vi rispondiamo entro un giorno lavorativo.
+          </p>
+          <a
+            className="inline-flex items-center gap-2 rounded-lg border border-navy px-4 py-2 font-semibold text-navy hover:bg-navy hover:text-white"
+            href={`mailto:${BRAND.contactEmail}?subject=${encodeURIComponent(`Consulenza: richiesta di un orario per ${data.company.name}`)}&body=${encodeURIComponent("Buongiorno,\nvorremmo fissare la consulenza. Siamo disponibili in questi giorni e orari:\n\n")}`}
+          >
+            Chiedi un orario <ArrowRight className="size-4" aria-hidden />
+          </a>
+        </div>
       ) : (
         <>
-          <p className="mt-5 text-sm font-medium">Scegli data e ora (ora italiana)</p>
+          <p className="mt-5 text-sm font-medium">Scegliete data e ora (ora italiana)</p>
           <div className="mt-2 space-y-3">
             {byDay.map(([k, list]) => (
               <div key={k} className="flex flex-wrap items-center gap-2 text-sm">
@@ -467,7 +504,7 @@ function Consulting({
           {slot && (
             <div className="mt-4 rounded-xl bg-paper p-4">
               <label className="block text-sm">
-                <span className="font-medium">Su cosa vuoi concentrarti? (facoltativo)</span>
+                <span className="font-medium">Su che cosa volete concentrarvi? (facoltativo)</span>
                 <textarea
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
@@ -484,10 +521,11 @@ function Consulting({
                     className="inline-flex items-center gap-2 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-60"
                   >
                     {booking ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Prenota
-                    con le tue ore
+                    con le vostre ore
                   </button>
                 ) : (
                   <>
+                    <div className="basis-full max-w-2xl">{terms}</div>
                     <button
                       onClick={() => onBuy([{ sku: "consulenza" }], { slotId: slot, topic })}
                       disabled={!!busy}

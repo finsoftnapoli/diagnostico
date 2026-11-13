@@ -22,3 +22,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Il motore in `src/lib/scoring.ts` deve sempre riprodurre il foglio Excel: `npm test` prima di ogni commit.
 - Database: ogni nuova tabella ha la sicurezza a livello di riga attiva e una prova in `supabase/tests/rls_test.sql`.
 - Mai chiavi nel codice; variabili d'ambiente elencate in `.env.example`.
+- Registro: tutti i testi rivolti al cliente usano il «voi» (pagine, email, messaggi di errore); i pulsanti restano brevi all'imperativo singolare («Apri il report»). Fanno eccezione, fino alla revisione legale, informativa privacy e condizioni di vendita.
+- Il report condiviso (`/condiviso/<link>`) è in sola lettura e si legge con il client di servizio: non aggiungere lì dati che il cliente non ha scelto di condividere (la «sintesi» non contiene bilancio, governance né testi liberi).

@@ -78,7 +78,7 @@ export default function Login() {
           <MailCheck className="size-5 shrink-0 text-navy" aria-hidden />
           <p>
             Abbiamo scritto a <strong>{email.trim()}</strong>. Inserite il codice, oppure aprite il link dell&apos;email da questo browser.
-            Se non la trovi, guarda anche nella posta indesiderata.
+            Se non la trovate, guardate anche nella posta indesiderata.
           </p>
         </div>
       )}

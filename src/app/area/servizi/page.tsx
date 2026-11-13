@@ -8,7 +8,7 @@ import { isStripeConfigured } from "@/lib/stripe";
 import { supabaseServer, supabaseService } from "@/lib/supabase/server";
 import type { AreaCode } from "@/lib/types";
 
-export const metadata: Metadata = { title: "I tuoi servizi" };
+export const metadata: Metadata = { title: "I vostri servizi" };
 
 export default function ServicesPage({ searchParams }: PageProps<"/area/servizi">) {
   return (
@@ -28,7 +28,7 @@ async function Content({ searchParams }: { searchParams: Promise<Record<string, 
   if (!data)
     return (
       <div className="mt-6">
-        <h1 className="text-3xl font-semibold text-navy">I tuoi servizi</h1>
+        <h1 className="text-3xl font-semibold text-navy">I vostri servizi</h1>
         <p className="mt-3 text-muted">
           Gli approfondimenti e le consulenze si attivano dopo il primo diagnostico.{" "}
           <Link href="/diagnostico" className="underline">

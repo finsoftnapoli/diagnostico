@@ -16,7 +16,7 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/prenotazi
   if (!b || (!isStaff && b.user_id !== user.id)) return NextResponse.json({ error: "Prenotazione non trovata" }, { status: 404 });
   const starts = new Date((b.expert_slots as unknown as { starts_at: string }).starts_at);
   if (!isStaff && starts.getTime() - Date.now() < CANCEL_HOURS * 3600 * 1000)
-    return NextResponse.json({ error: `Si può annullare fino a ${CANCEL_HOURS} ore prima: scrivici per spostarla` }, { status: 409 });
+    return NextResponse.json({ error: `Si può annullare fino a ${CANCEL_HOURS} ore prima: scriveteci per spostarla` }, { status: 409 });
   if (!(await cancelBooking(db, id, siteUrl()))) return NextResponse.json({ error: "Prenotazione già annullata" }, { status: 409 });
   return NextResponse.json({ ok: true });
 }

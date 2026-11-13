@@ -84,7 +84,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
     setBusy(true);
     const { error } = await supabaseBrowser().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
-    if (error) return setError("Codice non valido o scaduto. Controlla l'email o richiedine uno nuovo.");
+    if (error) return setError("Codice non valido o scaduto. Controllate l'email o richiedetene uno nuovo.");
     await save();
   }
 

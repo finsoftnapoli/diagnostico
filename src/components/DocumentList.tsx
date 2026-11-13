@@ -115,13 +115,13 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   async function submit() {
-    if (!file) return setMsg({ text: "Scegli il file da caricare.", ok: false });
+    if (!file) return setMsg({ text: "Scegliete il file da caricare.", ok: false });
     const fmt = docFormat(file, kind);
     if ("error" in fmt)
       return setMsg({
         text:
           fmt.error === "Il file deve essere un PDF."
-            ? "Il file deve essere un PDF: da Word, Excel o PowerPoint usa «Salva come PDF»."
+            ? "Il file deve essere un PDF: da Word, Excel o PowerPoint usate «Salva come PDF»."
             : fmt.error,
         ok: false,
       });
@@ -141,8 +141,8 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
       if (upErr)
         throw new Error(
           /mime/i.test(upErr.message)
-            ? "Formato del file non accettato dall'archivio: scrivici e lo abilitiamo."
-            : "Caricamento non riuscito, riprova",
+            ? "Formato del file non accettato dall'archivio: scriveteci e lo abilitiamo."
+            : "Caricamento non riuscito, riprovatete",
         );
       setMsg({ text: fmt.formato === "xbrl" ? "Lettura in corso…" : "Lettura in corso, può richiedere fino a un minuto…", ok: true });
       const res = await fetch("/api/documenti", {
@@ -150,7 +150,7 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, path: p.path, companyId, label }),
       });
-      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprova tra poco" }))) as {
+      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprovate tra poco" }))) as {
         error?: string;
         documentId?: string;
         period?: number | null;
@@ -256,10 +256,10 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
             {file ? <FileText className="size-5" aria-hidden /> : <Upload className="size-5" aria-hidden />}
           </span>
           <span className="text-sm">
-            <span className="font-medium block">{file ? file.name : "Trascina qui il file oppure fai clic per sceglierlo"}</span>
+            <span className="font-medium block">{file ? file.name : "Trascinate qui il file oppure fate clic per sceglierlo"}</span>
             <span className="text-muted">
               {file
-                ? "Fai clic o trascina un altro file per cambiarlo"
+                ? "Fate clic o trascinate un altro file per cambiarlo"
                 : kind === "bilancio"
                   ? "PDF o XBRL, fino a 20 MB"
                   : "PDF, fino a 20 MB"}
@@ -281,7 +281,7 @@ function AddDocument({ companies, onAdded }: { companies: { id: string; name: st
       </div>
       {msg && <p className={`mt-3 text-sm ${msg.ok ? "text-muted" : "text-accent"}`}>{msg.text}</p>}
       <p className="mt-3 text-xs text-muted">
-        I documenti restano in un archivio privato, visibili solo a te e ai nostri esperti, e sono usati per i tuoi report e, in forma
+        I documenti restano in un archivio privato, visibili solo a voi e ai nostri esperti, e sono usati per i vostri report e, in forma
         anonima e aggregata, per i confronti tra aziende. Non salviamo nomi di persone.
       </p>
     </div>

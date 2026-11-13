@@ -178,7 +178,7 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
   if (status === "failed")
     return (
       <div className="mt-6 rounded-xl border border-line bg-paper p-4 text-sm text-muted">
-        Il report approfondito non è stato generato: ci stiamo lavorando e ti avviseremo via email appena è pronto.
+        Il report approfondito non è stato generato: ci stiamo lavorando e vi avviseremo via email appena è pronto.
       </div>
     );
   return (

@@ -104,7 +104,10 @@ export default function Home() {
               <ExampleOttogramma size={290} />
             </div>
             <figcaption className="mt-2 text-center text-xs text-muted">
-              Un esempio di {BRAND.reportName}: più un vertice è lontano dal centro, più le pratiche di quell&apos;ambito sono mature.
+              Un esempio di {BRAND.reportName}: più un vertice è lontano dal centro, più le pratiche di quell&apos;ambito sono mature.{" "}
+              <Link href="/esempio" className="underline text-navy-soft">
+                Guardate il report di esempio
+              </Link>
             </figcaption>
           </figure>
         </div>
@@ -161,7 +164,7 @@ export default function Home() {
             {
               icon: FileText,
               t: `Il report approfondito, ${BRAND.reportPromise}`,
-              d: "Le tre priorità collegate alle vostre ambizioni e alle vostre sfide, con gli interventi da cui partire e, se caricate il bilancio, i numeri chiave.",
+              d: "Le tre priorità collegate alle vostre ambizioni e alle vostre sfide, con le azioni da spuntare man mano e, se caricate il bilancio, i numeri chiave. Si legge online o in PDF e si invia con un link a un socio, al commercialista o alla banca.",
             },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t}>
@@ -171,6 +174,12 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <Link
+          href="/esempio"
+          className="mt-8 inline-flex items-center gap-2 rounded-lg border border-navy px-5 py-2.5 font-semibold text-navy hover:bg-navy hover:text-white"
+        >
+          Guardate un report di esempio <ArrowRight className="size-4" aria-hidden />
+        </Link>
       </section>
 
       <section id="come-funziona" className="bg-paper scroll-mt-4">
@@ -242,6 +251,36 @@ export default function Home() {
               aggiungere bilanci aggiornati e il business plan.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-4 py-16">
+        <h2 className="text-2xl font-semibold text-navy">Chi c&apos;è dietro</h2>
+        <div className="mt-4 grid gap-8 md:grid-cols-[1.4fr_1fr] items-start">
+          <p className="text-muted leading-relaxed">
+            {BRAND.name} è un servizio di {BRAND.ownerLegal.replace(/\.$/, "")}, società di consulenza di direzione. Le domande, i livelli e
+            i criteri di lettura nascono da quarant&apos;anni di lavoro accanto a imprenditori e manager, in piccole aziende familiari e in
+            grandi gruppi: sono le stesse verifiche che un consulente esperto fa nelle prime settimane in azienda, ordinate in un metodo che
+            potete usare da soli. I nostri esperti curano la metodologia, sorvegliano la qualità dei report e sono a disposizione per le
+            consulenze.
+          </p>
+          <ul className="space-y-2 text-sm">
+            {[
+              "Metodologia proprietaria, uguale per tutte le aziende",
+              "Risposte e documenti riservati, mai ceduti a terzi",
+              "Nessun impegno: decidete voi se e come proseguire",
+            ].map((x) => (
+              <li key={x} className="flex gap-2">
+                <ArrowRight className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
+                {x}
+              </li>
+            ))}
+            <li>
+              <Link href="/metodo" className="underline text-navy-soft">
+                Il nostro metodo
+              </Link>
+            </li>
+          </ul>
         </div>
       </section>
 

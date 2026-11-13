@@ -73,7 +73,12 @@ export function linkIndex(selected: string[], catalogue: Choice[], area: AreaCod
   const total = w.reduce((a, b) => a + b, 0);
   let sum = 0;
   selected.slice(0, w.length).forEach((code, i) => {
-    sum += w[i] * link(catalogue.find((c) => c.code === code), area);
+    sum +=
+      w[i] *
+      link(
+        catalogue.find((c) => c.code === code),
+        area,
+      );
   });
   return round(sum / total, 2);
 }
@@ -90,10 +95,7 @@ export function computeResult(r: Responses): Result {
     const issuesIndex = linkIndex(r.issues, ISSUES, a.code);
     const fromText = r.textAreas.includes(a.code);
     const relevance = round(
-      1 +
-        PARAMS.bonusObjectives * objectivesIndex +
-        PARAMS.bonusIssues * issuesIndex +
-        PARAMS.bonusText * (fromText ? 1 : 0),
+      1 + PARAMS.bonusObjectives * objectivesIndex + PARAMS.bonusIssues * issuesIndex + PARAMS.bonusText * (fromText ? 1 : 0),
       3,
     );
     const priorityIndex = score === null ? 0 : round((100 - score) * relevance);
@@ -138,9 +140,7 @@ export function computeResult(r: Responses): Result {
   }
 
   const scored = rows.filter((x) => x.score !== null);
-  const overall = scored.length
-    ? round(scored.reduce((s, x) => s + (x.score as number), 0) / scored.length)
-    : null;
+  const overall = scored.length ? round(scored.reduce((s, x) => s + (x.score as number), 0) / scored.length) : null;
 
   return { areas: rows, priorities: order.filter((x) => x.isPriority), flags, overall };
 }
@@ -166,7 +166,7 @@ function reasonsFor(row: AreaResult, r: Responses): string[] {
     .filter((o): o is Choice => !!o && link(o, row.code) > 0)
     .map((o) => o.label.toLowerCase());
   if (cr.length) out.push(`Legato alle criticità: ${cr.join("; ")}`);
-  if (row.fromText) out.push("Richiamato nelle tue descrizioni");
+  if (row.fromText) out.push("Richiamato nelle vostre descrizioni");
   return out;
 }
 

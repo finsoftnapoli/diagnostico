@@ -9,7 +9,7 @@ import type { ReportInputs } from "@/lib/company-docs";
 import type { ReportNarrative } from "@/lib/report";
 import { QUESTIONNAIRE_VERSION } from "@/lib/questionnaire";
 import { emptyResponses } from "@/lib/scoring";
-import { currentUser, supabaseServer } from "@/lib/supabase/server";
+import { currentUser, supabaseServer, supabaseService } from "@/lib/supabase/server";
 import { readReport, trackReport } from "@/lib/report-access";
 import type { Responses } from "@/lib/types";
 
@@ -38,6 +38,9 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
   // il testo del report si legge dal server, solo quando è rilasciato; l'apertura da parte del cliente si registra
   const report = data.report_status === "ready" ? await readReport("assessments", id) : null;
   if (report?.narrative && !isStaff) await trackReport("diagnostico", id, user.id, "open");
+  const { data: done } = report?.narrative
+    ? await supabaseService().from("report_actions").select("action_key").eq("assessment_id", id)
+    : { data: null };
   // un bilancio più recente archiviato dopo la compilazione è quello usato nel report approfondito
   const inputs = data.report_status === "ready" ? (data.report_inputs as ReportInputs | null) : null;
   const draft = {
@@ -88,6 +91,7 @@ async function SavedReport({ params }: { params: Promise<{ id: string }> }) {
           sources={sourcesOf(inputs)}
           previous={previous}
           reviewed={report.releasedBy === "staff"}
+          doneActions={((done ?? []) as { action_key: string }[]).map((x) => x.action_key)}
         />
       ) : (
         <Ottogramma draft={draft} reportStatus={data.report_status === "failed" ? "failed" : "pending"} previous={previous} />

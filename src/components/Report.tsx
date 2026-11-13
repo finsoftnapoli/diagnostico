@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Banknote,
   CircleCheck,
+  Eye,
   Landmark,
   Footprints,
   Gauge,
@@ -29,6 +30,9 @@ import type { AreaCode } from "@/lib/types";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Governance } from "@/lib/types";
 import type { ReportNarrative } from "@/lib/report";
+import { actionKey } from "@/lib/action-key";
+import type { ShareScope } from "@/lib/share";
+import AreaExplorer from "./AreaExplorer";
 import Feedback from "./Feedback";
 import InviteColleagues from "./InviteColleagues";
 import Offers from "./Offers";
@@ -36,7 +40,9 @@ import PdfDownload from "./PdfDownload";
 import PrintButton from "./PrintButton";
 import Progress, { type PreviousResult } from "./Progress";
 import RadarProfile from "./RadarProfile";
+import ReportIndex, { type IndexItem } from "./ReportIndex";
 import ScoreReading from "./ScoreReading";
+import ShareReport from "./ShareReport";
 
 const nameOf = (c: AreaCode) => AREAS.find((a) => a.code === c)?.name ?? c;
 
@@ -46,8 +52,14 @@ export default function Report({
   sources = [],
   previous,
   reviewed = false,
+  shared,
+  doneActions = [],
 }: {
   draft: Draft;
+  /** Pagina condivisa in sola lettura: solo la sintesi oppure tutto il report. */
+  shared?: ShareScope | "esempio";
+  /** Chiavi delle azioni già segnate come fatte. */
+  doneActions?: string[];
   narrative?: ReportNarrative | null;
   /** Vero se un esperto ha rivisto e approvato il report prima dell'invio. */
   reviewed?: boolean;
@@ -75,12 +87,61 @@ export default function Report({
   const res = useMemo(() => computeResult(r), [r]);
   const ins = useMemo(() => buildInsights(r, res, bench), [r, res, bench]);
   const company = r.profile["PR-11"];
+  const full = shared !== "sintesi";
+  const [openArea, setOpenArea] = useState<AreaCode | null>(null);
+  const [done, setDone] = useState<Set<string>>(() => new Set(doneActions));
+  const canTick = !!narrative && (shared === "esempio" || (!!draft.savedId && !shared));
+  function toggle(text: string) {
+    if (!canTick) return;
+    const key = actionKey(text);
+    const on = !done.has(key);
+    setDone((d) => {
+      const n = new Set(d);
+      if (on) n.add(key);
+      else n.delete(key);
+      return n;
+    });
+    if (!draft.savedId || shared) return;
+    fetch(`/api/report/${draft.savedId}/azioni`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ key, done: on }),
+    }).catch(() => {});
+  }
+  const allActions = narrative ? [...narrative.priorities.flatMap((p) => p.actions), ...narrative.quickWins] : [];
+  const doneCount = allActions.filter((a) => done.has(actionKey(a))).length;
+  const index: IndexItem[] = [
+    { id: "quadro", label: "Il quadro" },
+    ...(narrative ? [{ id: "sintesi", label: "Sintesi" }] : []),
+    { id: "priorita", label: "Priorità" },
+    ...(narrative?.quickWins.length ? [{ id: "rapidi", label: "Interventi rapidi" }] : []),
+    ...(full && ins.readiness.length ? [{ id: "ambizioni", label: "Ambizioni" }] : []),
+    ...(full && ins.issueCauses.length ? [{ id: "sfide", label: "Sfide" }] : []),
+    ...(full && r.financials ? [{ id: "numeri", label: "Numeri" }] : []),
+    ...(full ? [{ id: "dettaglio", label: "Dettaglio" }] : []),
+  ];
   const date = draft.completedAt
     ? new Date(draft.completedAt).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })
     : "";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {shared && (
+        <p className="mb-6 flex items-start gap-2 rounded-xl bg-paper px-4 py-3 text-sm">
+          <Eye className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
+          {shared === "esempio" ? (
+            <span>
+              <strong className="text-navy">Report di esempio.</strong> L&apos;azienda è di fantasia: serve a mostrare che cosa ricevete
+              dopo il diagnostico. Provate a scegliere un ambito sull&apos;{BRAND.reportName} e a spuntare le azioni.
+            </span>
+          ) : (
+            <span>
+              <strong className="text-navy">{shared === "sintesi" ? "Sintesi del report" : "Report"} in sola lettura.</strong> Vi è stato
+              condiviso da {company ?? "un'azienda"}: è un documento riservato, non inoltrate il link.
+            </span>
+          )}
+        </p>
+      )}
       {/* Intestazione */}
       <p className="text-sm text-muted">
         {BRAND.reportName}
@@ -90,11 +151,18 @@ export default function Report({
       </p>
       <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl sm:text-4xl font-semibold text-navy">{company ?? "La vostra azienda"}</h1>
-        {narrative && (draft.savedId ? <PdfDownload href={`/api/report/${draft.savedId}/pdf`} /> : <PrintButton />)}
+        {narrative && !shared && (
+          <div className="flex flex-wrap gap-2">
+            {draft.savedId && <ShareReport assessmentId={draft.savedId} />}
+            {draft.savedId ? <PdfDownload href={`/api/report/${draft.savedId}/pdf`} /> : <PrintButton />}
+          </div>
+        )}
       </div>
 
+      {narrative && <ReportIndex items={index} />}
+
       {/* Indicatori */}
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+      <div id="quadro" className="scroll-mt-16 mt-8 grid gap-3 sm:grid-cols-3">
         <Kpi
           icon={Gauge}
           label="Livello di maturità"
@@ -135,7 +203,13 @@ export default function Report({
       {/* Radar e sintesi */}
       <section className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] items-start">
         <div>
-          <RadarProfile areas={res.areas} reference={bench.values} referenceLabel={bench.label} />
+          <RadarProfile
+            areas={res.areas}
+            reference={bench.values}
+            referenceLabel={bench.label}
+            selected={narrative ? res.areas.findIndex((a) => a.code === openArea) : undefined}
+            onSelect={narrative ? (i) => setOpenArea(res.areas[i]?.code === openArea ? null : (res.areas[i]?.code ?? null)) : undefined}
+          />
           <p className="mt-1 text-xs text-muted text-center">
             Dal centro verso l&apos;esterno: da «{LEVEL_NAMES[0]}» a «{LEVEL_NAMES[3]}». {bench.note}
           </p>
@@ -179,6 +253,18 @@ export default function Report({
         </div>
       </section>
 
+      {narrative && (
+        <AreaExplorer
+          areas={res.areas}
+          themes={ins.themes}
+          reference={bench.values}
+          referenceKind={bench.kind === "mediana" ? "mediana" : "riferimento"}
+          selected={openArea}
+          onSelect={setOpenArea}
+          detailHref={full ? "#dettaglio" : undefined}
+        />
+      )}
+
       {narrative && <Narrative n={narrative} sources={sources} reviewed={reviewed} />}
 
       {previous && (
@@ -186,12 +272,23 @@ export default function Report({
       )}
 
       {/* Priorità e prossimi passi: l'ordine e i testi sono quelli validati dagli esperti, se presenti */}
-      <section className="mt-14">
+      <section id="priorita" className="scroll-mt-16 mt-14">
         <h2 className="text-2xl font-semibold text-navy">Le priorità e da dove partire</h2>
         <p className="mt-1 text-sm text-muted max-w-3xl">
           Gli ambiti su cui concentrarvi per primi, perché pesano di più sulle vostre ambizioni e sulle sfide che avete indicato. Per
           ciascuno, le azioni suggerite e il passo che porta i temi più deboli al livello successivo.
+          {canTick && " Spuntate le azioni man mano che le avviate: il report tiene il conto."}
         </p>
+        {allActions.length > 0 && (canTick || doneCount > 0) && (
+          <div className="no-print mt-4 flex items-center gap-3 text-sm">
+            <span className="h-2 w-40 rounded-full bg-paper">
+              <span className="block h-2 rounded-full bg-navy" style={{ width: `${(doneCount / allActions.length) * 100}%` }} />
+            </span>
+            <span className="text-muted">
+              <strong className="text-ink">{doneCount}</strong> di {allActions.length} azioni avviate
+            </span>
+          </div>
+        )}
         <div className="mt-6 space-y-6">
           {priorityCards(res, narrative).map((p, i) => {
             const a = res.areas.find((x) => x.code === p.code)!;
@@ -236,11 +333,8 @@ export default function Report({
                         <p className="mt-4 text-sm font-semibold text-navy">Le azioni suggerite</p>
                         <ol className="mt-2 space-y-2 text-sm">
                           {p.actions.map((x, k) => (
-                            <li key={x} className="flex gap-3">
-                              <span className="shrink-0 size-5 rounded-full bg-navy/10 text-navy text-xs font-semibold flex items-center justify-center">
-                                {k + 1}
-                              </span>
-                              <span>{x}</span>
+                            <li key={x}>
+                              <Tick text={x} n={k + 1} on={done.has(actionKey(x))} onToggle={canTick ? toggle : undefined} />
                             </li>
                           ))}
                         </ol>
@@ -272,14 +366,13 @@ export default function Report({
       </section>
 
       {narrative && narrative.quickWins.length > 0 && (
-        <section className="mt-14">
+        <section id="rapidi" className="scroll-mt-16 mt-14">
           <h2 className="text-2xl font-semibold text-navy">Interventi rapidi</h2>
           <p className="mt-1 text-sm text-muted">Azioni a basso costo da avviare nelle prossime settimane.</p>
           <ul className="mt-5 grid gap-3 md:grid-cols-2">
             {narrative.quickWins.map((q) => (
-              <li key={q} className="flex gap-3 rounded-xl border border-line p-4 text-sm">
-                <span className="mt-0.5 size-4 shrink-0 rounded border-2 border-navy" aria-hidden />
-                <span>{q}</span>
+              <li key={q} className="rounded-xl border border-line p-4 text-sm">
+                <Tick text={q} on={done.has(actionKey(q))} onToggle={canTick ? toggle : undefined} />
               </li>
             ))}
           </ul>
@@ -287,8 +380,8 @@ export default function Report({
       )}
 
       {/* Ambizioni */}
-      {ins.readiness.length > 0 && (
-        <section className="mt-14">
+      {full && ins.readiness.length > 0 && (
+        <section id="ambizioni" className="scroll-mt-16 mt-14">
           <h2 className="text-2xl font-semibold text-navy">Quanto l&apos;azienda è pronta per le sue ambizioni</h2>
           <p className="mt-1 text-sm text-muted max-w-3xl">
             Per ogni obiettivo che avete indicato, quanto sono solidi oggi gli ambiti da cui dipende e qual è il punto più debole da cui
@@ -325,8 +418,8 @@ export default function Report({
       )}
 
       {/* Sfide */}
-      {ins.issueCauses.length > 0 && (
-        <section className="mt-14">
+      {full && ins.issueCauses.length > 0 && (
+        <section id="sfide" className="scroll-mt-16 mt-14">
           <h2 className="text-2xl font-semibold text-navy">Le sfide: dove possono nascere</h2>
           <p className="mt-1 text-sm text-muted max-w-3xl">
             Per ogni sfida che avete indicato, i temi collegati in cui le pratiche sono oggi informali o di base: sono le cause più
@@ -365,7 +458,7 @@ export default function Report({
       )}
 
       {/* Verifiche */}
-      {res.flags.length > 0 && (
+      {full && res.flags.length > 0 && (
         <section className="mt-14 rounded-xl bg-paper border border-line p-5">
           <h2 className="font-semibold text-navy flex items-center gap-2">
             <TriangleAlert className="size-5" aria-hidden /> Da verificare
@@ -382,70 +475,76 @@ export default function Report({
       )}
 
       {/* Numeri del bilancio */}
-      {r.financials && <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />}
+      {full && r.financials && (
+        <div id="numeri" className="scroll-mt-16">
+          <Numbers f={r.financials} finScore={res.areas.find((a) => a.code === "FIN")?.score ?? null} />
+        </div>
+      )}
 
       {/* Governance dalla visura */}
-      {r.governance && <GovernanceBlock g={r.governance} strLevel={r.levels["STR-3"]} />}
+      {full && r.governance && <GovernanceBlock g={r.governance} strLevel={r.levels["STR-3"]} />}
 
       {/* Dettaglio */}
-      <section className="mt-14">
-        <h2 className="text-2xl font-semibold text-navy">Dettaglio per ambito e tema</h2>
-        <p className="mt-1 text-sm text-muted">
-          La barra mostra il punteggio dell&apos;ambito; la tacca grigia il {bench.kind === "mediana" ? "valore mediano" : "riferimento"}{" "}
-          della vostra fascia.
-        </p>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {res.areas.map((a) => {
-            const ref = bench.values[a.code];
-            const themes = ins.themes.filter((t) => t.area === a.code);
-            return (
-              <div key={a.code} className="rounded-xl border border-line p-4">
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`size-9 rounded-lg flex items-center justify-center ${a.isPriority ? "bg-navy text-white" : "bg-paper text-navy"}`}
-                  >
-                    <AreaIcon code={a.code} className="size-4" />
-                  </span>
-                  <div className="flex-1">
-                    <p className="font-semibold leading-tight">{a.name}</p>
-                    <p className="text-xs text-muted">
-                      {levelLabel(a.score)}
-                      {a.isPriority ? ` · priorità ${a.rank}` : ""}
-                    </p>
+      {full && (
+        <section id="dettaglio" className="scroll-mt-16 mt-14">
+          <h2 className="text-2xl font-semibold text-navy">Dettaglio per ambito e tema</h2>
+          <p className="mt-1 text-sm text-muted">
+            La barra mostra il punteggio dell&apos;ambito; la tacca grigia il {bench.kind === "mediana" ? "valore mediano" : "riferimento"}{" "}
+            della vostra fascia.
+          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {res.areas.map((a) => {
+              const ref = bench.values[a.code];
+              const themes = ins.themes.filter((t) => t.area === a.code);
+              return (
+                <div key={a.code} className="rounded-xl border border-line p-4">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`size-9 rounded-lg flex items-center justify-center ${a.isPriority ? "bg-navy text-white" : "bg-paper text-navy"}`}
+                    >
+                      <AreaIcon code={a.code} className="size-4" />
+                    </span>
+                    <div className="flex-1">
+                      <p className="font-semibold leading-tight">{a.name}</p>
+                      <p className="text-xs text-muted">
+                        {levelLabel(a.score)}
+                        {a.isPriority ? ` · priorità ${a.rank}` : ""}
+                      </p>
+                    </div>
+                    <p className="text-lg font-semibold tabular-nums">{a.score}</p>
                   </div>
-                  <p className="text-lg font-semibold tabular-nums">{a.score}</p>
+                  <Bar value={a.score ?? 0} marker={ref} />
+                  <p className="mt-2 text-xs leading-relaxed text-muted">
+                    {areaReading(
+                      a.score,
+                      ref,
+                      themes.map((t) => t.level),
+                    )}
+                  </p>
+                  <ul className="mt-3 space-y-1.5">
+                    {themes.map((t) => (
+                      <li key={t.id} className="flex items-center justify-between gap-3 text-sm">
+                        <span>{t.theme}</span>
+                        <Dots level={t.level} />
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <Bar value={a.score ?? 0} marker={ref} />
-                <p className="mt-2 text-xs leading-relaxed text-muted">
-                  {areaReading(
-                    a.score,
-                    ref,
-                    themes.map((t) => t.level),
-                  )}
-                </p>
-                <ul className="mt-3 space-y-1.5">
-                  {themes.map((t) => (
-                    <li key={t.id} className="flex items-center justify-between gap-3 text-sm">
-                      <span>{t.theme}</span>
-                      <Dots level={t.level} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Colleghi */}
-      {isSupabaseConfigured() && draft.savedId && !r.context && (
+      {isSupabaseConfigured() && draft.savedId && !r.context && !shared && (
         <div className="no-print">
           <InviteColleagues people={r.people ?? []} />
         </div>
       )}
 
       {/* Riscontro e domande */}
-      {narrative && draft.savedId && (
+      {narrative && draft.savedId && !shared && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Feedback kind="report" refId={draft.savedId} />
           <Feedback kind="report" refId={draft.savedId} ask />
@@ -453,37 +552,52 @@ export default function Report({
       )}
 
       {/* Servizi di approfondimento: solo dopo il report */}
-      {narrative && (
+      {narrative && !shared && (
         <div className="no-print">
           <Offers assessmentId={draft.savedId} priorities={res.priorities.map((p) => ({ code: p.code, name: p.name }))} />
         </div>
       )}
 
       {/* Invito */}
-      <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
-        <h2 className="text-xl font-semibold">{narrative ? "Il prossimo passo" : "Volete trasformare le priorità in un piano?"}</h2>
-        {narrative?.closing && <p className="mt-2 text-white/90 max-w-3xl leading-relaxed">{narrative.closing}</p>}
-        <p className="mt-2 text-white/75 max-w-2xl">
-          In un&apos;ora con un nostro consulente senior validiamo l&apos;{BRAND.reportName}, definiamo il livello da raggiungere su ogni
-          tema e i primi interventi, con tempi e responsabili.
-        </p>
-        <a
-          href={
-            draft.savedId
-              ? "/area/servizi#consulenza"
-              : `mailto:${BRAND.contactEmail}?subject=${encodeURIComponent(`Consulenza sul ${BRAND.reportName}`)}`
-          }
-          className="mt-5 inline-flex items-center gap-2 bg-white text-navy font-semibold px-5 py-2.5 rounded-lg"
-        >
-          Prenota una consulenza <ArrowRight className="size-4" aria-hidden />
-        </a>
-      </section>
+      {shared ? (
+        <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Volete lo stesso quadro per la vostra azienda?</h2>
+          <p className="mt-2 text-white/75 max-w-2xl">
+            Il diagnostico è gratuito e richiede circa 15 minuti: otto ambiti di gestione, l&apos;{BRAND.reportName} subito e il report
+            approfondito {BRAND.reportPromise}.
+          </p>
+          <Link href="/diagnostico" className="mt-5 inline-flex items-center gap-2 bg-white text-navy font-semibold px-5 py-2.5 rounded-lg">
+            Iniziate il diagnostico <ArrowRight className="size-4" aria-hidden />
+          </Link>
+        </section>
+      ) : (
+        <>
+          <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
+            <h2 className="text-xl font-semibold">{narrative ? "Il prossimo passo" : "Volete trasformare le priorità in un piano?"}</h2>
+            {narrative?.closing && <p className="mt-2 text-white/90 max-w-3xl leading-relaxed">{narrative.closing}</p>}
+            <p className="mt-2 text-white/75 max-w-2xl">
+              In un&apos;ora con un nostro consulente senior validiamo l&apos;{BRAND.reportName}, definiamo il livello da raggiungere su
+              ogni tema e i primi interventi, con tempi e responsabili.
+            </p>
+            <a
+              href={
+                draft.savedId
+                  ? "/area/servizi#consulenza"
+                  : `mailto:${BRAND.contactEmail}?subject=${encodeURIComponent(`Consulenza sul ${BRAND.reportName}`)}`
+              }
+              className="mt-5 inline-flex items-center gap-2 bg-white text-navy font-semibold px-5 py-2.5 rounded-lg"
+            >
+              Prenota una consulenza <ArrowRight className="size-4" aria-hidden />
+            </a>
+          </section>
 
-      <div className="no-print mt-8 flex gap-4 text-sm">
-        <Link href="/diagnostico" className="underline text-navy-soft">
-          Nuovo diagnostico
-        </Link>
-      </div>
+          <div className="no-print mt-8 flex gap-4 text-sm">
+            <Link href="/diagnostico" className="underline text-navy-soft">
+              Nuovo diagnostico
+            </Link>
+          </div>
+        </>
+      )}
       <p className="mt-6 text-xs text-muted flex gap-2 max-w-3xl">
         <Info className="size-4 shrink-0" aria-hidden />
         Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {BRAND.owner}: non è una
@@ -491,6 +605,35 @@ export default function Report({
         ricerca.
       </p>
     </div>
+  );
+}
+
+/** Un'azione del report: si può segnare come avviata; nelle pagine in sola lettura mostra soltanto lo stato. */
+function Tick({ text, n, on, onToggle }: { text: string; n?: number; on: boolean; onToggle?: (text: string) => void }) {
+  const box = (
+    <span
+      className={`mt-0.5 shrink-0 size-5 rounded flex items-center justify-center text-xs font-semibold ${
+        on ? "bg-navy text-white" : onToggle || n === undefined ? "border-2 border-navy text-navy" : "bg-navy/10 text-navy rounded-full"
+      }`}
+      aria-hidden
+    >
+      {on ? "✓" : onToggle ? "" : (n ?? "")}
+    </span>
+  );
+  const body = <span className={on ? "text-muted line-through decoration-line" : ""}>{text}</span>;
+  if (!onToggle)
+    return (
+      <span className="flex gap-3">
+        {box}
+        {body}
+      </span>
+    );
+  return (
+    <label className="flex gap-3 cursor-pointer">
+      <input type="checkbox" className="sr-only" checked={on} onChange={() => onToggle(text)} />
+      {box}
+      {body}
+    </label>
   );
 }
 

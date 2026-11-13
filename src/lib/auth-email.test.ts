@@ -38,10 +38,10 @@ describe("firma delle chiamate di Supabase Auth", () => {
 describe("email di accesso", () => {
   it("mostra codice e link e adatta i testi all'azione", () => {
     const m = authEmail({ action: "magiclink", token: "123456", link: "https://x.supabase.co/auth/v1/verify?token=h&type=magiclink" });
-    expect(m.subject).toBe("Il tuo codice di accesso: 123456");
+    expect(m.subject).toBe("Il vostro codice di accesso: 123456");
     expect(m.html).toContain("123456");
     expect(m.html).toContain("Accedi con un clic");
     expect(m.text).toContain("Codice: 123456");
-    expect(authEmail({ action: "signup", token: "654321", link: null }).subject).toBe("Conferma la tua email: 654321");
+    expect(authEmail({ action: "signup", token: "654321", link: null }).subject).toBe("Confermate la vostra email: 654321");
   });
 });

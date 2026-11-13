@@ -258,10 +258,10 @@ do $$ begin
   assert (select allowed_mime_types @> array['application/pdf', 'application/xml'] from storage.buckets where id = 'documenti'),
     'archivio documenti: PDF e XML ammessi';
 end $$;
--- riscontri, misura del percorso e registro degli errori: solo il server
+-- riscontri, misura del percorso, registro degli errori, condivisioni e azioni del report: solo il server
 set role authenticated;
 do $$ declare t text; begin
-  foreach t in array array['feedback', 'funnel_events', 'error_log'] loop
+  foreach t in array array['feedback', 'funnel_events', 'error_log', 'report_shares', 'report_actions'] loop
     begin
       execute format('select 1 from public.%I', t);
       raise exception 'non doveva riuscire: %', t;

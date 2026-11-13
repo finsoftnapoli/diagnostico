@@ -20,7 +20,12 @@ export default function RadarProfile({
   reference,
   referenceLabel,
   fontSize = 12,
+  selected,
+  onSelect,
 }: {
+  /** Vertice scelto e funzione chiamata quando si tocca il nome di un vertice: rende il grafico esplorabile. */
+  selected?: number;
+  onSelect?: (index: number) => void;
   areas?: AreaResult[];
   /** In alternativa agli ambiti del diagnostico: vertici con etichetta e riferimento propri. */
   items?: RadarItem[];
@@ -63,8 +68,14 @@ export default function RadarProfile({
                   textAnchor={textAnchor}
                   dominantBaseline="central"
                   fontSize={fontSize}
-                  fontWeight={data[index]?.priority ? 700 : 400}
-                  fill={data[index]?.priority ? "#0a2a4a" : "#5b6573"}
+                  fontWeight={data[index]?.priority || selected === index ? 700 : 400}
+                  fill={data[index]?.priority || selected === index ? "#0a2a4a" : "#5b6573"}
+                  textDecoration={selected === index ? "underline" : undefined}
+                  onClick={onSelect ? () => onSelect(index) : undefined}
+                  onKeyDown={onSelect ? (e) => (e.key === "Enter" || e.key === " ") && onSelect(index) : undefined}
+                  tabIndex={onSelect ? 0 : undefined}
+                  role={onSelect ? "button" : undefined}
+                  style={onSelect ? { cursor: "pointer" } : undefined}
                 >
                   {lines.map((l, i) => (
                     <tspan key={i} x={x} dy={i === 0 ? (lines.length > 1 ? -fontSize * 0.55 : 0) : fontSize * 1.1}>

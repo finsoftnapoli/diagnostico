@@ -41,12 +41,12 @@ export function validateBilling(input: unknown): { ok: true; billing: Billing } 
   const sdi = clean(i.sdi_code, 7).toUpperCase();
   const pec = clean(i.pec, 200).toLowerCase();
 
-  if (denominazione.length < 2) errors.denominazione = "Indica la ragione sociale";
+  if (denominazione.length < 2) errors.denominazione = "Indicate la ragione sociale";
   if (!isValidItalianVat(vat)) errors.vat_number = "Partita IVA non valida";
   if (tax && !/^([0-9]{11}|[A-Z0-9]{16})$/.test(tax)) errors.tax_code = "Codice fiscale non valido";
-  if (address.length < 3) errors.address = "Indica l'indirizzo della sede";
+  if (address.length < 3) errors.address = "Indicate l'indirizzo della sede";
   if (!/^[0-9]{5}$/.test(cap)) errors.cap = "CAP di 5 cifre";
-  if (city.length < 2) errors.city = "Indica il comune";
+  if (city.length < 2) errors.city = "Indicate il comune";
   if (!/^[A-Z]{2}$/.test(province)) errors.province = "Sigla di 2 lettere";
   if (sdi && !/^[A-Z0-9]{7}$/.test(sdi)) errors.sdi_code = "Il codice destinatario ha 7 caratteri";
   if (pec && !/^\S+@\S+\.\S+$/.test(pec)) errors.pec = "PEC non valida";

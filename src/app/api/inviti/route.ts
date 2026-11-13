@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { email?: string; name?: string; role?: string; companyId?: string };
   const email = (body.email ?? "").trim().toLowerCase().slice(0, 200);
   if (!/^\S+@\S+\.\S+$/.test(email)) return NextResponse.json({ error: "Email non valida" }, { status: 422 });
-  if (email === user.email.toLowerCase()) return NextResponse.json({ error: "Non puoi invitare te stesso" }, { status: 422 });
+  if (email === user.email.toLowerCase()) return NextResponse.json({ error: "Non potete invitare voi stessi" }, { status: 422 });
   const name = (body.name ?? "").trim().slice(0, 120) || null;
   const role = (body.role ?? "").trim().slice(0, 80) || null;
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   if (body.companyId) q = q.eq("company_id", body.companyId);
   const { data: m } = await q.order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (!m) return NextResponse.json({ error: "Solo l'amministratore dello spazio aziendale può invitare colleghi" }, { status: 403 });
-  const companyName = (m.companies as unknown as { name: string } | null)?.name ?? "la tua azienda";
+  const companyName = (m.companies as unknown as { name: string } | null)?.name ?? "la vostra azienda";
 
   // limite giornaliero di inviti per amministratore (protegge la reputazione del dominio di invio)
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     .eq("invited_by", user.id)
     .gte("sent_at", since);
   if ((sentToday ?? 0) >= 30)
-    return NextResponse.json({ error: "Hai raggiunto il limite di inviti per oggi: riprova domani" }, { status: 429 });
+    return NextResponse.json({ error: "Avete raggiunto il limite di inviti per oggi: riprovate domani" }, { status: 429 });
 
   // un invito in sospeso per la stessa persona viene riutilizzato
   const { data: existing } = await sb
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       .single();
     if (error) {
       console.error("Invito non creato:", error.message);
-      return NextResponse.json({ error: "Invito non riuscito, riprova" }, { status: 500 });
+      return NextResponse.json({ error: "Invito non riuscito, riprovate" }, { status: 500 });
     }
     inv = data;
   }
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     await sendEmail({ to: email, ...mail, replyTo: user.email });
   } catch (e) {
     console.error("Email di invito non inviata:", e instanceof Error ? e.message : e);
-    return NextResponse.json({ error: "Email non inviata, riprova tra poco" }, { status: 502 });
+    return NextResponse.json({ error: "Email non inviata, riprovate tra poco" }, { status: 502 });
   }
   await supabaseService().from("invitations").update({ sent_at: new Date().toISOString() }).eq("id", inv.id);
   return NextResponse.json({ ok: true });

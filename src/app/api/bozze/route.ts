@@ -6,7 +6,7 @@ import { sanitizeResponses } from "@/lib/sanitize";
 import { supabaseService } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  if (!isHuman(request)) return NextResponse.json({ error: "Verifica di sicurezza scaduta: ricarica la pagina" }, { status: 403 });
+  if (!isHuman(request)) return NextResponse.json({ error: "Verifica di sicurezza scaduta: ricaricate la pagina" }, { status: 403 });
   let body: { email?: unknown; step?: unknown; responses?: unknown };
   try {
     const raw = await request.text();
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     .single();
   if (error) {
     console.error("Salvataggio bozza non riuscito:", error.message);
-    return NextResponse.json({ error: "Salvataggio non riuscito, riprova tra poco" }, { status: 500 });
+    return NextResponse.json({ error: "Salvataggio non riuscito, riprovate tra poco" }, { status: 500 });
   }
   return NextResponse.json({ id: data.id });
 }

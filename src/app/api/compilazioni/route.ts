@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   if (missing) return NextResponse.json({ error: `Questionario incompleto: ${missing}` }, { status: 422 });
   const companyName = responses.profile["PR-11"] ?? "";
   const vatNumber = responses.profile["PR-10"] ?? null;
-  if (!companyName) return NextResponse.json({ error: "Indica il nome dell'azienda" }, { status: 422 });
+  if (!companyName) return NextResponse.json({ error: "Indicate il nome dell'azienda" }, { status: 422 });
   const source = typeof body.source === "string" && body.source ? body.source.slice(0, 60) : "diretto";
 
   const db = supabaseService();
@@ -204,5 +204,5 @@ async function fail(what: string, error: { message: string }, assessmentId?: str
   console.error(`Salvataggio ${what} non riuscito:`, error.message);
   // niente compilazioni a metà: si elimina quanto scritto (risposte e punteggi seguono a cascata)
   if (assessmentId) await supabaseService().from("assessments").delete().eq("id", assessmentId);
-  return NextResponse.json({ error: "Salvataggio non riuscito, riprova tra poco" }, { status: 500 });
+  return NextResponse.json({ error: "Salvataggio non riuscito, riprovate tra poco" }, { status: 500 });
 }

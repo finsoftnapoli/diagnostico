@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     .single();
   if (error) {
     console.error("Modulo non avviato:", error.message);
-    return NextResponse.json({ error: "Non riuscito, riprova" }, { status: 500 });
+    return NextResponse.json({ error: "Non riuscito, riprovate" }, { status: 500 });
   }
   return NextResponse.json({ id: data.id });
 }

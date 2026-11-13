@@ -4,7 +4,7 @@ import { WizardClient as Wizard } from "@/components/ClientOnly";
 export const metadata: Metadata = {
   title: "Inizia il diagnostico aziendale gratuito",
   description:
-    "24 domande sugli 8 ambiti di gestione della tua azienda, con salvataggio automatico. Al termine l'Ottogramma con il confronto con aziende simili.",
+    "24 domande sugli 8 ambiti di gestione della vostra azienda, con salvataggio automatico. Al termine l'Ottogramma con il confronto con aziende simili.",
   alternates: { canonical: "/diagnostico" },
 };
 

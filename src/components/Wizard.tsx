@@ -829,7 +829,7 @@ function DocUpload({ r, update }: SectionProps) {
         throw new Error(
           /mime/i.test(upErr.message)
             ? "Formato del file non accettato dall'archivio: scriveteci e lo abilitiamo."
-            : "Caricamento non riuscito, riprova",
+            : "Caricamento non riuscito, riprovatete",
         );
       // 2. lettura
       setMsg((m) => ({
@@ -841,7 +841,7 @@ function DocUpload({ r, update }: SectionProps) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, path: p.path }),
       });
-      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprova tra poco" }))) as {
+      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprovate tra poco" }))) as {
         error?: string;
         documentId?: string;
         profile?: Record<string, string>;

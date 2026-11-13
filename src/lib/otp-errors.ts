@@ -8,9 +8,9 @@ export function otpWaitSeconds(message: string): number | null {
 
 export function otpSendError(message: string): { error: string; wait?: number } {
   const wait = otpWaitSeconds(message);
-  if (wait !== null) return { error: `Abbiamo appena inviato un'email: puoi richiederne un'altra tra ${wait} secondi.`, wait };
-  if (/rate limit|too many/i.test(message)) return { error: "Troppe richieste in poco tempo: riprova tra qualche minuto." };
+  if (wait !== null) return { error: `Abbiamo appena inviato un'email: potete richiederne un'altra tra ${wait} secondi.`, wait };
+  if (/rate limit|too many/i.test(message)) return { error: "Troppe richieste in poco tempo: riprovate tra qualche minuto." };
   if (/signups? not allowed|not found|user/i.test(message))
-    return { error: "Non troviamo un accesso con questa email: se non hai ancora completato un diagnostico, inizia da lì." };
-  return { error: "Non siamo riusciti a inviare l'email. Riprova tra un minuto." };
+    return { error: "Non troviamo un accesso con questa email: se non avete ancora completato un diagnostico, iniziate da lì." };
+  return { error: "Non siamo riusciti a inviare l'email. Riprovate tra un minuto." };
 }

@@ -42,26 +42,26 @@ export async function sendEmail(opts: {
 export function invitationEmail(p: { inviter: string; company: string; name?: string | null; link: string; expires: Date }) {
   const greeting = p.name ? `Buongiorno ${p.name},` : "Buongiorno,";
   const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long" });
-  const subject = `${p.inviter} ti invita a compilare il diagnostico di ${p.company}`;
+  const subject = `${p.inviter} vi invita a compilare il diagnostico di ${p.company}`;
   const text = `${greeting}
 
-${p.inviter} ti ha invitato a compilare il diagnostico gestionale di ${p.company} su ${BRAND.name}.
+${p.inviter} vi ha invitato a compilare il diagnostico gestionale di ${p.company} su ${BRAND.name}.
 Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato.
-Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.
+Le vostre risposte individuali saranno visibili a chi vi ha invitato, in qualità di amministratore dello spazio aziendale.
 
 Compila il diagnostico: ${p.link}
 
-L'invito scade il ${date}. Se non conosci il mittente, puoi ignorare questa email.
+L'invito scade il ${date}. Se non conoscete il mittente, potete ignorare questa email.
 ${ownerSentence()}`;
   const html = emailLayout({
-    preheader: `${p.inviter} ti invita a compilare il diagnostico di ${p.company}${stop(p.company)}`,
+    preheader: `${p.inviter} vi invita a compilare il diagnostico di ${p.company}${stop(p.company)}`,
     eyebrow: "Invito",
     title: `Il diagnostico di ${p.company}`,
     body: `${para(esc(greeting))}
-${para(`<strong>${esc(p.inviter)}</strong> ti ha invitato a compilare il diagnostico gestionale di <strong>${esc(p.company)}</strong> su ${esc(BRAND.name)}.`)}
-${para("Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato. Le tue risposte individuali saranno visibili a chi ti ha invitato, in qualità di amministratore dello spazio aziendale.")}
+${para(`<strong>${esc(p.inviter)}</strong> vi ha invitato a compilare il diagnostico gestionale di <strong>${esc(p.company)}</strong> su ${esc(BRAND.name)}.`)}
+${para("Le risposte dei diversi responsabili permettono di confrontare le visioni e di vedere dove il management è allineato. Le vostre risposte individuali saranno visibili a chi vi ha invitato, in qualità di amministratore dello spazio aziendale.")}
 ${emailButton(p.link, "Compila il diagnostico")}
-${para(`L'invito scade il ${esc(date)}. Se non conosci il mittente, puoi ignorare questa email.`, "font-size:13px;color:#5b6573;margin-top:18px")}`,
+${para(`L'invito scade il ${esc(date)}. Se non conoscete il mittente, potete ignorare questa email.`, "font-size:13px;color:#5b6573;margin-top:18px")}`,
   });
   return { subject, text, html };
 }
@@ -172,5 +172,43 @@ export function reviewDigestEmail(p: { count: number; link: string }) {
   const subject = p.count === 1 ? "1 report da rivedere" : `${p.count} report da rivedere`;
   const text = `Ci sono ${p.count} report generati in attesa della tua revisione prima dell'invio ai clienti.\n\nArea staff: ${p.link}`;
   const html = `<p>Ci sono <strong>${p.count}</strong> report generati in attesa della tua revisione prima dell'invio ai clienti.</p><p><a href="${esc(p.link)}">Apri l'area staff</a></p>`;
+  return { subject, text, html };
+}
+
+/** Email a chi riceve un report condiviso in sola lettura. */
+export function sharedReportEmail(p: {
+  sender: string;
+  company: string;
+  name?: string | null;
+  note?: string | null;
+  link: string;
+  expires: Date;
+  summary: boolean;
+}) {
+  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+  const what = p.summary ? "la sintesi del report" : "il report";
+  const subject = `${p.company}: ${p.summary ? "la sintesi del diagnostico" : "il report del diagnostico"} da leggere`;
+  const greeting = p.name ? `Buongiorno ${p.name},` : "Buongiorno,";
+  const intro = `${p.sender} vi ha inviato ${what} del diagnostico gestionale di ${p.company}, elaborato con ${BRAND.name}: l'${BRAND.reportName} degli otto ambiti di gestione, le priorità e le azioni da cui partire.`;
+  const foot = `Il link apre una pagina in sola lettura ed è valido fino al ${date}. Se non conoscete il mittente, potete ignorare questa email.`;
+  const text = `${greeting}
+
+${intro}
+${p.note ? `\nMessaggio di ${p.sender}:\n«${p.note}»\n` : ""}
+Aprite il report: ${p.link}
+
+${foot}
+
+${ownerSentence()}`;
+  const html = emailLayout({
+    preheader: intro,
+    eyebrow: p.summary ? "Sintesi del report" : "Report del diagnostico",
+    title: `Il diagnostico di ${p.company}`,
+    body: `${para(esc(greeting))}
+${para(`<strong>${esc(p.sender)}</strong> vi ha inviato ${esc(what)} del diagnostico gestionale di <strong>${esc(p.company)}</strong>, elaborato con ${esc(BRAND.name)}: l'${esc(BRAND.reportName)} degli otto ambiti di gestione, le priorità e le azioni da cui partire.`)}
+${p.note ? `<div style="margin:18px 0;padding:14px 18px;border-left:3px solid ${C.navy};background:${C.paper}">${para(`Messaggio di ${esc(p.sender)}`, `margin:0 0 4px;font-size:13px;color:${C.muted}`)}${para(esc(p.note), "margin:0;font-style:italic")}</div>` : ""}
+${emailButton(p.link, "Apri il report")}
+${para(esc(foot), "font-size:13px;color:#5b6573;margin-top:18px")}`,
+  });
   return { subject, text, html };
 }
