@@ -26,10 +26,10 @@ function Unavailable() {
     <div className="mx-auto max-w-xl px-4 py-20 text-center">
       <h1 className="text-2xl font-semibold text-navy">Questo link non è più valido</h1>
       <p className="mt-3 text-muted">
-        Il report non è più condiviso: il link è scaduto oppure chi ve lo ha inviato lo ha ritirato. Chiedetegli di inviarvene uno nuovo.
+        Il report non è più condiviso: il link è scaduto oppure chi gliel&apos;ha inviato lo ha ritirato. Chieda di riceverne uno nuovo.
       </p>
       <Link href="/" className="mt-6 inline-block underline text-navy-soft">
-        Scoprite {BRAND.name}
+        Scopra {BRAND.name}
       </Link>
     </div>
   );

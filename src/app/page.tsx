@@ -106,7 +106,7 @@ export default function Home() {
             <figcaption className="mt-2 text-center text-xs text-muted">
               Un esempio di {BRAND.reportName}: più un vertice è lontano dal centro, più le pratiche di quell&apos;ambito sono mature.{" "}
               <Link href="/esempio" className="underline text-navy-soft">
-                Guardate il report di esempio
+                Guarda il report di esempio
               </Link>
             </figcaption>
           </figure>
@@ -178,7 +178,7 @@ export default function Home() {
           href="/esempio"
           className="mt-8 inline-flex items-center gap-2 rounded-lg border border-navy px-5 py-2.5 font-semibold text-navy hover:bg-navy hover:text-white"
         >
-          Guardate un report di esempio <ArrowRight className="size-4" aria-hidden />
+          Guarda un report di esempio <ArrowRight className="size-4" aria-hidden />
         </Link>
       </section>
 
