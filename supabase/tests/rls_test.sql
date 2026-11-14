@@ -261,7 +261,7 @@ end $$;
 -- riscontri, misura del percorso, registro degli errori, condivisioni e azioni del report: solo il server
 set role authenticated;
 do $$ declare t text; begin
-  foreach t in array array['feedback', 'funnel_events', 'error_log', 'report_shares', 'report_actions'] loop
+  foreach t in array array['feedback', 'funnel_events', 'error_log', 'report_shares', 'report_actions', 'calendar_feeds', 'calendar_busy', 'agenda_settings'] loop
     begin
       execute format('select 1 from public.%I', t);
       raise exception 'non doveva riuscire: %', t;

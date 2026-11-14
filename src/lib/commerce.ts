@@ -1,6 +1,7 @@
 import "server-only";
 import { BRAND } from "@/config/brand";
 import { BUNDLE_HOURS, euro, priceCart, PRODUCTS, SESSION_MIN, VAT_RATE, type CartLine, type PricedLine, type Sku } from "@/config/offers";
+import { slotCollides } from "./agenda-busy";
 import { isArubaConfigured, uploadInvoice } from "./aruba";
 import type { Billing } from "./billing";
 import { isEmailConfigured, sendEmail } from "./email";
@@ -106,6 +107,7 @@ export async function createOrder(
 
 /** Blocca lo slot scelto per il tempo del pagamento. */
 export async function holdSlot(db: Db, slotId: string, orderId: string) {
+  if (await slotCollides(db, slotId)) return false;
   const { data } = await db.rpc("claim_slot", { p_slot: slotId, p_status: "held", p_minutes: HOLD_MINUTES, p_order: orderId });
   return data === true;
 }
@@ -382,6 +384,7 @@ export const xmlFileName = (number: string) => `fattura_${number.replace(/\W+/g,
 export async function bookWithCredit(db: Db, p: { userId: string; companyId: string; slotId: string; topic?: string | null }) {
   const credit = await consultCredit(db, p.companyId);
   if (!credit.next) return { error: "Non ha ore di consulenza disponibili" };
+  if (await slotCollides(db, p.slotId)) return { error: "L'orario scelto non è più disponibile" };
   const { data: claimed } = await db.rpc("claim_slot", { p_slot: p.slotId, p_status: "booked", p_minutes: 0, p_order: null });
   if (!claimed) return { error: "L'orario scelto non è più disponibile" };
   const { data: used } = await db.rpc("use_credit", { p_entitlement: credit.next, p_delta: 1 });

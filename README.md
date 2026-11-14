@@ -76,7 +76,7 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
    invia le email (`src/lib/commerce.ts`).
 3. **Modulo**: `/api/moduli` avvia il modulo acquistato → `/area/modulo/<id>` (questionario, poi Ottogramma dell'ambito) →
    report nel cron, revisione in `/admin/modulo/<id>` (con anteprima del PDF), poi PDF scaricabile dal cliente.
-4. **Consulenza**: lo staff pubblica gli orari in `/admin/agenda`; il cliente prenota pagando o con le ore del percorso
+4. **Consulenza**: lo staff apre gli orari cliccando o trascinando sul calendario settimanale di `/admin/agenda` (o con «Ripeti ogni settimana»); il cliente prenota pagando o con le ore del percorso. I calendari dell'esperto (Google, Outlook, Apple) si collegano con il loro link ICS: gli orari già impegnati non si offrono ai clienti (rilettura ogni 10 minuti, solo inizio e fine degli eventi, tabelle `calendar_feeds` e `calendar_busy`); le consulenze prenotate escono in un calendario da sottoscrivere (`/api/calendario/<codice>.ics`, codice in `agenda_settings`, rinnovabile). Il collegamento diretto con accesso Google/Microsoft richiede la creazione di app OAuth e non è attivo
    (`/api/prenotazioni`); conferma e annullamento con invito di calendario.
 
 ## Struttura

@@ -1,3 +1,5 @@
+import { loadBusy, syncFeeds } from "@/lib/agenda-busy";
+import { overlapsBusy } from "@/lib/agenda-time";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -63,6 +65,9 @@ async function load(sp: Record<string, string | string[] | undefined>): Promise<
   const limit = new Date(Date.now() + 45 * 24 * 3600 * 1000).toISOString();
   const minStart = new Date(Date.now() + 12 * 3600 * 1000).toISOString();
   const nowIso = new Date().toISOString();
+  // gli orari che cadono su un impegno dei calendari collegati dell'esperto non si offrono
+  await syncFeeds(db, { timeoutMs: 3000 });
+  const busy = await loadBusy(db, new Date(minStart), new Date(limit));
   const [billing, ents, modules, bookings, slots, orders, diag, credit] = await Promise.all([
     db
       .from("billing_profiles")
@@ -142,7 +147,9 @@ async function load(sp: Record<string, string | string[] | undefined>): Promise<
       })
       .filter((b) => new Date(b.startsAt).getTime() > Date.now() - 2 * 3600 * 1000)
       .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
-    slots: (slots.data ?? []).map((s) => ({ id: s.id as string, startsAt: s.starts_at as string, duration: s.duration_min as number })),
+    slots: (slots.data ?? [])
+      .filter((s) => !overlapsBusy(busy, new Date(s.starts_at as string).getTime(), s.duration_min as number))
+      .map((s) => ({ id: s.id as string, startsAt: s.starts_at as string, duration: s.duration_min as number })),
     orders: (orders.data ?? []).map((o) => {
       const inv = Array.isArray(o.invoices) ? o.invoices[0] : (o.invoices as { number: string; status: string } | null);
       return {
