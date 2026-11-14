@@ -183,7 +183,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
         </p>
       )}
       <p className="mt-8 text-xs text-muted">
-        Usiamo l&apos;email per l&apos;accesso, per inviarvi il report e per le comunicazioni scelte all&apos;inizio.
+        Usiamo l&apos;email per l&apos;accesso, per inviarLe il report e per le comunicazioni scelte all&apos;inizio.
       </p>
     </div>
   );

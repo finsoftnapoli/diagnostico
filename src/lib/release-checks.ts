@@ -79,8 +79,9 @@ const BLOCKING_PATTERNS: { re: RegExp; message: string }[] = [
   },
   {
     re: /\b(?:tuo|tua|tuoi|tue|hai|puoi|devi|vuoi|potresti|dovresti|ti consigli\w+|ti suggeri\w+)\b/i,
-    message: "dà del tu invece del voi",
+    message: "dà del tu invece del voi o del Lei",
   },
+  { re: /\?\s*(?:No|Anzi|Meglio|Correzione)\b\s*[:,.]/, message: "contiene una domanda retorica con autocorrezione" },
   {
     re: /\b(?:secondo (?:uno studio|una ricerca|i dati|l['’]istat|recenti)|studi (?:dimostrano|mostrano)|ricerche (?:dimostrano|mostrano)|statisticamente|è dimostrato)\b/i,
     message: "cita studi o statistiche esterne non presenti nei dati",

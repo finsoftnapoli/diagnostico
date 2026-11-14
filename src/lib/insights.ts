@@ -176,7 +176,7 @@ export function buildInsights(r: Responses, res: Result, bench: Benchmark): Insi
     summary.push(
       `Per ${listIt(blocked.map((b) => `«${b.label.toLowerCase()}»`))} gli ambiti che servono sono oggi deboli: è il primo nodo da sciogliere.`,
     );
-  if (res.priorities.length) summary.push(`Le priorità su cui concentrarvi: ${listIt(res.priorities.map((p) => nameOf(p.code)))}.`);
+  if (res.priorities.length) summary.push(`Le priorità su cui concentrarsi: ${listIt(res.priorities.map((p) => nameOf(p.code)))}.`);
   if (res.flags.length)
     summary.push(
       `${res.flags.length === 1 ? "Una risposta va verificata" : `${res.flags.length} risposte vanno verificate`}: in quei punti il quadro potrebbe essere ottimista.`,

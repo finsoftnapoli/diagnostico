@@ -52,7 +52,9 @@ export default function Wizard() {
   const [r, setR] = useState<Responses>(() => initial?.responses ?? emptyResponses());
   // si riprende dal primo passo incompleto, qualunque versione del percorso abbia salvato la bozza
   const [step, setStep] = useState(() => (initial ? firstIncomplete(initial.responses) : 0));
-  const [notice, setNotice] = useState<string | null>(() => (initial && step > 0 ? "Abbiamo ripreso da dove eravate rimasti." : null));
+  const [notice, setNotice] = useState<string | null>(() =>
+    initial && step > 0 ? "Abbiamo ripreso dal punto in cui aveva interrotto la compilazione." : null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [human, setHuman] = useState(() => !isHumanCheckEnabled());
   /** Ambito appena completato, di cui si mostra il riscontro prima di proseguire. */
@@ -631,7 +633,7 @@ function Profile({ r, update, showMissing }: SectionProps & { showMissing: boole
       <p className="text-sm text-muted">Ultimo passo</p>
       <h1 className="text-3xl font-semibold text-navy">La vostra azienda</h1>
       <p className="mt-2 text-muted">
-        Questi dati servono a confrontarvi con aziende simili per settore e dimensione e a intestare il report.
+        Questi dati servono a confrontare l&apos;azienda con aziende simili per settore e dimensione e a intestare il report.
         {r.profile["PR-11"]?.trim() ? " Alcuni campi sono già compilati: controllateli." : ""}
       </p>
       {isSupabaseConfigured() && <DocUpload r={r} update={update} />}
@@ -748,7 +750,7 @@ function Ranked(props: {
 
       <div className="mt-8 rounded-2xl border border-navy/20 bg-navy/5 p-4 sm:p-5">
         <label className="block">
-          <span className="font-semibold text-navy">Prendetevi due minuti</span>
+          <span className="font-semibold text-navy">Si prenda due minuti</span>
           <span className="mt-1 block text-sm text-ink">
             {props.textPrompt} <span className="text-accent">*</span>
           </span>

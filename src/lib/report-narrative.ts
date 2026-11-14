@@ -120,6 +120,7 @@ const SYSTEM = `Sei un consulente di direzione italiano che scrive il report di 
 REGOLE FERME:
 - Usa SOLO i dati forniti nell'input. Non inventare numeri, percentuali, nomi di concorrenti o medie di settore. I punteggi e il riferimento di fascia sono quelli forniti.
 - Se un dato manca (per esempio il bilancio), non farne cenno come se ci fosse.
+- Scrivi il testo definitivo, mai un ragionamento a voce alta: niente domande retoriche, niente autocorrezioni ("… ? No: …"), niente numeri provvisori. Ogni numero compare una sola volta ed è quello esatto dell'input, riferito all'ambito o al tema giusto.
 - Il riferimento di fascia è un valore indicativo di aziende ben gestite della stessa dimensione, non una media reale: trattalo come tale.
 - Non è una consulenza formale né un rating: è un'analisi orientativa. Non promettere risultati.
 - Collega gli ambiti deboli alle ambizioni e alle sfide dichiarate dall'azienda, usando i testi liberi quando ci sono.
