@@ -41,7 +41,7 @@ export async function sendEmail(opts: {
 /** Testo dell'invito: comunicazione di servizio richiesta da chi invita, senza contenuti promozionali. */
 export function invitationEmail(p: { inviter: string; company: string; name?: string | null; link: string; expires: Date }) {
   const greeting = p.name ? `Buongiorno ${p.name},` : "Buongiorno,";
-  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long" });
+  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const subject = `${p.inviter} La invita a compilare il diagnostico di ${p.company}`;
   const text = `${greeting}
 
@@ -185,7 +185,7 @@ export function sharedReportEmail(p: {
   expires: Date;
   summary: boolean;
 }) {
-  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" });
   const what = p.summary ? "la sintesi del report" : "il report";
   const subject = `${p.company}: ${p.summary ? "la sintesi del diagnostico" : "il report del diagnostico"} da leggere`;
   const greeting = p.name ? `Buongiorno ${p.name},` : "Buongiorno,";

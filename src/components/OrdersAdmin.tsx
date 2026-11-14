@@ -63,7 +63,9 @@ export default function OrdersAdmin({ rows }: { rows: OrderRow[] }) {
             const inv = Array.isArray(o.invoices) ? o.invoices[0] : o.invoices;
             return (
               <tr key={o.id} className="border-b border-line align-top">
-                <td className="py-2 pr-4 whitespace-nowrap">{new Date(o.created_at).toLocaleDateString("it-IT")}</td>
+                <td className="py-2 pr-4 whitespace-nowrap">
+                  {new Date(o.created_at).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" })}
+                </td>
                 <td className="py-2 pr-4">
                   {o.billing?.denominazione}
                   <span className="block text-muted">P.IVA {o.billing?.vat_number}</span>

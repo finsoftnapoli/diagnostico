@@ -67,7 +67,7 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         <div>
           <h1 className="text-2xl font-semibold text-navy">{r.companies?.name}</h1>
           <p className="text-muted text-sm">
-            {r.respondent_email} · {new Date(r.completed_at).toLocaleString("it-IT")} · provenienza {r.source}
+            {r.respondent_email} · {new Date(r.completed_at).toLocaleString("it-IT", { timeZone: "Europe/Rome" })} · provenienza {r.source}
           </p>
         </div>
         <Link href={`/area/report/${r.id}`} className="text-sm underline text-navy-soft">

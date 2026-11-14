@@ -4,7 +4,7 @@ import { Check, Copy, Send, Share2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SHARE_DAYS, type ShareRow, shareState } from "@/lib/share";
 
-const day = (iso: string) => new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+const day = (iso: string) => new Date(iso).toLocaleDateString("it-IT", { day: "numeric", month: "short", timeZone: "Europe/Rome" });
 
 /** «Invia il report a…»: crea un link in sola lettura con scadenza, lo invia per email o lo fa copiare, e permette di ritirarlo. */
 export default function ShareReport({ assessmentId }: { assessmentId: string }) {

@@ -46,8 +46,11 @@ async function Detail({ params }: { params: Promise<{ id: string }> }) {
         {(m.companies as unknown as { name: string } | null)?.name} · {AREAS.find((a) => a.code === area)?.name}
       </h1>
       <p className="text-sm text-muted">
-        Modulo {m.status === "completed" ? `inviato il ${new Date(m.completed_at as string).toLocaleString("it-IT")}` : "in compilazione"} ·
-        punteggio {m.score ?? "—"}
+        Modulo{" "}
+        {m.status === "completed"
+          ? `inviato il ${new Date(m.completed_at as string).toLocaleString("it-IT", { timeZone: "Europe/Rome" })}`
+          : "in compilazione"}{" "}
+        · punteggio {m.score ?? "—"}
       </p>
       {m.status === "completed" && (
         <div className="mt-4 max-w-2xl">

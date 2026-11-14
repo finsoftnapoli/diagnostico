@@ -22,7 +22,12 @@ export default function Progress({
   overall: number | null;
   scores: Partial<Record<AreaCode, number | null>>;
 }) {
-  const when = new Date(previous.date).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+  const when = new Date(previous.date).toLocaleDateString("it-IT", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Rome",
+  });
   const delta = overall !== null && previous.overall !== null ? overall - previous.overall : null;
   const rows = AREAS.map((a) => {
     const now = scores[a.code];

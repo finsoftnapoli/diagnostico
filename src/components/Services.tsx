@@ -189,7 +189,7 @@ export default function Services({ data }: { data: ServicesData }) {
             {data.orders.map((o) => (
               <li key={o.id} className="py-2.5 flex flex-wrap justify-between gap-3">
                 <span>
-                  {new Date(o.date).toLocaleDateString("it-IT")} · {o.items.join(", ")}
+                  {new Date(o.date).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" })} · {o.items.join(", ")}
                 </span>
                 <span className="text-muted">
                   {euro(o.totalCents / 100)} IVA inclusa{o.invoice ? ` · fattura n. ${o.invoice}` : ""}

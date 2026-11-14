@@ -123,7 +123,7 @@ export default function Report({
     ...(full ? [{ id: "dettaglio", label: "Dettaglio" }] : []),
   ];
   const date = draft.completedAt
-    ? new Date(draft.completedAt).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })
+    ? new Date(draft.completedAt).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" })
     : "";
 
   return (

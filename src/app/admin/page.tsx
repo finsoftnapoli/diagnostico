@@ -66,7 +66,10 @@ async function AdminList() {
               <li key={t.href} className="py-2 flex flex-wrap justify-between gap-3">
                 <span>
                   <strong>{t.company}</strong> · {t.what}
-                  <span className="text-muted"> · completato il {new Date(t.date).toLocaleDateString("it-IT")}</span>
+                  <span className="text-muted">
+                    {" "}
+                    · completato il {new Date(t.date).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" })}
+                  </span>
                 </span>
                 <span className="flex items-center gap-3">
                   {t.failed && (
@@ -108,7 +111,9 @@ async function AdminList() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-b border-line align-top">
-                <td className="py-2 pr-4 whitespace-nowrap">{new Date(r.completed_at).toLocaleDateString("it-IT")}</td>
+                <td className="py-2 pr-4 whitespace-nowrap">
+                  {new Date(r.completed_at).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" })}
+                </td>
                 <td className="py-2 pr-4">
                   <Link href={`/admin/${r.id}`} className="underline text-navy-soft">
                     {r.companies?.name ?? "—"}

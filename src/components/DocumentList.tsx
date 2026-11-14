@@ -59,7 +59,8 @@ export default function DocumentList({ docs, companies }: { docs: DocRow[]; comp
                   </span>
                   {d.label && <span> · {d.label}</span>}
                   <span className="text-muted">
-                    {d.company ? ` · ${d.company}` : ""} · caricato il {new Date(d.created_at).toLocaleDateString("it-IT")}
+                    {d.company ? ` · ${d.company}` : ""} · caricato il{" "}
+                    {new Date(d.created_at).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" })}
                     {d.size_bytes ? ` · ${Math.round(d.size_bytes / 1024)} KB` : ""}
                   </span>
                 </span>

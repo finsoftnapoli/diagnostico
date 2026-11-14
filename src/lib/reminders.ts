@@ -15,7 +15,7 @@ const MAX_PER_RUN = 25;
 export const remindersEnabled = () => process.env.REMINDERS !== "0";
 
 export function draftReminderEmail(p: { link: string; expires: Date }) {
-  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long" });
+  const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long", timeZone: "Europe/Rome" });
   const subject = "Il diagnostico è rimasto a metà";
   const intro = `Ha iniziato il diagnostico di ${BRAND.name} e lo ha salvato per continuare più tardi: le risposte date finora sono al sicuro e si riprende dal punto in cui si è fermato.`;
   const how = `Per riprendere, acceda con la stessa email: Le inviamo un codice e torna subito alle domande. La bozza resta disponibile fino al ${date}.`;

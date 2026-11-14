@@ -129,7 +129,7 @@ export default function NarrativeEditor({
             {dirty ? (
               <span className="font-medium text-[#8a5a00]">● Modifiche non salvate</span>
             ) : savedAt ? (
-              `Salvato alle ${savedAt.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}`
+              `Salvato alle ${savedAt.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Rome" })}`
             ) : (
               ""
             )}
