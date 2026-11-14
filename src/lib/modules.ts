@@ -1,8 +1,8 @@
-// Generato da scripts/genera_moduli.py (moduli di approfondimento v0.2). Non modificare a mano:
+// Generato da scripts/genera_moduli.py (moduli di approfondimento v0.3). Non modificare a mano:
 // cambiare scripts/moduli_content.py e rigenerare.
 import type { AreaCode } from "./types";
 
-export const MODULE_VERSION = "0.2";
+export const MODULE_VERSION = "0.3";
 
 /** Gli 8 sotto-ambiti di ciascun modulo: i vertici dell'Ottogramma dell'ambito. */
 export interface ModuleSubarea {
@@ -439,9 +439,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Quanto è chiara e condivisa la direzione dell'azienda per i prossimi 3-5 anni?",
       "levels": [
         "La direzione non è scritta: la conosce chi guida l'azienda e si adatta alle occasioni.",
-        "Il vertice ha una visione chiara, ma i responsabili la conoscono solo a grandi linee.",
+        "Chi guida l'azienda ha una visione chiara, ma i responsabili la conoscono solo a grandi linee.",
         "Visione e scelte di fondo (mercati, prodotti, dimensione) sono scritte e presentate ai responsabili.",
-        "La direzione è scritta, condivisa e usata come criterio esplicito per dire sì o no a opportunità e investimenti."
+        "La direzione scritta è il criterio con cui si dice sì o no a opportunità e investimenti."
       ],
       "check": {
         "text": "I responsabili di funzione saprebbero indicare le tre scelte strategiche principali dell'azienda?",
@@ -466,10 +466,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Vantaggio competitivo",
       "text": "Quanto è definito su cosa l'azienda vuole distinguersi (prezzo, qualità, servizio, specializzazione, innovazione)?",
       "levels": [
-        "Si cerca di fare un po' tutto, come i concorrenti.",
-        "Il vantaggio è intuito dal vertice, ma non guida le scelte quotidiane.",
+        "Non abbiamo definito su che cosa distinguerci dai concorrenti.",
+        "Chi guida l'azienda ha un'idea del vantaggio, ma non orienta le scelte quotidiane.",
         "Il posizionamento è esplicito e orienta offerta, prezzi e investimenti principali.",
-        "Il posizionamento è verificato con dati di mercato e clienti, difeso con investimenti mirati e rivisto quando il mercato cambia."
+        "Il posizionamento è verificato con dati di mercato e dei clienti e rivisto quando il mercato cambia."
       ],
       "check": null,
       "na": false
@@ -481,10 +481,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Analisi a supporto delle scelte",
       "text": "Su cosa si basano le scelte strategiche (nuovi mercati, prodotti, investimenti importanti)?",
       "levels": [
-        "Su intuito ed esperienza, senza analisi strutturate.",
+        "Su intuito ed esperienza.",
         "Su qualche dato raccolto di volta in volta (andamento vendite, richieste dei clienti).",
         "Su analisi preparate prima di decidere: mercato, concorrenti, numeri attesi e rischi.",
-        "Su analisi sistematiche aggiornate con regolarità, con scenari alternativi e verifica a posteriori dei risultati."
+        "Su analisi con scenari alternativi, e a distanza di tempo si verifica se le scelte hanno dato i risultati attesi."
       ],
       "check": null,
       "na": false
@@ -496,10 +496,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Osservazione di mercato e concorrenti",
       "text": "Come seguite l'evoluzione del mercato, dei concorrenti e delle regole che vi riguardano?",
       "levels": [
-        "Le informazioni arrivano per caso, da clienti o fornitori.",
+        "Le informazioni arrivano quando capita, da clienti o fornitori.",
         "Qualcuno segue fiere e notizie di settore, senza condividerle in modo ordinato.",
-        "Raccolta periodica di informazioni su mercato e concorrenti, discussa in direzione almeno una volta l'anno.",
-        "Osservatorio continuo con fonti definite, indicatori di mercato e segnali deboli che alimentano la revisione della strategia."
+        "Le informazioni su mercato e concorrenti si raccolgono periodicamente e si discutono in direzione almeno una volta l'anno.",
+        "Mercato e concorrenti si seguono in modo continuo, con fonti e indicatori definiti che alimentano la revisione della strategia."
       ],
       "check": null,
       "na": false
@@ -528,8 +528,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Non esiste un piano scritto.",
         "Esiste un documento preparato per un'occasione (banca, bando) e poi non aggiornato.",
-        "Piano pluriennale scritto, con obiettivi economici e iniziative, aggiornato ogni anno.",
-        "Piano aggiornato ogni anno con il gruppo di direzione, con verifica dei risultati dell'anno precedente e scenari alternativi."
+        "C'è un piano pluriennale scritto, con obiettivi economici e iniziative, aggiornato ogni anno.",
+        "Il piano si aggiorna ogni anno con il gruppo di direzione, partendo dalla verifica dei risultati dell'anno precedente."
       ],
       "check": {
         "text": "Il piano è stato aggiornato negli ultimi 12 mesi?",
@@ -558,7 +558,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Solo con fatturato e utile di fine anno.",
         "Con alcuni indicatori economici mensili, non collegati agli obiettivi strategici.",
         "Con un insieme limitato di indicatori collegati agli obiettivi, discussi periodicamente in direzione.",
-        "Con un cruscotto di indicatori economici, di mercato, operativi e sulle persone, con obiettivi e responsabili per ciascuno."
+        "Con un cruscotto che copre risultati economici, mercato, operazioni e persone, con un obiettivo e un responsabile per ogni indicatore."
       ],
       "check": null,
       "na": false
@@ -572,8 +572,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Non ci sono riunioni regolari: ci si confronta quando nasce un problema.",
         "Ci sono riunioni, ma senza ordine del giorno né decisioni messe per iscritto.",
-        "Riunioni periodiche con ordine del giorno, numeri aggiornati e decisioni verbalizzate.",
-        "Riunioni a cadenza fissa e diversa per livello (operativo, mensile, strategico), con verifica sistematica delle azioni decise."
+        "Le riunioni sono periodiche, con ordine del giorno, numeri aggiornati e decisioni messe per iscritto.",
+        "Le riunioni hanno cadenze diverse per livello (operativo, mensile, strategico) e si aprono verificando le azioni decise la volta precedente."
       ],
       "check": {
         "text": "Le decisioni dell'ultima riunione di direzione sono state messe per iscritto con un responsabile?",
@@ -597,12 +597,12 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "area": "STR",
       "sub": "STR-4",
       "theme": "Delega e autonomia",
-      "text": "Quanto il vertice è coinvolto nelle decisioni operative quotidiane?",
+      "text": "Quanto chi guida l'azienda è coinvolto nelle decisioni operative quotidiane?",
       "levels": [
         "Quasi tutte le decisioni, anche minori, passano da chi guida l'azienda.",
-        "I responsabili decidono su questioni minori, ma ogni eccezione risale al vertice.",
-        "Limiti di autonomia chiari per area (spesa, prezzi, personale) e rispettati.",
-        "Il vertice si concentra su strategia e sviluppo; le deleghe sono formalizzate e verificate con i risultati."
+        "I responsabili decidono sulle questioni minori, ma ogni eccezione torna a chi guida l'azienda.",
+        "Ogni area ha limiti di autonomia chiari (spesa, prezzi, personale), che vengono rispettati.",
+        "Chi guida l'azienda si concentra su strategia e sviluppo; le deleghe sono scritte e si verificano sui risultati."
       ],
       "check": null,
       "na": false
@@ -617,7 +617,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Svolge solo adempimenti formali (approvazione del bilancio).",
         "Si riunisce di rado e discute soprattutto l'andamento passato.",
         "Si riunisce con regolarità, esamina piano, risultati e rischi, e prende le decisioni rilevanti.",
-        "Include competenze esterne o indipendenti, ha un calendario annuale dei temi e valuta periodicamente il proprio funzionamento."
+        "Include competenze esterne o indipendenti e lavora su un calendario annuale dei temi."
       ],
       "check": null,
       "na": false
@@ -632,7 +632,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Ricevono il bilancio a fine anno.",
         "Ricevono situazioni periodiche, spesso solo contabili e in ritardo.",
         "Ricevono con regolarità risultati, previsioni e rischi principali, con il tempo per esaminarli.",
-        "Hanno un flusso informativo definito (contenuti, tempi, responsabili) e incontri periodici con chi gestisce le aree chiave."
+        "Ricevono informazioni con contenuti e tempi definiti e incontrano periodicamente chi gestisce le aree chiave."
       ],
       "check": null,
       "na": false
@@ -646,8 +646,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Non ci sono regole oltre allo statuto: si decide caso per caso.",
         "Ci sono accordi informali, mai messi per iscritto.",
-        "Patti parasociali o regole scritte su ruoli, ingressi in azienda, dividendi e uscita dei soci.",
-        "Regole scritte e aggiornate, con sedi di confronto distinte tra soci, famiglia e gestione dell'impresa."
+        "Ci sono patti parasociali o regole scritte su ruoli, ingressi in azienda, dividendi e uscita dei soci.",
+        "Le regole scritte si aggiornano, e soci, famiglia e gestione dell'impresa hanno sedi di confronto distinte."
       ],
       "check": null,
       "na": false
@@ -659,10 +659,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Continuità e successione",
       "text": "Come è preparato il passaggio di testimone al vertice e nei ruoli chiave?",
       "levels": [
-        "Non se ne è mai parlato in modo esplicito.",
+        "Il tema non è stato ancora affrontato in modo esplicito.",
         "Se ne parla, ma non ci sono un piano né dei tempi.",
         "C'è un piano con le persone individuate, i tempi e un percorso di preparazione.",
-        "Il piano è in corso, con passaggi graduali di responsabilità, sostituti pronti per i ruoli chiave e verifiche periodiche."
+        "Il piano è in corso: le responsabilità passano per gradi e i ruoli chiave hanno sostituti pronti."
       ],
       "check": null,
       "na": false
@@ -675,9 +675,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come vengono individuati e gestiti i rischi principali (clienti, fornitori, persone chiave, mercato, regole)?",
       "levels": [
         "Si affrontano quando si manifestano.",
-        "Il vertice conosce i rischi principali, ma non c'è un elenco né delle contromisure.",
+        "Chi guida l'azienda conosce i rischi principali, ma non ci sono un elenco scritto né contromisure definite.",
         "Esiste una mappa dei rischi principali con probabilità, impatto e azioni di mitigazione.",
-        "La mappa è aggiornata almeno una volta l'anno, collegata a indicatori di allerta e discussa dall'organo amministrativo."
+        "La mappa si aggiorna almeno una volta l'anno, è collegata a indicatori di allerta e viene discussa dall'organo amministrativo."
       ],
       "check": {
         "text": "Esiste un elenco scritto dei rischi principali aggiornato negli ultimi 12 mesi?",
@@ -701,10 +701,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Adeguati assetti e segnali di crisi",
       "text": "Come presidiate gli adeguati assetti organizzativi, amministrativi e contabili e i segnali di difficoltà previsti dal Codice della crisi?",
       "levels": [
-        "Non è un tema che abbiamo affrontato.",
+        "Non è un tema che abbiamo ancora affrontato.",
         "Ne siamo consapevoli, ma ci affidiamo al commercialista per gli adempimenti.",
         "Abbiamo strumenti di previsione (cassa a 12 mesi, indicatori) e qualcuno che li verifica con regolarità.",
-        "Assetti documentati, indicatori di allerta monitorati e discussi periodicamente dall'organo amministrativo, con azioni definite in caso di soglie superate."
+        "Gli assetti sono documentati e gli indicatori di allerta sono discussi periodicamente dall'organo amministrativo, con azioni già definite se si superano le soglie."
       ],
       "check": null,
       "na": false
@@ -716,10 +716,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Coperture assicurative e contratti",
       "text": "Come verificate che assicurazioni e contratti principali proteggano davvero l'azienda?",
       "levels": [
-        "Le polizze si rinnovano come negli anni precedenti; i contratti si firmano senza revisione.",
+        "Le polizze si rinnovano come negli anni precedenti e i contratti non hanno una revisione dedicata.",
         "Si rivedono le polizze quando c'è un sinistro o cambia il broker.",
-        "Revisione periodica delle coperture rispetto ai rischi principali e controllo legale dei contratti importanti.",
-        "Programma assicurativo costruito sulla mappa dei rischi, con massimali verificati e contratti standard aggiornati per clienti e fornitori."
+        "Le coperture si rivedono periodicamente rispetto ai rischi principali e i contratti importanti hanno un controllo legale.",
+        "Il programma assicurativo è costruito sulla mappa dei rischi e ci sono contratti standard aggiornati per clienti e fornitori."
       ],
       "check": null,
       "na": false
@@ -731,10 +731,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Crescita per linee esterne",
       "text": "Come valutate acquisizioni, fusioni o ingressi di nuovi soci come leve di crescita?",
       "levels": [
-        "Non ci abbiamo mai pensato.",
+        "Non è una strada che abbiamo considerato finora.",
         "Valutiamo le occasioni che ci vengono proposte, caso per caso.",
         "Abbiamo criteri chiari su cosa cercare e ci facciamo assistere nelle valutazioni.",
-        "Le operazioni straordinarie fanno parte della strategia, con un elenco di obiettivi monitorati e un metodo per integrare le aziende acquisite."
+        "Le operazioni straordinarie fanno parte della strategia: seguiamo un elenco di aziende obiettivo e abbiamo un metodo per integrare quelle acquisite."
       ],
       "check": null,
       "na": false
@@ -747,9 +747,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Quanto usate alleanze con altre imprese (reti d'impresa, consorzi, accordi commerciali o produttivi)?",
       "levels": [
         "Lavoriamo da soli.",
-        "Collaborazioni occasionali, legate a singole commesse.",
-        "Alcune alleanze stabili con obiettivi e accordi scritti.",
-        "Alleanze scelte in base alla strategia, con obiettivi condivisi, regole di governo e verifica periodica dei risultati."
+        "Abbiamo collaborazioni occasionali, legate a singole commesse.",
+        "Abbiamo alcune alleanze stabili, con obiettivi e accordi scritti.",
+        "Le alleanze si scelgono in base alla strategia, con regole di governo e una verifica periodica dei risultati."
       ],
       "check": null,
       "na": false
@@ -765,8 +765,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Non si prepara un budget.",
         "Si fissano obiettivi di fatturato e qualche voce di costo, senza un conto economico completo.",
-        "Budget economico completo, preparato con i responsabili prima dell'inizio dell'anno.",
-        "Budget economico, patrimoniale e di cassa, con ipotesi esplicite, aggiornato con previsioni infrannuali (forecast)."
+        "C'è un budget economico completo, preparato con i responsabili prima dell'inizio dell'anno.",
+        "Il budget è economico, patrimoniale e di cassa, e durante l'anno si aggiorna con previsioni di chiusura."
       ],
       "check": {
         "text": "Il budget di quest'anno è stato approvato prima dell'inizio dell'esercizio?",
@@ -795,7 +795,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Non c'è un piano economico-finanziario oltre l'anno in corso.",
         "Si prepara un piano solo quando lo chiede una banca o un bando, poi non si aggiorna.",
         "C'è un piano a 3-5 anni con conto economico, stato patrimoniale e flussi di cassa, aggiornato ogni anno.",
-        "Il piano è integrato con quello strategico, ha scenari e sensibilità sulle ipotesi principali e si usa nelle decisioni di investimento e finanziamento."
+        "Il piano ha scenari sulle ipotesi principali e si usa nelle decisioni di investimento e di finanziamento."
       ],
       "check": null,
       "na": false
@@ -807,10 +807,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Reporting periodico",
       "text": "Che informazioni economiche ricevete in corso d'anno e con che tempi?",
       "levels": [
-        "Solo il bilancio annuale.",
-        "Situazioni contabili trimestrali o semestrali, spesso in ritardo.",
-        "Conto economico mensile entro 20-30 giorni, confrontato con il budget.",
-        "Cruscotto mensile entro 10-15 giorni con indicatori economici, finanziari e operativi e commento sugli scostamenti."
+        "Il bilancio annuale.",
+        "Situazioni contabili trimestrali o semestrali, che arrivano a distanza di tempo.",
+        "Un conto economico mensile entro 20-30 giorni, confrontato con il budget.",
+        "Un cruscotto mensile entro 10-15 giorni, con indicatori economici, finanziari e operativi e un commento sugli scostamenti."
       ],
       "check": null,
       "na": false
@@ -822,10 +822,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Analisi degli scostamenti",
       "text": "Cosa succede quando i risultati si discostano dal budget?",
       "levels": [
-        "Ce ne accorgiamo a fine anno.",
+        "Lo vediamo a fine anno, con il bilancio.",
         "Si commentano gli scostamenti più evidenti, senza azioni definite.",
         "Gli scostamenti rilevanti sono analizzati con i responsabili e portano ad azioni correttive.",
-        "Analisi sistematica per causa (volumi, prezzi, mix, efficienza), azioni con responsabili e verifica nel mese successivo."
+        "Gli scostamenti si analizzano per causa (volumi, prezzi, mix, efficienza) e le azioni decise si verificano il mese successivo."
       ],
       "check": null,
       "na": false
@@ -837,10 +837,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Contabilità analitica",
       "text": "Come sono attribuiti costi e ricavi alle diverse parti dell'azienda?",
       "levels": [
-        "Solo la contabilità generale: non si distinguono reparti, linee o commesse.",
-        "Qualche ripartizione fatta a mano a fine anno.",
-        "Centri di costo e di ricavo definiti, con attribuzione mensile dei costi diretti.",
-        "Contabilità analitica integrata nel gestionale, con criteri di ripartizione dei costi comuni condivisi e stabili."
+        "C'è la sola contabilità generale: reparti, linee o commesse non sono distinti.",
+        "Si fa qualche ripartizione a mano a fine anno.",
+        "Ci sono centri di costo e di ricavo, a cui i costi diretti si attribuiscono ogni mese.",
+        "La contabilità analitica è nel gestionale e i costi comuni si ripartiscono con criteri condivisi e stabili."
       ],
       "check": null,
       "na": false
@@ -854,8 +854,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Si conosce solo il risultato complessivo.",
         "Si stima il margine dei prodotti o clienti principali, saltuariamente.",
-        "Margine di contribuzione calcolato con regolarità per prodotto, cliente o commessa.",
-        "Margini calcolati e confrontati con il preventivo, usati per decidere prezzi, mix e clienti su cui investire."
+        "Il margine di contribuzione si calcola con regolarità per prodotto, cliente o commessa.",
+        "I margini si confrontano con il preventivo e si usano per decidere prezzi, mix e clienti su cui investire."
       ],
       "check": {
         "text": "Sapreste indicare oggi i cinque clienti o prodotti con il margine più basso?",
@@ -882,7 +882,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "A esperienza, partendo dal prezzo di mercato.",
         "Con un calcolo dei costi diretti principali; i costi generali si stimano a percentuale.",
         "Con schede di costo aggiornate (materiali, ore, lavorazioni esterne) e quote di costi generali definite.",
-        "Con costi standard aggiornati periodicamente e confronto sistematico tra costo preventivato ed effettivo."
+        "Con costi standard aggiornati periodicamente, e il costo preventivato si confronta sempre con quello effettivo."
       ],
       "check": null,
       "na": false
@@ -896,8 +896,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Si guarda il saldo dei conti correnti.",
         "Si prevedono a breve le uscite principali (stipendi, imposte, fornitori importanti).",
-        "Prospetto di cassa a 3-6 mesi aggiornato almeno una volta al mese.",
-        "Previsione settimanale a breve e mensile a 12 mesi, con scenari e confronto sistematico tra previsto ed effettivo."
+        "C'è un prospetto di cassa a 3-6 mesi, aggiornato almeno una volta al mese.",
+        "La previsione è settimanale nel breve e mensile a 12 mesi, e si confronta con quanto è accaduto."
       ],
       "check": {
         "text": "Avete un prospetto di cassa aggiornato nell'ultimo mese?",
@@ -921,10 +921,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Gestione della tesoreria",
       "text": "Come sono gestiti conti, pagamenti e liquidità disponibile?",
       "levels": [
-        "Pagamenti decisi giorno per giorno, conti gestiti separatamente.",
-        "Un calendario dei pagamenti principali, con qualche controllo sui saldi.",
-        "Calendario dei pagamenti, autorizzazioni definite e visione unica dei saldi di tutti i conti.",
-        "Tesoreria accentrata con regole su pagamenti, eccedenze di liquidità e coperture dei rischi (tassi, cambi, materie prime) dove servono."
+        "I pagamenti si decidono giorno per giorno e ogni conto si gestisce per conto proprio.",
+        "C'è un calendario dei pagamenti principali, con qualche controllo sui saldi.",
+        "C'è un calendario dei pagamenti con autorizzazioni definite e una visione unica dei saldi di tutti i conti.",
+        "La tesoreria è accentrata, con regole sull'impiego della liquidità e, dove servono, coperture dei rischi (tassi, cambi, materie prime)."
       ],
       "check": null,
       "na": false
@@ -936,10 +936,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Crediti verso clienti",
       "text": "Come gestite incassi e crediti verso clienti?",
       "levels": [
-        "Si sollecita quando la cassa è in difficoltà.",
+        "I solleciti partono quando serve liquidità.",
         "L'amministrazione sollecita i ritardi, senza regole condivise con il commerciale.",
-        "Condizioni di pagamento definite, scadenzario controllato ogni settimana, solleciti a fasi e fido per i clienti principali.",
-        "Valutazione del rischio cliente prima della vendita, obiettivi di giorni di incasso per area e strumenti come anticipi o assicurazione dei crediti."
+        "Le condizioni di pagamento sono definite, lo scadenzario si controlla ogni settimana e i solleciti seguono fasi stabilite.",
+        "Il rischio del cliente si valuta prima della vendita, con un fido assegnato, e ci sono obiettivi sui giorni di incasso."
       ],
       "check": null,
       "na": false
@@ -967,9 +967,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come gestite i rapporti con le banche e la struttura dei finanziamenti?",
       "levels": [
         "Si chiede credito quando serve, alla banca abituale.",
-        "Più banche, ma senza un quadro d'insieme di linee, costi e scadenze.",
-        "Quadro aggiornato di affidamenti, costi e scadenze; Centrale Rischi controllata; informazioni periodiche alle banche.",
-        "Struttura finanziaria pianificata (breve e medio termine coerenti con gli impieghi), rating seguito e banche informate con regolarità sui piani."
+        "Lavoriamo con più banche, senza un quadro d'insieme di linee, costi e scadenze.",
+        "C'è un quadro aggiornato di affidamenti, costi e scadenze, la Centrale Rischi si controlla e le banche ricevono informazioni periodiche.",
+        "La struttura finanziaria è pianificata, con scadenze coerenti con gli impieghi, e le banche sono informate con regolarità sui piani."
       ],
       "check": null,
       "na": false
@@ -981,10 +981,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Merito di credito e fonti alternative",
       "text": "Quanto conoscete e curate il vostro merito di credito e le fonti di finanziamento diverse dal credito bancario?",
       "levels": [
-        "Non sappiamo come ci valutano banche e Fondo di garanzia.",
+        "Non conosciamo ancora i criteri con cui ci valutano banche e Fondo di garanzia.",
         "Ne abbiamo un'idea dai colloqui con le banche.",
         "Seguiamo gli indicatori su cui siamo valutati (rating, Fondo di garanzia) e conosciamo alternative come leasing, garanzie pubbliche e finanza agevolata.",
-        "Lavoriamo sugli indicatori per migliorare il merito di credito e usiamo un mix di fonti (anche minibond, factoring, capitale) coerente con il piano."
+        "Lavoriamo sugli indicatori per migliorare il merito di credito e scegliamo le fonti (anche factoring, minibond, capitale) in base al piano."
       ],
       "check": null,
       "na": false
@@ -999,7 +999,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Si decide in base all'opportunità o alla disponibilità di cassa.",
         "Si confrontano preventivi, senza calcolare il ritorno.",
         "Per gli investimenti principali si calcolano ritorno, tempi di recupero e copertura finanziaria, considerando anche gli incentivi.",
-        "Processo strutturato con soglie di approvazione e verifica a posteriori dei risultati rispetto alle attese."
+        "C'è un processo con soglie di approvazione, e a distanza di tempo i risultati si confrontano con le attese."
       ],
       "check": null,
       "na": false
@@ -1014,7 +1014,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Caso per caso, in base alle esigenze dei soci.",
         "Si distribuisce quando la cassa lo permette.",
         "Esiste un orientamento condiviso tra i soci, coerente con i fabbisogni di investimento.",
-        "Politica scritta su dividendi e patrimonializzazione, collegata al piano e al livello di indebitamento desiderato."
+        "C'è una politica scritta su dividendi e patrimonio, collegata al piano e al livello di indebitamento desiderato."
       ],
       "check": null,
       "na": false
@@ -1026,10 +1026,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Chiusure e controlli interni",
       "text": "Come sono organizzate le chiusure contabili e i controlli interni (riconciliazioni, deleghe di spesa, separazione dei compiti)?",
       "levels": [
-        "Le chiusure si fanno a fine anno con il commercialista; i controlli dipendono dalle persone.",
-        "Chiusure periodiche non regolari; poche procedure scritte.",
-        "Chiusure mensili con calendario, riconciliazioni di banche, clienti e fornitori, deleghe di spesa definite.",
-        "Procedure scritte, controlli verificati periodicamente (anche da revisore o sindaco), con evidenza delle verifiche svolte."
+        "Le chiusure si fanno a fine anno con il commercialista; i controlli sono affidati all'attenzione delle persone.",
+        "Le chiusure periodiche non hanno una cadenza fissa e le procedure scritte sono poche.",
+        "Le chiusure sono mensili, con un calendario, le riconciliazioni di banche, clienti e fornitori e deleghe di spesa definite.",
+        "Le procedure sono scritte e i controlli si verificano periodicamente, anche da parte di revisore o sindaco, lasciandone traccia."
       ],
       "check": null,
       "na": false
@@ -1043,8 +1043,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Ci occupiamo solo delle scadenze, con il commercialista.",
         "Valutiamo con il consulente qualche agevolazione a fine anno.",
-        "Pianifichiamo con anticipo le imposte e l'uso delle agevolazioni (crediti d'imposta, super ammortamenti, patent box).",
-        "Pianificazione fiscale integrata con budget e investimenti, con controllo dei rischi fiscali e documentazione in ordine."
+        "Pianifichiamo con anticipo le imposte e l'uso delle agevolazioni (crediti d'imposta, iperammortamento, patent box).",
+        "La pianificazione fiscale è integrata con budget e investimenti, e i rischi fiscali sono sotto controllo con la documentazione in ordine."
       ],
       "check": null,
       "na": false
@@ -1059,7 +1059,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Una persona amministrativa e il commercialista esterno.",
         "Un piccolo ufficio concentrato su contabilità e adempimenti.",
         "Un responsabile amministrativo e finanziario che segue anche budget, cassa e banche.",
-        "Una funzione con un responsabile che partecipa alle decisioni di direzione, competenze di controllo di gestione e strumenti adeguati."
+        "Una funzione con competenze di controllo di gestione, il cui responsabile partecipa alle decisioni di direzione."
       ],
       "check": null,
       "na": false
@@ -1073,10 +1073,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Segmenti di clientela",
       "text": "Come sono individuati i segmenti di clientela su cui puntare?",
       "levels": [
-        "Si serve chi arriva, senza distinzioni.",
+        "Serviamo tutti i clienti che arrivano, senza distinzioni.",
         "Si distinguono i clienti grandi da quelli piccoli.",
-        "Segmenti definiti per esigenze, settore o canale, con fatturato e margine per segmento.",
-        "Segmenti prioritari scelti in base ad attrattività e capacità di servirli, con offerte e azioni commerciali dedicate."
+        "I segmenti sono definiti per esigenze, settore o canale, e di ciascuno conosciamo fatturato e margine.",
+        "I segmenti prioritari sono scelti per attrattività e capacità di servirli, e hanno offerte e azioni commerciali dedicate."
       ],
       "check": null,
       "na": false
@@ -1103,10 +1103,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Proposta di valore",
       "text": "Quanto è chiaro perché i clienti scelgono voi invece della concorrenza?",
       "levels": [
-        "Non lo sappiamo con precisione.",
+        "Non lo abbiamo ancora verificato.",
         "Lo sappiamo a grandi linee, ma ognuno in azienda lo racconta in modo diverso.",
         "La proposta di valore è definita per segmento e verificata con alcuni clienti.",
-        "È verificata con regolarità (interviste, analisi delle gare vinte e perse) e guida offerta, prezzi e comunicazione."
+        "È verificata con regolarità (interviste, trattative vinte e perse) e guida offerta, prezzi e comunicazione."
       ],
       "check": {
         "text": "Negli ultimi 12 mesi avete analizzato perché avete perso le trattative principali?",
@@ -1130,10 +1130,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Portafoglio di offerta",
       "text": "Come gestite il portafoglio di prodotti o servizi?",
       "levels": [
-        "L'offerta cresce per aggiunta; raramente si elimina qualcosa.",
+        "L'offerta cresce per aggiunte successive; di rado si toglie qualcosa.",
         "Si eliminano prodotti o servizi in modo occasionale.",
-        "Revisione periodica dell'offerta per vendite e margini, con decisioni su cosa sviluppare o eliminare.",
-        "Portafoglio gestito con un ruolo chiaro per ciascuna linea, introduzioni ed eliminazioni programmate e obiettivi per linea."
+        "L'offerta si rivede periodicamente su vendite e margini, decidendo che cosa sviluppare e che cosa eliminare.",
+        "Ogni linea ha un ruolo e obiettivi propri, e introduzioni ed eliminazioni sono programmate."
       ],
       "check": null,
       "na": false
@@ -1146,9 +1146,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come gestite marca e comunicazione verso il mercato?",
       "levels": [
         "Non c'è un'attività di comunicazione pianificata.",
-        "Sito, materiali e presenza alle fiere, senza un piano né una misura dei risultati.",
-        "Piano annuale di comunicazione con messaggi coerenti, budget e responsabile.",
-        "Comunicazione integrata sui diversi canali, con obiettivi misurati (notorietà, contatti generati) e risultati usati per ricalibrare il piano."
+        "Abbiamo sito, materiali e presenza alle fiere, senza un piano né una misura dei risultati.",
+        "C'è un piano annuale di comunicazione, con messaggi coerenti, budget e responsabile.",
+        "La comunicazione ha obiettivi misurati (notorietà, contatti generati) e i risultati servono a correggere il piano."
       ],
       "check": null,
       "na": false
@@ -1160,10 +1160,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Presenza digitale",
       "text": "Quanto il sito e i canali online lavorano per l'azienda?",
       "levels": [
-        "Il sito è una vetrina poco aggiornata; i social non sono curati.",
-        "Sito aggiornato e qualche pubblicazione sui social, senza obiettivi.",
+        "Il sito presenta l'azienda e si aggiorna di rado; i canali social non sono presidiati.",
+        "Il sito è aggiornato e sui social si pubblica ogni tanto, senza obiettivi.",
         "Sito e canali online aggiornati con regolarità, con contenuti utili ai clienti e misura delle visite.",
-        "Presenza digitale progettata per generare contatti, con contenuti pianificati, posizionamento nei motori di ricerca e conversioni misurate."
+        "La presenza online è progettata per generare contatti, con contenuti pianificati e conversioni misurate."
       ],
       "check": null,
       "na": false
@@ -1191,9 +1191,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Quanto marketing e vendite lavorano in modo coordinato?",
       "levels": [
         "Non c'è un'attività di marketing distinta dalle vendite.",
-        "Il marketing produce materiali; le vendite li usano poco.",
-        "Obiettivi comuni, criteri condivisi per passare i contatti alle vendite e riunioni periodiche.",
-        "Processo unico dal primo contatto alla vendita, con indicatori condivisi e riscontro delle vendite sulla qualità dei contatti."
+        "Il marketing prepara i materiali, che le vendite usano solo in parte.",
+        "Marketing e vendite hanno obiettivi comuni e criteri condivisi per passare i contatti alle vendite.",
+        "C'è un processo unico dal primo contatto alla vendita, e le vendite danno un riscontro sulla qualità dei contatti ricevuti."
       ],
       "check": null,
       "na": false
@@ -1205,10 +1205,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Processo di vendita e CRM",
       "text": "Come sono seguite le trattative commerciali?",
       "levels": [
-        "Ognuno segue i propri clienti come preferisce; le informazioni restano ai singoli.",
-        "Fogli di calcolo o note personali, condivisi solo in parte.",
-        "Fasi della vendita definite e trattative registrate in un CRM usato da tutto il commerciale.",
-        "CRM con previsioni di vendita affidabili, tassi di conversione per fase e analisi periodica delle trattative in corso."
+        "Ogni venditore segue i propri clienti con il proprio metodo e le informazioni restano a lui.",
+        "Su fogli di calcolo o note personali, condivisi solo in parte.",
+        "Le fasi della vendita sono definite e le trattative sono registrate in un CRM usato da tutto il commerciale.",
+        "Dal CRM si ricavano previsioni di vendita e tassi di conversione per fase, e le trattative in corso si analizzano periodicamente."
       ],
       "check": {
         "text": "Sapreste indicare oggi il valore delle trattative aperte e la loro probabilità di chiusura?",
@@ -1233,9 +1233,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come vengono preparate e seguite le offerte ai clienti?",
       "levels": [
         "Ogni offerta è preparata da zero, con tempi variabili.",
-        "Modelli di offerta, ma tempi e seguito dipendono dal singolo venditore.",
-        "Modelli e regole definiti, tempi di risposta misurati e richiamo sistematico delle offerte aperte.",
-        "Configurazione delle offerte con regole e prezzi preimpostati, tempi di risposta brevi e analisi delle offerte vinte e perse."
+        "Ci sono modelli di offerta, ma tempi e seguito sono lasciati al singolo venditore.",
+        "Modelli e regole sono definiti, i tempi di risposta si misurano e le offerte aperte vengono sempre richiamate.",
+        "Le offerte si compongono con regole e prezzi preimpostati, e si analizzano quelle vinte e quelle perse."
       ],
       "check": null,
       "na": false
@@ -1247,10 +1247,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Organizzazione e incentivi",
       "text": "Come sono organizzati, guidati e incentivati i venditori (interni, agenti, distributori)?",
       "levels": [
-        "Ognuno lavora in autonomia; gli incentivi dipendono solo dal fatturato.",
+        "Ogni venditore lavora in autonomia e gli incentivi sono legati al solo fatturato.",
         "Ci sono obiettivi di fatturato annuali, con poche verifiche intermedie.",
-        "Obiettivi per cliente o zona, riunioni commerciali periodiche e incentivi che includono il margine.",
-        "Ruoli distinti (sviluppo e gestione clienti), affiancamento e formazione, incentivi su margine e obiettivi strategici."
+        "Ci sono obiettivi per cliente o zona, riunioni commerciali periodiche e incentivi che tengono conto del margine.",
+        "I ruoli di sviluppo e di gestione dei clienti sono distinti, con affiancamento e incentivi su margine e obiettivi strategici."
       ],
       "check": null,
       "na": false
@@ -1264,8 +1264,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Per storia: ogni venditore o agente ha i suoi clienti.",
         "Le zone sono definite, ma la copertura dei clienti potenziali non è misurata.",
-        "Zone e canali definiti in base al potenziale, con piani di visita per i clienti principali.",
-        "Copertura progettata sul potenziale, con canali diversi per segmento (diretto, agenti, distributori, digitale, estero) e obiettivi per canale."
+        "Zone e canali sono definiti in base al potenziale, con piani di visita per i clienti principali.",
+        "La copertura è progettata sul potenziale, con canali diversi per segmento (diretto, agenti, distributori, digitale, estero) e obiettivi per canale."
       ],
       "check": null,
       "na": false
@@ -1278,9 +1278,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come si governano listini, sconti e condizioni commerciali?",
       "levels": [
         "Ogni venditore decide sconti e condizioni caso per caso.",
-        "Listino definito, ma sconti frequenti e non tracciati.",
-        "Regole di sconto per livello di autorizzazione e analisi periodica dei prezzi effettivi.",
-        "Prezzi basati sul valore per il cliente e sui costi, con analisi della dispersione degli sconti e revisioni periodiche dei listini."
+        "C'è un listino, ma gli sconti sono frequenti e non tracciati.",
+        "Gli sconti hanno regole e livelli di autorizzazione, e i prezzi effettivi si analizzano periodicamente.",
+        "I prezzi si basano sul valore per il cliente oltre che sui costi, e si analizza quanto variano gli sconti da cliente a cliente."
       ],
       "check": null,
       "na": false
@@ -1292,10 +1292,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Revisione dei prezzi",
       "text": "Come gestite gli aumenti di prezzo quando crescono i costi?",
       "levels": [
-        "Li subiamo: aumentare i prezzi è difficile e si rinvia.",
+        "Di solito assorbiamo l'aumento dei costi e rinviamo l'adeguamento dei prezzi.",
         "Aumentiamo quando i margini sono già scesi, con trattative caso per caso.",
-        "Revisioni periodiche dei listini e clausole di adeguamento nei contratti principali.",
-        "Monitoraggio continuo di costi e prezzi di mercato, clausole di indicizzazione e comunicazione degli aumenti preparata per segmento."
+        "I listini si rivedono periodicamente e i contratti principali hanno clausole di adeguamento.",
+        "Costi e prezzi di mercato si seguono in modo continuo, i contratti sono indicizzati e la comunicazione degli aumenti è preparata per segmento."
       ],
       "check": null,
       "na": false
@@ -1309,8 +1309,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Come tutti gli altri.",
         "Li segue personalmente chi guida l'azienda o un venditore, senza un piano.",
-        "Responsabile dedicato e piano annuale per ciascun cliente principale.",
-        "Piani condivisi con i clienti principali, incontri periodici di verifica e misura di quota e redditività per cliente."
+        "Ogni cliente principale ha un responsabile dedicato e un piano annuale.",
+        "I piani sono condivisi con i clienti principali in incontri periodici, e per ciascuno si misurano quota e redditività."
       ],
       "check": null,
       "na": false
@@ -1322,10 +1322,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Soddisfazione e fidelizzazione",
       "text": "Come misurate e migliorate la soddisfazione dei clienti?",
       "levels": [
-        "Lo capiamo dai reclami.",
+        "La ricaviamo dai reclami che riceviamo.",
         "Chiediamo un parere ai clienti in modo occasionale.",
-        "Indagine di soddisfazione periodica e gestione strutturata dei reclami.",
-        "Indicatori di soddisfazione e di abbandono seguiti nel tempo, con azioni di miglioramento verificate."
+        "Facciamo un'indagine di soddisfazione periodica e i reclami hanno una gestione definita.",
+        "Seguiamo nel tempo indicatori di soddisfazione e di abbandono, e verifichiamo l'effetto delle azioni di miglioramento."
       ],
       "check": null,
       "na": false
@@ -1339,8 +1339,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Si interviene quando il cliente chiama.",
         "C'è un riferimento per l'assistenza, senza tempi definiti.",
-        "Servizio organizzato con tempi di risposta definiti e richieste registrate.",
-        "Servizio gestito come fonte di valore, con livelli di servizio misurati, offerte dedicate e informazioni usate per migliorare i prodotti."
+        "Il servizio è organizzato, con tempi di risposta definiti e richieste registrate.",
+        "Il servizio ha livelli misurati e offerte dedicate, e le informazioni raccolte servono a migliorare i prodotti."
       ],
       "check": null,
       "na": true
@@ -1354,10 +1354,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Organigramma e responsabilità",
       "text": "Quanto sono chiari organigramma e responsabilità?",
       "levels": [
-        "Non c'è un organigramma; i ruoli si sovrappongono.",
-        "Organigramma esistente ma non aggiornato o non rispecchia la realtà.",
-        "Organigramma aggiornato e descrizioni dei ruoli principali con responsabilità e riporti.",
-        "Organizzazione rivista con regolarità in base alla strategia, con ruoli, responsabilità e indicatori per ciascuna posizione chiave."
+        "Non c'è un organigramma e alcuni ruoli si sovrappongono.",
+        "C'è un organigramma, ma non è aggiornato o non rispecchia il lavoro di oggi.",
+        "L'organigramma è aggiornato e i ruoli principali sono descritti, con responsabilità e riporti.",
+        "L'organizzazione si rivede in base alla strategia e ogni posizione chiave ha responsabilità e indicatori propri."
       ],
       "check": {
         "text": "L'organigramma è stato aggiornato negli ultimi 12 mesi?",
@@ -1383,10 +1383,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Coordinamento tra funzioni",
       "text": "Come si coordinano le diverse funzioni (commerciale, produzione, acquisti, amministrazione)?",
       "levels": [
-        "Ognuno lavora per conto suo; i problemi emergono tra un ufficio e l'altro.",
+        "Ogni funzione lavora in autonomia e il coordinamento avviene quando nasce un problema.",
         "Ci si coordina tramite chi guida l'azienda, che fa da collegamento.",
-        "Momenti di coordinamento periodici e responsabilità chiare sui passaggi tra funzioni.",
-        "Processi principali disegnati da un capo all'altro, con responsabili e indicatori comuni tra le funzioni coinvolte."
+        "Ci sono momenti di coordinamento periodici e responsabilità chiare sui passaggi tra funzioni.",
+        "I processi principali sono disegnati da un capo all'altro, con un responsabile e indicatori comuni alle funzioni coinvolte."
       ],
       "check": null,
       "na": false
@@ -1398,10 +1398,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Pianificazione delle persone",
       "text": "Come pianificate il fabbisogno di persone e competenze?",
       "levels": [
-        "Si assume quando qualcuno lascia o quando il lavoro non si regge più.",
+        "Si assume quando qualcuno lascia o quando il carico di lavoro lo impone.",
         "Si stimano le assunzioni dell'anno insieme al budget.",
-        "Piano annuale di organico e competenze collegato agli obiettivi.",
-        "Piano pluriennale delle competenze critiche, con analisi dei rischi (uscite, pensionamenti) e azioni anticipate."
+        "C'è un piano annuale di organico e competenze, collegato agli obiettivi.",
+        "C'è un piano pluriennale delle competenze critiche, che considera uscite e pensionamenti e fa partire le azioni in anticipo."
       ],
       "check": null,
       "na": false
@@ -1415,8 +1415,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Se ne occupano il consulente del lavoro e chi guida l'azienda.",
         "Una persona interna gestisce gli aspetti amministrativi.",
-        "Funzione o referente dedicato con regolamenti interni, dati del personale aggiornati e indicatori di base.",
-        "Funzione che partecipa alle decisioni di direzione, con indicatori su costo, produttività, assenze e uscite discussi regolarmente."
+        "C'è una funzione o un referente dedicato, con regolamenti interni e dati del personale aggiornati.",
+        "La funzione partecipa alle decisioni di direzione e porta con regolarità indicatori su costo, assenze e uscite."
       ],
       "check": null,
       "na": false
@@ -1430,8 +1430,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Con il passaparola e colloqui informali.",
         "Con annunci e colloqui, senza criteri definiti.",
-        "Profili scritti, più colloqui con criteri di valutazione condivisi, canali diversi.",
-        "Processo strutturato con prove pratiche, tempi misurati e verifica della qualità delle assunzioni nel tempo."
+        "Con profili scritti e più colloqui, valutati con criteri condivisi.",
+        "Con un processo che comprende prove pratiche, e la riuscita delle assunzioni si verifica nel tempo."
       ],
       "check": null,
       "na": false
@@ -1443,10 +1443,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Attrattività come datore di lavoro",
       "text": "Quanto l'azienda riesce ad attrarre candidati per i ruoli che servono?",
       "levels": [
-        "Facciamo molta fatica e non sappiamo bene perché.",
+        "Facciamo fatica a trovare candidati e non ne abbiamo ancora analizzato le ragioni.",
         "Attraiamo per i ruoli generici, molto meno per quelli specializzati.",
         "Curiamo la presentazione come datore di lavoro (sito, annunci, scuole e università) e misuriamo le candidature.",
-        "Abbiamo una proposta chiara per chi lavora con noi, rapporti stabili con scuole e università e tempi di copertura delle posizioni misurati."
+        "Abbiamo una proposta chiara per chi lavora con noi e rapporti stabili con scuole e università; i tempi di copertura delle posizioni sono misurati."
       ],
       "check": {
         "text": "Negli ultimi 12 mesi avete coperto le posizioni aperte nei tempi previsti?",
@@ -1472,9 +1472,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come vengono inserite le persone appena assunte?",
       "levels": [
         "Imparano sul campo.",
-        "Affiancamento a un collega, senza un programma.",
-        "Programma di inserimento con referente, formazione iniziale e verifica a fine prova.",
-        "Percorso di inserimento strutturato e misurato (permanenza a 12 mesi, opinione dei nuovi assunti) e migliorato nel tempo."
+        "Con l'affiancamento a un collega, senza un programma.",
+        "Con un programma di inserimento: referente, formazione iniziale e verifica a fine prova.",
+        "Con un percorso di cui si misurano i risultati (permanenza a 12 mesi, opinione dei nuovi assunti) per migliorarlo."
       ],
       "check": null,
       "na": false
@@ -1486,10 +1486,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Formazione e sviluppo",
       "text": "Come gestite formazione e crescita professionale?",
       "levels": [
-        "Solo la formazione obbligatoria.",
-        "Corsi su richiesta o su proposta di fornitori.",
-        "Piano annuale della formazione basato sulle competenze necessarie, anche con fondi interprofessionali.",
-        "Percorsi di sviluppo per ruolo e per persone a potenziale, con verifica dell'efficacia della formazione."
+        "Con la formazione obbligatoria.",
+        "Con corsi su richiesta delle persone o su proposta dei fornitori.",
+        "Con un piano annuale della formazione basato sulle competenze necessarie, anche con i fondi interprofessionali.",
+        "Con percorsi di sviluppo per ruolo e per le persone a potenziale, verificando l'efficacia della formazione."
       ],
       "check": {
         "text": "Esiste un piano della formazione per quest'anno?",
@@ -1514,9 +1514,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come vengono assegnati gli obiettivi e valutate le prestazioni?",
       "levels": [
         "Non ci sono obiettivi individuali né valutazioni.",
-        "Obiettivi informali e giudizi del responsabile, non condivisi.",
-        "Obiettivi annuali scritti per i ruoli chiave e colloquio di valutazione almeno annuale.",
-        "Obiettivi collegati alla strategia per tutti i ruoli, colloqui periodici e valutazione usata per sviluppo e riconoscimenti."
+        "Gli obiettivi sono informali e il giudizio del responsabile non viene condiviso con la persona.",
+        "I ruoli chiave hanno obiettivi annuali scritti e un colloquio di valutazione almeno annuale.",
+        "Tutti i ruoli hanno obiettivi collegati alla strategia, e la valutazione si usa per sviluppo e riconoscimenti."
       ],
       "check": null,
       "na": false
@@ -1528,10 +1528,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Riscontro e prestazioni insufficienti",
       "text": "Come si danno riscontri sul lavoro e come si gestiscono le prestazioni insufficienti?",
       "levels": [
-        "Se ne parla solo quando c'è un problema serio.",
-        "Il riscontro dipende dal singolo responsabile; le prestazioni insufficienti si tollerano a lungo.",
-        "Momenti periodici di riscontro e percorsi definiti per chi non raggiunge gli obiettivi.",
-        "Riscontro continuo come pratica di tutti i responsabili, piani di miglioramento con tempi e decisioni conseguenti."
+        "Se ne parla quando nasce un problema rilevante.",
+        "Il riscontro è lasciato al singolo responsabile e le prestazioni insufficienti si affrontano tardi.",
+        "Ci sono momenti periodici di riscontro e percorsi definiti per chi non raggiunge gli obiettivi.",
+        "Il riscontro continuo è pratica di tutti i responsabili, e i piani di miglioramento hanno tempi e decisioni conseguenti."
       ],
       "check": null,
       "na": false
@@ -1544,9 +1544,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come sono definite retribuzioni, premi e benefit?",
       "levels": [
         "Caso per caso, spesso in base alle richieste.",
-        "Aumenti e premi decisi dal vertice senza criteri dichiarati.",
-        "Criteri per livello e ruolo, confronto con il mercato, premi legati a risultati.",
-        "Politica retributiva scritta, premi di risultato collegati agli obiettivi e verifica periodica di equità interna."
+        "Aumenti e premi sono decisi da chi guida l'azienda, senza criteri dichiarati.",
+        "Ci sono criteri per livello e ruolo, un confronto con il mercato e premi legati ai risultati.",
+        "La politica retributiva è scritta, i premi sono collegati agli obiettivi e l'equità interna si verifica periodicamente."
       ],
       "check": null,
       "na": false
@@ -1558,10 +1558,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Welfare e flessibilità",
       "text": "Quanto welfare aziendale e flessibilità del lavoro sono usati in modo pensato?",
       "levels": [
-        "Non ce ne occupiamo oltre al contratto.",
-        "Qualche iniziativa isolata (buoni, flessibilità concessa caso per caso).",
-        "Piano di welfare e regole su orari e lavoro da remoto dove possibile, comunicati a tutti.",
-        "Welfare e flessibilità costruiti sulle esigenze rilevate, usati anche per attrarre e trattenere, con utilizzo e gradimento misurati."
+        "Applichiamo quanto prevede il contratto.",
+        "Ci sono iniziative isolate (buoni, flessibilità concessa caso per caso).",
+        "Ci sono un piano di welfare e regole su orari e lavoro da remoto, comunicati a tutti.",
+        "Welfare e flessibilità sono costruiti sulle esigenze rilevate tra le persone, e se ne misurano utilizzo e gradimento."
       ],
       "check": null,
       "na": false
@@ -1573,10 +1573,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Ruoli chiave e talenti",
       "text": "Come proteggete i ruoli chiave e fate crescere chi ha potenziale?",
       "levels": [
-        "Non sappiamo con precisione quali persone siano insostituibili.",
-        "Lo sappiamo, ma non ci sono sostituti né piani per trattenerle.",
-        "Ruoli chiave individuati, con sostituti indicati e azioni per trattenere le persone importanti.",
-        "Piano di successione per i ruoli chiave e percorsi per le persone a potenziale, rivisti ogni anno."
+        "Non abbiamo ancora individuato le persone difficili da sostituire.",
+        "Le conosciamo, ma non ci sono sostituti né azioni per trattenerle.",
+        "I ruoli chiave sono individuati, con sostituti indicati e azioni per trattenere le persone importanti.",
+        "Ci sono un piano di successione per i ruoli chiave e percorsi per le persone a potenziale, rivisti ogni anno."
       ],
       "check": null,
       "na": false
@@ -1588,10 +1588,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Sviluppo dei responsabili",
       "text": "Come preparate i responsabili a guidare le persone?",
       "levels": [
-        "Si diventa responsabili per anzianità o competenza tecnica, senza preparazione.",
-        "Qualche corso occasionale per i responsabili.",
-        "Percorso di sviluppo per i responsabili su guida dei collaboratori, delega e gestione dei conflitti.",
-        "Modello condiviso di comportamenti attesi dai responsabili, percorsi dedicati e valutazione anche da parte dei collaboratori."
+        "Si diventa responsabili per anzianità o competenza tecnica, senza una preparazione dedicata.",
+        "Con qualche corso occasionale.",
+        "Con un percorso di sviluppo su guida dei collaboratori, delega e gestione dei conflitti.",
+        "Con un modello condiviso dei comportamenti attesi e una valutazione che raccoglie anche il parere dei collaboratori."
       ],
       "check": null,
       "na": false
@@ -1605,8 +1605,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Non viene rilevato.",
         "Se ne ha un'idea dal confronto informale.",
-        "Indagine periodica di clima e momenti di ascolto strutturati.",
-        "Indagine periodica con piano di azione condiviso, indicatori (assenze, uscite volontarie) seguiti nel tempo."
+        "Facciamo un'indagine periodica di clima e abbiamo momenti di ascolto organizzati.",
+        "All'indagine periodica segue un piano di azione condiviso, e assenze e uscite volontarie si seguono nel tempo."
       ],
       "check": {
         "text": "Conoscete il tasso di uscite volontarie dell'ultimo anno?",
@@ -1630,10 +1630,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Comunicazione interna",
       "text": "Come circolano in azienda le informazioni su risultati, obiettivi e cambiamenti?",
       "levels": [
-        "Le informazioni circolano a voce e in modo disomogeneo.",
-        "Comunicazioni occasionali del vertice, soprattutto nei momenti difficili.",
-        "Incontri periodici con tutto il personale su risultati e obiettivi, strumenti di comunicazione interna definiti.",
-        "Comunicazione regolare a due direzioni: informazioni condivise per livello e canali per raccogliere domande e proposte, con riscontro."
+        "Le informazioni circolano a voce, senza canali definiti.",
+        "Chi guida l'azienda comunica in modo occasionale, soprattutto nei momenti difficili.",
+        "Ci sono incontri periodici con tutto il personale su risultati e obiettivi, e strumenti di comunicazione interna definiti.",
+        "La comunicazione è regolare e a due direzioni: ci sono canali per raccogliere domande e proposte, che ricevono risposta."
       ],
       "check": null,
       "na": false
@@ -1647,10 +1647,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Fare o comprare",
       "text": "Come decidete cosa produrre o erogare all'interno e cosa affidare all'esterno?",
       "levels": [
-        "Per abitudine: si continua come si è sempre fatto.",
+        "Si prosegue con l'assetto adottato in passato, senza una valutazione dedicata.",
         "Si valuta quando c'è un problema di capacità o di costo.",
         "Le scelte principali sono valutate con un confronto di costi, qualità e controllo.",
-        "Criteri definiti e collegati alla strategia (competenze distintive, rischi, costi totali), con revisione periodica delle scelte."
+        "Ci sono criteri collegati alla strategia (competenze distintive, rischi, costi totali) e le scelte si rivedono periodicamente."
       ],
       "check": null,
       "na": false
@@ -1662,10 +1662,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Capacità e sedi",
       "text": "Quanto conoscete e pianificate la capacità produttiva o di servizio e la configurazione delle sedi?",
       "levels": [
-        "Ci accorgiamo dei limiti quando non riusciamo a evadere gli ordini.",
+        "I limiti di capacità emergono quando gli ordini superano ciò che riusciamo a evadere.",
         "Conosciamo a grandi linee la capacità dei reparti principali.",
-        "Capacità misurata per reparto o squadra, con un piano di adeguamento collegato alle previsioni.",
-        "Capacità e configurazione delle sedi pianificate sul medio periodo, con scenari di domanda e investimenti programmati."
+        "La capacità è misurata per reparto o squadra, con un piano di adeguamento collegato alle previsioni.",
+        "Capacità e sedi sono pianificate sul medio periodo, con scenari di domanda e investimenti programmati."
       ],
       "check": null,
       "na": false
@@ -1679,8 +1679,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Si produce o si eroga sugli ordini, affrontando i picchi quando arrivano.",
         "Il commerciale comunica le previsioni in modo informale.",
-        "Riunione mensile tra vendite, operations e acquisti su previsioni, capacità e scorte.",
-        "Processo strutturato di pianificazione integrata, con previsioni misurate per accuratezza e decisioni condivise su capacità e scorte."
+        "C'è una riunione mensile tra vendite, operations e acquisti su previsioni, capacità e scorte.",
+        "La pianificazione è integrata: l'accuratezza delle previsioni si misura e le decisioni su capacità e scorte sono condivise."
       ],
       "check": null,
       "na": false
@@ -1693,9 +1693,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come viene programmato il lavoro quotidiano (produzione, cantieri, servizi)?",
       "levels": [
         "Giorno per giorno in base alle urgenze.",
-        "Programma settimanale fatto a mano, spesso stravolto.",
-        "Programma basato su capacità, priorità e materiali disponibili, rispettato nella maggior parte dei casi.",
-        "Programmazione supportata dal gestionale, con misura del rispetto dei piani e analisi delle cause degli scostamenti."
+        "Con un programma settimanale fatto a mano, che cambia spesso in corso d'opera.",
+        "Con un programma basato su capacità, priorità e materiali disponibili, rispettato nella maggior parte dei casi.",
+        "Con il supporto del gestionale: il rispetto dei piani si misura e le cause degli scostamenti si analizzano."
       ],
       "check": {
         "text": "Misurate la percentuale di consegne o servizi completati nei tempi promessi?",
@@ -1721,8 +1721,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Non viene misurata.",
         "Si osserva a grandi linee (ore lavorate, pezzi o servizi a fine mese).",
-        "Indicatori di produttività o utilizzo misurati con regolarità per reparto o squadra.",
-        "Indicatori di efficienza complessiva (per esempio OEE o ore produttive su ore disponibili) con obiettivi e analisi delle perdite."
+        "Con indicatori di produttività o di utilizzo, rilevati con regolarità per reparto o squadra.",
+        "Con indicatori di efficienza complessiva (per esempio ore produttive su ore disponibili), con obiettivi e analisi delle perdite."
       ],
       "check": null,
       "na": false
@@ -1734,10 +1734,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Standard di lavoro",
       "text": "Quanto sono definiti i modi di lavorare e l'ordine dei posti di lavoro?",
       "levels": [
-        "Ognuno lavora a modo suo; molto dipende dall'esperienza delle persone.",
-        "Istruzioni scritte per alcune attività, poco aggiornate.",
-        "Istruzioni e standard per le attività principali, posti di lavoro ordinati e verificati.",
-        "Standard aggiornati con chi lavora, visibili sul posto di lavoro, verificati con regolarità e usati come base per migliorare."
+        "Ogni persona lavora secondo la propria esperienza.",
+        "Ci sono istruzioni scritte per alcune attività, non sempre aggiornate.",
+        "Le attività principali hanno istruzioni e standard, e l'ordine dei posti di lavoro si verifica.",
+        "Gli standard si aggiornano con chi lavora, sono visibili sul posto e sono la base da cui partono i miglioramenti."
       ],
       "check": null,
       "na": false
@@ -1750,9 +1750,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come garantite la qualità di prodotti o servizi?",
       "levels": [
         "Si interviene sui problemi segnalati dai clienti.",
-        "Controlli a fine processo, non registrati in modo sistematico.",
-        "Controlli definiti lungo il processo, non conformità registrate e analizzate.",
-        "Qualità progettata nei processi, indicatori (scarti, resi, reclami) con obiettivi e analisi sistematica delle cause."
+        "Con controlli a fine processo, registrati solo in parte.",
+        "Con controlli definiti lungo il processo e non conformità registrate e analizzate.",
+        "La qualità è progettata nei processi: scarti, resi e reclami hanno obiettivi e se ne analizzano le cause."
       ],
       "check": null,
       "na": false
@@ -1764,7 +1764,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Costo della non qualità",
       "text": "Quanto conoscete il costo di scarti, rilavorazioni, resi e interventi in garanzia?",
       "levels": [
-        "Non lo conosciamo.",
+        "Non lo abbiamo ancora misurato.",
         "Ne abbiamo una stima approssimativa.",
         "Lo misuriamo per le voci principali con regolarità.",
         "Lo misuriamo in modo completo, con obiettivi di riduzione e progetti dedicati alle cause più costose."
@@ -1793,8 +1793,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Si compra dai fornitori di sempre quando serve.",
         "Si chiedono più preventivi per gli acquisti importanti.",
-        "Categorie di acquisto analizzate per spesa e rischio, con fornitori alternativi e accordi quadro.",
-        "Strategia per categoria, negoziazioni pianificate, costo totale di acquisto considerato e risparmi misurati."
+        "Le categorie di acquisto sono analizzate per spesa e rischio, con fornitori alternativi e accordi quadro.",
+        "Ogni categoria ha una strategia, si considera il costo totale di acquisto e i risparmi ottenuti si misurano."
       ],
       "check": {
         "text": "Conoscete la spesa annua per i dieci fornitori principali?",
@@ -1819,9 +1819,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come valutate e sviluppate i fornitori?",
       "levels": [
         "Non vengono valutati.",
-        "Si ricordano i problemi avuti con i fornitori.",
-        "Valutazione periodica dei fornitori principali su qualità, tempi e prezzo.",
-        "Valutazione strutturata con piani di miglioramento condivisi e criteri anche ambientali e sociali."
+        "Si tiene memoria dei problemi avuti, senza una valutazione scritta.",
+        "I fornitori principali si valutano periodicamente su qualità, tempi e prezzo.",
+        "La valutazione porta a piani di miglioramento condivisi con i fornitori e comprende criteri ambientali e sociali."
       ],
       "check": null,
       "na": false
@@ -1833,10 +1833,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Rischio di fornitura",
       "text": "Quanto siete protetti da interruzioni di fornitura (fornitori unici, materiali critici, fornitori esteri)?",
       "levels": [
-        "Non ci abbiamo pensato finché non è successo.",
+        "Il tema non è stato ancora affrontato in modo preventivo.",
         "Conosciamo i fornitori critici, ma non abbiamo alternative pronte.",
-        "Fornitori critici individuati, con alternative qualificate o scorte di sicurezza per i materiali principali.",
-        "Rischio di fornitura monitorato con indicatori, piani di continuità per i materiali critici e contratti che ripartiscono i rischi."
+        "I fornitori critici sono individuati, con alternative qualificate o scorte di sicurezza per i materiali principali.",
+        "Il rischio di fornitura è seguito con indicatori, e per i materiali critici ci sono piani di continuità."
       ],
       "check": null,
       "na": false
@@ -1848,10 +1848,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Scorte e magazzino",
       "text": "Come sono gestiti scorte e magazzino?",
       "levels": [
-        "Le scorte si controllano a vista; gli inventari a fine anno.",
-        "Giacenze nel gestionale, ma spesso non affidabili.",
-        "Giacenze affidabili e livelli di scorta definiti per gli articoli principali.",
-        "Scorte gestite per classe di articolo con obiettivi di rotazione e livello di servizio, articoli obsoleti seguiti e smaltiti."
+        "Le scorte si controllano a vista e l'inventario si fa a fine anno.",
+        "Le giacenze sono nel gestionale, ma non sempre corrispondono a quelle reali.",
+        "Le giacenze sono affidabili e gli articoli principali hanno livelli di scorta definiti.",
+        "Le scorte si gestiscono per classe di articolo, con obiettivi di rotazione e di livello di servizio."
       ],
       "check": null,
       "na": true
@@ -1864,9 +1864,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come sono organizzati trasporti e consegne ai clienti?",
       "levels": [
         "Si organizzano volta per volta.",
-        "Trasportatori abituali, senza controllo di costi e puntualità.",
-        "Consegne programmate, trasportatori scelti con criteri e costi per spedizione controllati.",
-        "Logistica misurata per costo, puntualità e danni, con ottimizzazione dei carichi e dei giri e accordi con livelli di servizio."
+        "Con i trasportatori abituali, senza un controllo di costi e puntualità.",
+        "Le consegne sono programmate, i trasportatori sono scelti con criteri e i costi per spedizione sono controllati.",
+        "La logistica si misura su costo, puntualità e danni, e gli accordi con i trasportatori prevedono livelli di servizio."
       ],
       "check": null,
       "na": true
@@ -1879,9 +1879,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come gestite manutenzione di impianti, macchine, mezzi o attrezzature?",
       "levels": [
         "Si ripara quando si rompe.",
-        "Manutenzione programmata solo per gli impianti principali.",
-        "Piano di manutenzione preventiva registrato, fermi e guasti misurati.",
-        "Manutenzione basata sui dati (condizioni, frequenza dei guasti), con obiettivi di disponibilità e costo."
+        "La manutenzione è programmata solo per gli impianti principali.",
+        "C'è un piano di manutenzione preventiva, e fermi e guasti si misurano.",
+        "La manutenzione si basa sui dati (condizioni, frequenza dei guasti), con obiettivi di disponibilità e di costo."
       ],
       "check": null,
       "na": true
@@ -1893,10 +1893,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Salute e sicurezza sul lavoro",
       "text": "Come gestite salute e sicurezza sul lavoro oltre agli obblighi di legge?",
       "levels": [
-        "Ci si limita agli adempimenti, gestiti da un consulente.",
-        "Adempimenti in ordine, con attenzione ai temi principali.",
-        "Valutazione dei rischi aggiornata, formazione regolare, infortuni e quasi incidenti registrati e analizzati.",
-        "Sistema di gestione strutturato (anche certificato), indicatori seguiti, coinvolgimento attivo dei lavoratori e miglioramento continuo."
+        "Curiamo gli adempimenti di legge, con il supporto di un consulente.",
+        "Gli adempimenti sono in ordine e i rischi principali ricevono un'attenzione specifica.",
+        "La valutazione dei rischi è aggiornata, la formazione è regolare e infortuni e quasi incidenti si registrano e si analizzano.",
+        "C'è un sistema di gestione, anche certificato, con indicatori seguiti nel tempo e il coinvolgimento attivo dei lavoratori."
       ],
       "check": null,
       "na": false
@@ -1908,10 +1908,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Miglioramento continuo",
       "text": "Come nascono e si realizzano i miglioramenti dei processi?",
       "levels": [
-        "Quando c'è un problema grave.",
+        "Quando un problema rilevante li rende necessari.",
         "Su iniziativa di singole persone, senza un metodo.",
-        "Progetti di miglioramento periodici con un metodo (per esempio lean) e risultati misurati.",
-        "Il miglioramento è parte del lavoro quotidiano: suggerimenti raccolti, gruppi di lavoro, risultati condivisi e riconosciuti."
+        "Con progetti di miglioramento periodici, condotti con un metodo (per esempio lean) e con risultati misurati.",
+        "Il miglioramento è parte del lavoro quotidiano: i suggerimenti si raccolgono e i risultati sono condivisi e riconosciuti."
       ],
       "check": null,
       "na": false
@@ -1924,9 +1924,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Con quali indicatori seguite le operations?",
       "levels": [
         "Non ci sono indicatori operativi definiti.",
-        "Qualche indicatore calcolato a mano, saltuariamente.",
-        "Indicatori principali (puntualità, produttività, qualità, scorte) aggiornati ogni mese e discussi.",
-        "Cruscotto con obiettivi per ciascun indicatore, visibile anche nei reparti, aggiornato in automatico e usato nelle riunioni quotidiane o settimanali."
+        "Con qualche indicatore calcolato a mano, saltuariamente.",
+        "Con gli indicatori principali (puntualità, produttività, qualità, scorte), aggiornati e discussi ogni mese.",
+        "Con un cruscotto che ha un obiettivo per ogni indicatore, è visibile nei reparti e si usa nelle riunioni quotidiane o settimanali."
       ],
       "check": null,
       "na": false
@@ -1941,9 +1941,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come vengono decisi gli investimenti in tecnologia e digitale?",
       "levels": [
         "Quando un sistema smette di funzionare o un fornitore propone qualcosa.",
-        "Il vertice decide caso per caso, senza un piano.",
-        "Piano pluriennale degli investimenti digitali collegato alle priorità aziendali, con budget.",
-        "Piano rivisto ogni anno, con progetti valutati per benefici attesi e risultati verificati dopo la realizzazione."
+        "Chi guida l'azienda decide caso per caso, senza un piano.",
+        "C'è un piano pluriennale degli investimenti digitali, collegato alle priorità aziendali e con un budget.",
+        "Il piano si rivede ogni anno: i progetti si scelgono per i benefici attesi e i risultati si verificano dopo la realizzazione."
       ],
       "check": null,
       "na": false
@@ -1955,10 +1955,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Organizzazione dell'informatica",
       "text": "Come è organizzata la gestione dell'informatica?",
       "levels": [
-        "Se ne occupa chi ha più dimestichezza, a tempo perso.",
+        "Se ne occupa, accanto al proprio lavoro, la persona con più dimestichezza.",
         "Un fornitore esterno interviene a chiamata.",
-        "Responsabile interno o fornitore con contratto e livelli di servizio definiti.",
-        "Responsabile che partecipa alle scelte di direzione, fornitori gestiti e valutati, inventario di sistemi e licenze aggiornato."
+        "C'è un responsabile interno, oppure un fornitore con contratto e livelli di servizio definiti.",
+        "Il responsabile partecipa alle scelte di direzione, i fornitori sono valutati e l'inventario di sistemi e licenze è aggiornato."
       ],
       "check": null,
       "na": false
@@ -1970,10 +1970,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Gestionale e integrazione",
       "text": "Quanto i sistemi gestionali coprono e collegano i processi aziendali?",
       "levels": [
-        "Contabilità informatizzata; il resto su fogli di calcolo e carta.",
-        "Gestionale per amministrazione e ordini; produzione, magazzino o commesse gestite a parte.",
-        "Gestionale integrato che copre i processi principali, con poche doppie registrazioni.",
-        "Sistemi integrati tra loro (gestionale, CRM, produzione, e-commerce) con dati inseriti una sola volta e scambi automatici con clienti e fornitori."
+        "La contabilità è informatizzata; il resto è su fogli di calcolo e carta.",
+        "Il gestionale copre amministrazione e ordini; produzione, magazzino o commesse si gestiscono a parte.",
+        "Un gestionale integrato copre i processi principali, con poche doppie registrazioni.",
+        "I sistemi sono integrati tra loro (gestionale, CRM, produzione, e-commerce) e i dati si inseriscono una sola volta."
       ],
       "check": {
         "text": "Ci sono dati che vengono reinseriti a mano da un sistema all'altro?",
@@ -1998,10 +1998,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Infrastruttura e servizi in cloud",
       "text": "Quanto è adeguata l'infrastruttura (server, rete, postazioni, servizi in cloud)?",
       "levels": [
-        "Apparati vecchi, rallentamenti e fermi frequenti.",
+        "Gli apparati hanno diversi anni e rallentamenti o fermi sono frequenti.",
         "Funziona, ma senza un piano di rinnovo né una visione d'insieme.",
-        "Infrastruttura aggiornata con un piano di rinnovo, servizi principali in cloud o in sede sotto controllo.",
-        "Infrastruttura progettata per crescita e continuità, con costi e prestazioni monitorati e scelte cloud valutate per costo, sicurezza e dipendenza dai fornitori."
+        "L'infrastruttura è aggiornata e ha un piano di rinnovo; i servizi principali, in cloud o in sede, sono sotto controllo.",
+        "L'infrastruttura è progettata per crescita e continuità, con costi e prestazioni seguiti nel tempo."
       ],
       "check": null,
       "na": false
@@ -2013,10 +2013,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Qualità e governo dei dati",
       "text": "Quanto sono affidabili e governati i dati aziendali (anagrafiche, codici, definizioni)?",
       "levels": [
-        "Ci sono spesso dati doppi o incoerenti tra uffici.",
+        "Capita spesso di trovare dati doppi o diversi tra un ufficio e l'altro.",
         "Le anagrafiche principali sono abbastanza pulite, ma senza regole.",
-        "Responsabili delle anagrafiche e regole di codifica definite.",
-        "Dati governati con definizioni comuni degli indicatori, controlli periodici di qualità e accessi regolati."
+        "Le anagrafiche hanno un responsabile e regole di codifica definite.",
+        "Gli indicatori hanno definizioni comuni a tutti e la qualità dei dati si controlla periodicamente."
       ],
       "check": null,
       "na": false
@@ -2029,9 +2029,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come sono gestiti documenti e archivi (contratti, progetti, documenti tecnici e amministrativi)?",
       "levels": [
         "In cartelle personali, email e carta.",
-        "Cartelle condivise, con regole poco rispettate.",
-        "Archivio digitale con struttura e permessi definiti, versioni sotto controllo.",
-        "Gestione documentale integrata con i processi, ricerca rapida, conservazione a norma e accessi tracciati."
+        "In cartelle condivise, con regole seguite solo in parte.",
+        "In un archivio digitale con struttura e permessi definiti e versioni sotto controllo.",
+        "In un sistema documentale integrato con i processi, con conservazione a norma e accessi tracciati."
       ],
       "check": null,
       "na": false
@@ -2043,10 +2043,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Cruscotti e reporting",
       "text": "Come vengono prodotti i report per decidere?",
       "levels": [
-        "Ognuno prepara i propri fogli di calcolo quando serve.",
-        "Report periodici estratti a mano dal gestionale.",
-        "Cruscotti aggiornati automaticamente per le aree principali.",
-        "Cruscotti integrati per direzione e responsabili, con indicatori definiti in modo univoco e usati nelle riunioni."
+        "Ogni responsabile prepara i propri fogli di calcolo quando serve.",
+        "Con report periodici estratti a mano dal gestionale.",
+        "Con cruscotti che si aggiornano in automatico per le aree principali.",
+        "Con cruscotti per direzione e responsabili, basati su indicatori dalla definizione unica e usati nelle riunioni."
       ],
       "check": {
         "text": "Il report usato nell'ultima riunione di direzione è stato preparato in automatico?",
@@ -2070,10 +2070,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Uso dei dati nelle decisioni",
       "text": "Quanto i responsabili usano davvero i dati per decidere?",
       "levels": [
-        "Si decide soprattutto a esperienza.",
-        "I dati si guardano a posteriori per confermare le decisioni.",
+        "Si decide soprattutto in base all'esperienza.",
+        "I dati si guardano dopo aver deciso, come conferma.",
         "I responsabili consultano con regolarità dati e indicatori prima di decidere.",
-        "I responsabili sanno analizzare i dati in autonomia e le decisioni importanti sono accompagnate da numeri e ipotesi verificabili."
+        "I responsabili analizzano i dati in autonomia e le decisioni importanti poggiano su numeri e ipotesi verificabili."
       ],
       "check": null,
       "na": false
@@ -2086,9 +2086,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Quanto sono automatizzati i processi ripetitivi (fatture passive, ordini, approvazioni, documenti)?",
       "levels": [
         "Quasi tutto è manuale.",
-        "Qualche automazione isolata.",
-        "Processi principali digitalizzati con flussi di approvazione.",
-        "Automazione estesa con misura dei tempi risparmiati e revisione periodica dei processi."
+        "C'è qualche automazione isolata.",
+        "I processi principali sono digitali, con flussi di approvazione.",
+        "L'automazione è estesa, si misurano i tempi risparmiati e i processi si rivedono periodicamente."
       ],
       "check": null,
       "na": false
@@ -2103,7 +2103,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Prevalgono carta, firme a mano e passaggi via email.",
         "Alcuni flussi sono digitali, altri no; i documenti si stampano spesso.",
         "I flussi principali sono digitali con firma elettronica e tracciabilità.",
-        "Flussi digitali da un capo all'altro, collegati al gestionale, con tempi misurati e colli di bottiglia eliminati."
+        "I flussi sono digitali da un capo all'altro e collegati al gestionale, e se ne misurano i tempi."
       ],
       "check": null,
       "na": false
@@ -2116,9 +2116,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Quanto usate strumenti digitali nel rapporto con i clienti (CRM, portali, e-commerce, firma elettronica)?",
       "levels": [
         "Quasi per nulla.",
-        "Sito vetrina ed email.",
-        "CRM in uso e almeno un canale digitale per ordini, preventivi o assistenza.",
-        "Esperienza digitale completa per il cliente (portale, ordini, documenti, assistenza) misurata e migliorata."
+        "Usiamo il sito di presentazione e l'email.",
+        "Usiamo un CRM e almeno un canale digitale per ordini, preventivi o assistenza.",
+        "Il cliente trova online tutto ciò che gli serve (portale, ordini, documenti, assistenza) e ne misuriamo l'uso per migliorarlo."
       ],
       "check": null,
       "na": false
@@ -2130,10 +2130,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Integrazione con i fornitori",
       "text": "Quanto sono digitali gli scambi con i fornitori (ordini, conferme, documenti, consegne)?",
       "levels": [
-        "Telefono, email e documenti reinseriti a mano.",
-        "Ordini inviati dal gestionale, conferme e documenti gestiti a mano.",
-        "Scambi digitali con i fornitori principali (portali, documenti strutturati).",
-        "Scambi integrati con i sistemi dei fornitori principali, con stato degli ordini visibile e controlli automatici."
+        "Passano da telefono ed email, e i documenti si reinseriscono a mano.",
+        "Gli ordini partono dal gestionale; conferme e documenti si gestiscono a mano.",
+        "Con i fornitori principali gli scambi sono digitali (portali, documenti strutturati).",
+        "Gli scambi sono integrati con i sistemi dei fornitori principali, con lo stato degli ordini visibile in tempo reale."
       ],
       "check": null,
       "na": true
@@ -2147,8 +2147,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Per nulla.",
         "Qualche persona usa strumenti di intelligenza artificiale in modo personale.",
-        "Alcuni casi d'uso definiti (previsioni, testi, assistenza) con risultati verificati.",
-        "Iniziative strutturate con priorità, dati preparati, competenze interne e misura dei benefici."
+        "Abbiamo alcuni casi d'uso definiti (previsioni, testi, assistenza), con risultati verificati.",
+        "Abbiamo un programma con priorità e competenze interne, e misuriamo i benefici di ogni iniziativa."
       ],
       "check": null,
       "na": false
@@ -2160,10 +2160,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Regole d'uso dell'intelligenza artificiale",
       "text": "Avete regole sull'uso dell'intelligenza artificiale (dati riservati, strumenti ammessi, verifica dei risultati)?",
       "levels": [
-        "No: ognuno usa gli strumenti che preferisce.",
-        "Indicazioni verbali di prudenza.",
-        "Regole scritte su strumenti ammessi e dati che non si possono inserire, comunicate a tutti.",
-        "Regole scritte, formazione, strumenti aziendali con contratti adeguati e verifica della conformità alle norme europee."
+        "Non ancora: ogni persona sceglie gli strumenti da usare.",
+        "Abbiamo dato indicazioni a voce.",
+        "Ci sono regole scritte, comunicate a tutti, su strumenti ammessi e dati che non si possono inserire.",
+        "Alle regole scritte si aggiungono la formazione di chi usa gli strumenti e la verifica della conformità alle norme europee."
       ],
       "check": null,
       "na": false
@@ -2175,10 +2175,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Sicurezza: misure tecniche",
       "text": "Quali misure tecniche di sicurezza informatica sono in uso?",
       "levels": [
-        "Antivirus e poco altro.",
-        "Antivirus, firewall e salvataggi dei dati, senza verifiche.",
-        "Accessi con doppia verifica, aggiornamenti regolari, salvataggi separati e provati.",
-        "Monitoraggio continuo, verifiche periodiche di vulnerabilità e misure in linea con la normativa (per esempio NIS2, se applicabile)."
+        "L'antivirus.",
+        "Antivirus, firewall e salvataggi dei dati, non ancora verificati.",
+        "Accessi con doppia verifica, aggiornamenti regolari e salvataggi separati, di cui si prova il ripristino.",
+        "Monitoraggio continuo e verifiche periodiche delle vulnerabilità, con misure in linea con la normativa (per esempio NIS2, se applicabile)."
       ],
       "check": {
         "text": "Negli ultimi 12 mesi avete provato a ripristinare i dati da un salvataggio?",
@@ -2202,10 +2202,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Sicurezza: persone e continuità",
       "text": "Come preparate persone e azienda a un incidente informatico?",
       "levels": [
-        "Non ci abbiamo pensato.",
+        "Non abbiamo ancora affrontato il tema.",
         "Sappiamo a chi telefonare in caso di problemi.",
-        "Formazione periodica del personale (per esempio sulle email truffa) e procedura di risposta agli incidenti.",
-        "Piano di continuità provato, simulazioni, eventuale assicurazione e ruoli chiari in caso di attacco."
+        "Con la formazione periodica del personale (per esempio sulle email truffa) e una procedura di risposta agli incidenti.",
+        "Con un piano di continuità provato con simulazioni e ruoli chiari in caso di attacco."
       ],
       "check": null,
       "na": false
@@ -2217,10 +2217,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Protezione dei dati personali",
       "text": "Come gestite la protezione dei dati personali di clienti, dipendenti e fornitori?",
       "levels": [
-        "Ci siamo limitati a qualche informativa.",
-        "Adempimenti di base fatti con un consulente, poco aggiornati.",
-        "Registro dei trattamenti, nomine e informative aggiornati, responsabile interno o esterno definito.",
-        "Protezione dei dati integrata nei processi e nei progetti, verifiche periodiche e gestione documentata delle richieste e degli incidenti."
+        "Abbiamo predisposto le informative essenziali.",
+        "Gli adempimenti di base sono stati fatti con un consulente e non sono stati più aggiornati.",
+        "Registro dei trattamenti, nomine e informative sono aggiornati, e c'è un responsabile, interno o esterno.",
+        "La protezione dei dati è considerata in ogni nuovo progetto, con verifiche periodiche e una gestione documentata di richieste e incidenti."
       ],
       "check": null,
       "na": false
@@ -2235,9 +2235,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Quanto è definito dove e perché innovare?",
       "levels": [
         "Si innova quando un cliente lo chiede.",
-        "Il vertice ha idee sulle direzioni, non messe per iscritto.",
-        "Priorità di innovazione scritte, collegate alla strategia.",
-        "Strategia dell'innovazione con obiettivi misurabili, mix di progetti incrementali e di rottura, rivista ogni anno."
+        "Chi guida l'azienda ha in mente le direzioni, non ancora messe per iscritto.",
+        "Le priorità di innovazione sono scritte e collegate alla strategia.",
+        "C'è una strategia dell'innovazione con obiettivi misurabili, che bilancia miglioramenti e progetti di rottura e si rivede ogni anno."
       ],
       "check": null,
       "na": false
@@ -2249,10 +2249,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Risorse per l'innovazione",
       "text": "Quante risorse sono dedicate all'innovazione (persone, tempo, budget)?",
       "levels": [
-        "Nessuna risorsa dedicata: si fa nei ritagli di tempo.",
-        "Qualche spesa decisa caso per caso.",
-        "Budget annuale e persone con tempo dedicato all'innovazione.",
-        "Investimento programmato e misurato (per esempio in percentuale del fatturato), con persone e competenze dedicate e risorse protette dalle urgenze."
+        "Non ci sono risorse dedicate: ci si lavora accanto all'attività ordinaria.",
+        "Ci sono spese decise caso per caso.",
+        "Ci sono un budget annuale e persone con tempo dedicato all'innovazione.",
+        "L'investimento è programmato e misurato (per esempio in rapporto al fatturato) e le risorse dedicate non vengono assorbite dalle urgenze."
       ],
       "check": {
         "text": "Sapreste indicare quanto avete speso in ricerca, sviluppo e innovazione nell'ultimo anno?",
@@ -2278,8 +2278,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Da chi guida l'azienda o da qualche persona particolarmente intraprendente.",
         "Dalle richieste dei clienti, raccolte in modo informale.",
-        "Canali definiti per raccogliere idee da persone, clienti e fornitori, con valutazione periodica.",
-        "Processo continuo che coinvolge tutta l'azienda e dà riscontro a chi propone."
+        "Attraverso canali definiti, da persone, clienti e fornitori, con una valutazione periodica.",
+        "Con un processo continuo che coinvolge tutta l'azienda e dà riscontro a chi propone."
       ],
       "check": null,
       "na": false
@@ -2294,7 +2294,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "Non le seguiamo in modo particolare.",
         "Le scopriamo da fiere e fornitori.",
         "Qualcuno ha il compito di seguirle e riferire periodicamente in direzione.",
-        "Osservazione strutturata con fonti, partner e momenti di valutazione dell'impatto sul nostro modello di business."
+        "Le seguiamo con fonti e partner definiti e valutiamo periodicamente l'impatto sul nostro modo di fare impresa."
       ],
       "check": null,
       "na": false
@@ -2306,10 +2306,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Selezione e portafoglio",
       "text": "Come vengono scelti e seguiti i progetti di innovazione?",
       "levels": [
-        "Si parte con quello che sembra promettente, senza criteri.",
-        "Il vertice sceglie, ma i progetti si accumulano e pochi si chiudono.",
-        "Criteri di selezione chiari (valore, fattibilità, coerenza) e un elenco unico di progetti con priorità.",
-        "Portafoglio gestito con momenti di decisione per proseguire o fermare, risorse assegnate e risultati confrontati con le attese."
+        "Si avvia ciò che sembra promettente, senza criteri scritti.",
+        "Sceglie chi guida l'azienda; i progetti aperti sono molti e pochi arrivano a conclusione.",
+        "Ci sono criteri di selezione chiari (valore, fattibilità, coerenza) e un elenco unico dei progetti, con priorità.",
+        "I progetti passano da momenti di decisione in cui si sceglie se proseguire o fermarsi, e i risultati si confrontano con le attese."
       ],
       "check": {
         "text": "Negli ultimi 12 mesi avete fermato un progetto che non dava i risultati attesi?",
@@ -2334,7 +2334,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Valutazione economica dei progetti",
       "text": "Prima di investire in un progetto innovativo, ne valutate il ritorno?",
       "levels": [
-        "No: si procede se l'idea convince.",
+        "Non ancora: si procede quando l'idea convince.",
         "Si stimano i costi, non i benefici.",
         "Si stimano costi, ricavi attesi e tempi per i progetti principali.",
         "Si costruisce un caso economico con ipotesi esplicite, aggiornato durante il progetto e verificato dopo il lancio."
@@ -2349,10 +2349,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Processo di sviluppo",
       "text": "Come si sviluppa un nuovo prodotto, servizio o processo?",
       "levels": [
-        "Per tentativi, senza fasi definite.",
-        "Con alcune fasi, ma tempi e costi spesso sfuggono.",
-        "Processo con fasi, responsabili, prototipi e verifiche prima del lancio.",
-        "Processo strutturato e misurato (tempi di sviluppo, successo dei lanci), con il coinvolgimento di funzioni diverse fin dall'inizio."
+        "Per tentativi successivi, senza fasi definite.",
+        "Con alcune fasi, ma tempi e costi non sono sotto controllo.",
+        "Con un processo a fasi, con responsabili, prototipi e verifiche prima del lancio.",
+        "Con un processo di cui si misurano tempi e successo dei lanci, e che coinvolge fin dall'inizio funzioni diverse."
       ],
       "check": null,
       "na": false
@@ -2364,10 +2364,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Tempi di sviluppo",
       "text": "Quanto riuscite a rispettare tempi e budget dei progetti di sviluppo?",
       "levels": [
-        "Non li misuriamo; i ritardi sono la regola.",
-        "Li misuriamo a fine progetto, spesso con ritardi importanti.",
-        "Tempi e costi pianificati e seguiti; la maggior parte dei progetti li rispetta.",
-        "Tempi di sviluppo misurati e in riduzione, con metodi per accelerare (sviluppi in parallelo, rilasci progressivi)."
+        "Non li misuriamo e i ritardi sono frequenti.",
+        "Li misuriamo a fine progetto, quando i ritardi si sono già accumulati.",
+        "Tempi e costi sono pianificati e seguiti, e la maggior parte dei progetti li rispetta.",
+        "I tempi di sviluppo sono misurati e in riduzione, grazie a metodi per accelerare (sviluppi in parallelo, rilasci progressivi)."
       ],
       "check": null,
       "na": false
@@ -2379,10 +2379,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Ascolto del cliente e sperimentazione",
       "text": "Quanto coinvolgete i clienti nello sviluppo e sperimentate prima di investire?",
       "levels": [
-        "Si presenta il prodotto finito.",
+        "Al cliente si presenta il prodotto finito.",
         "Si raccoglie il parere di qualche cliente a fine sviluppo.",
-        "Clienti coinvolti già nella definizione e prove su piccola scala prima del lancio.",
-        "Sperimentazione sistematica (prototipi, prove pilota, test) con criteri chiari per decidere se proseguire."
+        "I clienti sono coinvolti già nella definizione e si fanno prove su piccola scala prima del lancio.",
+        "Si sperimenta sempre prima di investire (prototipi, prove pilota), con criteri chiari per decidere se proseguire."
       ],
       "check": null,
       "na": false
@@ -2395,9 +2395,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come portate sul mercato una novità?",
       "levels": [
         "La si mette a listino e si informa la rete di vendita.",
-        "Qualche azione di comunicazione al lancio.",
-        "Piano di lancio con obiettivi, formazione della rete di vendita e comunicazione dedicata.",
-        "Lancio pianificato con commerciale e marketing, obiettivi di vendita seguiti nei primi mesi e correzioni rapide."
+        "Con qualche azione di comunicazione al momento del lancio.",
+        "Con un piano di lancio: obiettivi, formazione della rete di vendita e comunicazione dedicata.",
+        "Con un lancio pianificato insieme a commerciale e marketing, seguendo le vendite nei primi mesi per correggere in fretta."
       ],
       "check": null,
       "na": false
@@ -2409,10 +2409,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Collaborazioni per innovare",
       "text": "Con chi collaborate per innovare?",
       "levels": [
-        "Con nessuno.",
+        "Finora con nessuno.",
         "Occasionalmente con fornitori o consulenti.",
-        "Collaborazioni stabili con almeno un soggetto (università, centri di ricerca, startup, clienti).",
-        "Rete di collaborazioni gestita con obiettivi, accordi chiari sulla proprietà dei risultati e progetti comuni ricorrenti."
+        "In modo stabile con almeno un soggetto (università, centri di ricerca, startup, clienti).",
+        "Con una rete di partner con cui abbiamo progetti ricorrenti e accordi chiari sulla proprietà dei risultati."
       ],
       "check": null,
       "na": false
@@ -2424,7 +2424,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Ecosistema e filiera",
       "text": "Quanto partecipate a iniziative di innovazione del territorio o della filiera (poli, competence center, programmi per startup)?",
       "levels": [
-        "Non le conosciamo.",
+        "Non le conosciamo ancora.",
         "Le conosciamo, ma non partecipiamo.",
         "Partecipiamo ad alcune iniziative con un referente interno.",
         "Partecipiamo attivamente, con progetti comuni e accesso a competenze e strutture che da soli non avremmo."
@@ -2439,10 +2439,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Incentivi e finanza agevolata",
       "text": "Quanto sfruttate incentivi e finanziamenti per l'innovazione (crediti d'imposta, bandi, programmi nazionali ed europei)?",
       "levels": [
-        "Non li conosciamo o non li usiamo.",
+        "Finora non li abbiamo usati.",
         "Li usiamo quando un consulente ce li propone.",
         "Monitoriamo le opportunità e le usiamo per i progetti principali, con la documentazione in ordine.",
-        "Pianifichiamo i progetti tenendo conto degli incentivi, con un presidio stabile e la documentazione tecnica preparata durante il progetto."
+        "Pianifichiamo i progetti tenendo conto degli incentivi e prepariamo la documentazione tecnica durante il progetto."
       ],
       "check": null,
       "na": false
@@ -2454,10 +2454,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Proprietà intellettuale",
       "text": "Come proteggete il valore che create (marchi, brevetti, segreti industriali, software)?",
       "levels": [
-        "Non ce ne occupiamo.",
+        "Non abbiamo ancora affrontato il tema.",
         "Abbiamo registrato il marchio.",
         "Valutiamo la protezione per le innovazioni principali e abbiamo accordi di riservatezza con collaboratori e partner.",
-        "Gestione strutturata del patrimonio intellettuale, con monitoraggio dei concorrenti ed eventuale uso fiscale (patent box)."
+        "Gestiamo il patrimonio intellettuale come un insieme, seguiamo i depositi dei concorrenti e valutiamo le agevolazioni fiscali (patent box)."
       ],
       "check": null,
       "na": false
@@ -2469,10 +2469,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Competenze e cultura",
       "text": "Quanto l'organizzazione sostiene chi propone e prova cose nuove?",
       "levels": [
-        "Le novità sono viste come rischi; gli errori si evitano.",
+        "Le novità sono viste soprattutto come un rischio.",
         "Le idee sono ben accolte, ma manca il tempo per lavorarci.",
-        "Tempo e risorse dedicate, con persone che hanno competenze specifiche.",
-        "Sperimentare è incoraggiato e riconosciuto, gli errori diventano apprendimento condiviso."
+        "Ci sono tempo e risorse dedicate, e persone con competenze specifiche.",
+        "Sperimentare è incoraggiato e riconosciuto, e dagli errori si ricavano lezioni condivise."
       ],
       "check": null,
       "na": false
@@ -2487,7 +2487,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
         "I risultati dell'innovazione non vengono misurati.",
         "Si ha un'idea dei prodotti nuovi che vanno bene.",
         "Si misura la quota di fatturato da prodotti o servizi introdotti negli ultimi tre anni.",
-        "Indicatori di risultato e di processo (quota di fatturato nuovo, ritorno dei progetti, tempi) con obiettivi."
+        "Ci sono indicatori con obiettivi, di risultato e di processo (quota di fatturato nuovo, ritorno dei progetti, tempi)."
       ],
       "check": {
         "text": "Conoscete la quota di fatturato da prodotti o servizi lanciati negli ultimi tre anni?",
@@ -2511,9 +2511,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Innovazione di processo e di modello",
       "text": "Quanto innovate anche nel modo di lavorare e di guadagnare, oltre che nei prodotti?",
       "levels": [
-        "L'innovazione riguarda solo i prodotti, quando c'è.",
-        "Qualche miglioramento dei processi, senza ripensare il modello.",
-        "Progetti dedicati a processi e servizi (per esempio servizi aggiuntivi, nuove modalità di vendita).",
+        "L'innovazione riguarda i prodotti.",
+        "C'è qualche miglioramento dei processi, senza ripensare il modello.",
+        "Ci sono progetti dedicati a processi e servizi (per esempio servizi aggiuntivi, nuove modalità di vendita).",
         "Valutiamo con regolarità nuovi modelli (servizi, abbonamenti, piattaforme, nuovi canali) e li sperimentiamo con criteri chiari."
       ],
       "check": null,
@@ -2528,7 +2528,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Temi rilevanti",
       "text": "Avete individuato i temi di sostenibilità più rilevanti per l'azienda e per i suoi interlocutori?",
       "levels": [
-        "I temi rilevanti non sono stati individuati.",
+        "I temi rilevanti non sono stati ancora individuati.",
         "Si individuano in modo informale, in base alle richieste ricevute.",
         "Un'analisi dei temi rilevanti considera impatti e rischi per l'azienda.",
         "Un'analisi aggiornata coinvolge clienti, dipendenti, banche e filiera e orienta la strategia."
@@ -2543,10 +2543,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Rischi e opportunità",
       "text": "Quanto considerate i rischi e le opportunità legati a clima, energia e nuove regole nella strategia?",
       "levels": [
-        "Non li consideriamo.",
+        "Finora non li abbiamo considerati.",
         "Li consideriamo quando ci toccano direttamente (costi dell'energia, richieste dei clienti).",
         "Rischi e opportunità principali sono individuati e discussi in direzione.",
-        "Sono valutati con scenari, integrati nel piano e trasformati in obiettivi e investimenti (anche nuovi prodotti o servizi)."
+        "Sono valutati con scenari e tradotti nel piano in obiettivi e investimenti, anche su nuovi prodotti o servizi."
       ],
       "check": null,
       "na": false
@@ -2558,10 +2558,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Governo della sostenibilità",
       "text": "Chi si occupa di sostenibilità e con quali obiettivi?",
       "levels": [
-        "Nessuno in particolare.",
-        "Una persona se ne occupa a margine di altro.",
-        "Responsabile indicato, obiettivi scritti e risorse dedicate.",
-        "Obiettivi approvati dal vertice, inseriti nel piano e collegati agli incentivi dei responsabili."
+        "Per ora nessuno in particolare.",
+        "Una persona se ne occupa accanto ad altri incarichi.",
+        "C'è un responsabile, con obiettivi scritti e risorse dedicate.",
+        "Gli obiettivi sono approvati da chi guida l'azienda, inseriti nel piano e collegati agli incentivi dei responsabili."
       ],
       "check": null,
       "na": false
@@ -2573,10 +2573,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Consapevolezza e coinvolgimento",
       "text": "Quanto le persone dell'azienda conoscono e partecipano agli obiettivi di sostenibilità?",
       "levels": [
-        "Non se ne parla.",
-        "Comunicazioni occasionali.",
-        "Formazione e comunicazione periodica, con alcune iniziative partecipate.",
-        "Obiettivi conosciuti da tutti, proposte delle persone raccolte e realizzate, risultati comunicati."
+        "Il tema non è ancora entrato nella comunicazione interna.",
+        "Ci sono comunicazioni occasionali.",
+        "Formazione e comunicazione sono periodiche, con alcune iniziative a cui le persone partecipano.",
+        "Gli obiettivi sono conosciuti da tutti e le proposte delle persone vengono raccolte e realizzate."
       ],
       "check": null,
       "na": false
@@ -2588,10 +2588,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Energia",
       "text": "Come gestite i consumi di energia?",
       "levels": [
-        "Conosciamo solo il costo in bolletta.",
+        "Conosciamo il costo in bolletta.",
         "Conosciamo i consumi complessivi annui.",
-        "Consumi misurati per area o impianto, con interventi di efficienza realizzati.",
-        "Piano energetico con obiettivi, misure continue, quota di energia rinnovabile e valutazione degli investimenti (anche con incentivi)."
+        "Misuriamo i consumi per area o impianto e abbiamo realizzato interventi di efficienza.",
+        "Abbiamo un piano energetico con obiettivi, misure continue dei consumi e una quota di energia rinnovabile."
       ],
       "check": {
         "text": "Avete fatto una diagnosi energetica negli ultimi 4 anni?",
@@ -2615,10 +2615,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Emissioni",
       "text": "Quanto conoscete le emissioni di gas serra dell'azienda?",
       "levels": [
-        "Non le abbiamo mai calcolate.",
+        "Non le abbiamo ancora calcolate.",
         "Ne abbiamo una stima approssimativa.",
         "Calcoliamo ogni anno le emissioni dirette e da energia acquistata.",
-        "Calcoliamo anche le emissioni della catena del valore principali, con obiettivi di riduzione e piano d'azione."
+        "Calcoliamo anche le principali emissioni della catena del valore e abbiamo obiettivi di riduzione con un piano d'azione."
       ],
       "check": null,
       "na": false
@@ -2630,7 +2630,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Risorse e rifiuti",
       "text": "Come gestite materiali, acqua e rifiuti?",
       "levels": [
-        "Ci limitiamo agli obblighi.",
+        "Rispettiamo gli obblighi di legge.",
         "Facciamo la raccolta differenziata e qualche recupero.",
         "Misuriamo consumi e rifiuti e abbiamo obiettivi di riduzione e recupero.",
         "Progettiamo prodotti e processi per ridurre gli sprechi e recuperare materiali, anche con i fornitori."
@@ -2647,8 +2647,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Per nulla.",
         "Solo quando lo chiede un cliente.",
-        "Criteri ambientali considerati per i nuovi prodotti e per gli imballaggi principali.",
-        "Impatto valutato lungo il ciclo di vita, con obiettivi (materiali riciclati, riparabilità, imballaggi) e risultati comunicati ai clienti."
+        "Per i nuovi prodotti e per gli imballaggi principali si considerano criteri ambientali.",
+        "L'impatto si valuta lungo il ciclo di vita, con obiettivi (materiali riciclati, riparabilità, imballaggi) comunicati ai clienti."
       ],
       "check": null,
       "na": true
@@ -2662,8 +2662,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Si applica il contratto.",
         "Ci sono iniziative isolate di welfare o conciliazione.",
-        "Politiche scritte su conciliazione e welfare, con dati raccolti.",
-        "Obiettivi e indicatori sociali monitorati e rendicontati, con azioni verificate nel tempo."
+        "Ci sono politiche scritte su conciliazione e welfare, e si raccolgono i dati.",
+        "Ci sono obiettivi e indicatori sociali, rendicontati, e l'effetto delle azioni si verifica nel tempo."
       ],
       "check": null,
       "na": false
@@ -2675,10 +2675,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Equità e pari opportunità",
       "text": "Come presidiate equità retributiva e pari opportunità?",
       "levels": [
-        "Non è un tema affrontato.",
-        "Ne siamo attenti, senza dati né regole.",
+        "Il tema non è stato ancora affrontato.",
+        "Vi prestiamo attenzione, senza dati né regole scritte.",
         "Raccogliamo i dati (per esempio differenze retributive e accesso alla formazione) e abbiamo regole su selezione e crescita.",
-        "Obiettivi e indicatori di equità seguiti nel tempo, eventuale certificazione della parità di genere e risultati comunicati."
+        "Seguiamo nel tempo obiettivi e indicatori di equità e ne comunichiamo i risultati, anche con la certificazione della parità di genere."
       ],
       "check": null,
       "na": false
@@ -2691,9 +2691,9 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "text": "Come sono presidiate etica e condotta d'impresa (codice etico, anticorruzione, segnalazioni, modello 231)?",
       "levels": [
         "Non ci sono strumenti specifici.",
-        "Esiste un codice etico, poco conosciuto.",
-        "Codice etico diffuso, canale per le segnalazioni attivo, valutazione dell'opportunità del modello 231.",
-        "Modello organizzativo adottato e aggiornato, organismo di vigilanza, formazione periodica e controlli."
+        "Esiste un codice etico, ancora poco conosciuto in azienda.",
+        "Il codice etico è diffuso, il canale per le segnalazioni è attivo e abbiamo valutato l'adozione del modello 231.",
+        "Il modello organizzativo è adottato e aggiornato, con un organismo di vigilanza e formazione periodica."
       ],
       "check": null,
       "na": false
@@ -2705,10 +2705,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Conformità ambientale e normativa",
       "text": "Come tenete sotto controllo autorizzazioni, adempimenti ambientali e nuove regole che vi riguardano?",
       "levels": [
-        "Ci pensa il consulente, quando c'è una scadenza.",
+        "Se ne occupa il consulente, in vista delle scadenze.",
         "Abbiamo un elenco delle scadenze principali.",
-        "Scadenzario completo con responsabili e verifica periodica degli adempimenti.",
-        "Sistema di gestione (anche certificato, per esempio ISO 14001) con controlli periodici e anticipo delle nuove regole."
+        "C'è uno scadenzario completo, con responsabili e una verifica periodica degli adempimenti.",
+        "C'è un sistema di gestione, anche certificato (per esempio ISO 14001), e ci prepariamo in anticipo alle nuove regole."
       ],
       "check": null,
       "na": false
@@ -2722,8 +2722,8 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "levels": [
         "Per nulla.",
         "Chiediamo certificazioni solo in casi particolari.",
-        "Criteri ambientali e sociali nella qualifica dei fornitori principali.",
-        "Valutazione periodica della filiera con obiettivi condivisi e piani di miglioramento con i fornitori principali."
+        "La qualifica dei fornitori principali comprende criteri ambientali e sociali.",
+        "La filiera si valuta periodicamente, con obiettivi e piani di miglioramento condivisi con i fornitori principali."
       ],
       "check": null,
       "na": false
@@ -2735,10 +2735,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Territorio e comunità",
       "text": "Che rapporto ha l'azienda con il territorio e la comunità?",
       "levels": [
-        "Nessuna iniziativa specifica.",
-        "Sponsorizzazioni o donazioni occasionali.",
-        "Iniziative coerenti con l'attività e programmate, con partner locali.",
-        "Strategia di impatto sul territorio con obiettivi e risultati comunicati."
+        "Non ci sono iniziative specifiche.",
+        "Ci sono sponsorizzazioni o donazioni occasionali.",
+        "Ci sono iniziative programmate e coerenti con l'attività, insieme a partner locali.",
+        "C'è una strategia di impatto sul territorio, con obiettivi e risultati comunicati."
       ],
       "check": null,
       "na": false
@@ -2750,10 +2750,10 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Rendicontazione",
       "text": "Come comunicate le informazioni di sostenibilità a clienti, banche e investitori?",
       "levels": [
-        "Rispondiamo ai questionari quando arrivano, con fatica.",
+        "Rispondiamo ai questionari quando arrivano, raccogliendo i dati ogni volta.",
         "Abbiamo raccolto alcuni dati per rispondere alle richieste principali.",
-        "Raccolta annuale dei dati secondo uno standard semplificato (per esempio VSME) con un documento di sintesi.",
-        "Rendicontazione annuale strutturata, con dati verificati, obiettivi e confronto nel tempo, usata anche con banche e clienti."
+        "Raccogliamo i dati ogni anno secondo lo standard volontario europeo per le PMI (VSME) e ne ricaviamo un documento di sintesi.",
+        "Pubblichiamo un rendiconto annuale con dati verificati e obiettivi, che usiamo anche con banche e clienti."
       ],
       "check": {
         "text": "Avete un documento con i dati di sostenibilità dell'ultimo anno?",
@@ -2777,7 +2777,7 @@ export const MODULE_QUESTIONS: Record<AreaCode, ModuleQuestion[]> = {
       "theme": "Valutazioni e rating",
       "text": "Come affrontate valutazioni di sostenibilità richieste da clienti o banche (questionari, rating, piattaforme)?",
       "levels": [
-        "Le subiamo, con risultati che non conosciamo o non governiamo.",
+        "Rispondiamo quando ci vengono richieste, senza conoscere il risultato.",
         "Rispondiamo, senza sapere come migliorare il punteggio.",
         "Conosciamo i criteri delle valutazioni principali e abbiamo un piano per migliorare.",
         "Seguiamo i punteggi nel tempo, li usiamo come leva commerciale e finanziaria e li colleghiamo agli obiettivi."

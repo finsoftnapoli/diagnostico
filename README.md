@@ -126,7 +126,7 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
    (`ARUBA_ENV=prod`).
 5. Revisione legale di informativa e condizioni di vendita; completare i punti tra parentesi quadre.
 6. Tetto di spesa nella Console Anthropic; backup giornalieri Supabase (piano Pro); piano Vercel Pro per uso commerciale.
-7. Revisione delle domande dei moduli (Excel v0.2: fatto solo l'allineamento dei termini, manca la revisione editoriale con i criteri della banca v0.5) e calibrazione dei parametri dopo le prime compilazioni reali.
+7. Calibrazione di pesi, riferimenti di fascia e soglie dopo le prime compilazioni reali (banca delle domande v0.5, moduli v0.3).
 8. Riferimenti normativi della libreria delle raccomandazioni: ricontrollarli (ultima verifica novembre 2026).
 
 ## Regole
