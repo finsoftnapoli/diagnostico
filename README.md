@@ -138,4 +138,4 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 - Nomi di soci e amministratori letti dalla visura restano nel browser di chi carica il documento: mai nel database.
 - I testi rivolti agli utenti parlano di "esperti" (chi valida i report e fa le consulenze), di "Ottogramma" (il profilo) e
   di "metodologia, algoritmi e sistemi proprietari": nessun dettaglio pubblico su formule o uso dell'AI, salvo il minimo
-  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono con `BRAND.reportPromise` ("la mattina del giorno successivo").
+  richiesto nell'informativa privacy (fornitori e natura del trattamento). I report si promettono con `BRAND.reportPromise` ("entro 24 ore", con `BRAND.reportWorking`: «I nostri esperti ci stanno già lavorando»).

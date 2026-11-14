@@ -113,8 +113,8 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
         <form onSubmit={sendLink} className="mt-6 space-y-4">
           <p className="text-muted">
             Manca un passo per leggerlo: indichi l&apos;email aziendale e la confermi con il codice che Le inviamo. Vedrà subito le
-            evidenze, il confronto con aziende simili e le priorità; {BRAND.reportPromise} riceverà il report approfondito, e potrà
-            ritrovare tutto nell&apos;area personale e invitare i colleghi.
+            evidenze, il confronto con aziende simili e le priorità. {BRAND.reportWorking} al report approfondito: lo riceverà{" "}
+            {BRAND.reportPromise} e potrà ritrovare tutto nell&apos;area personale e invitare i colleghi.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Email</span>

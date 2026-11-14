@@ -193,8 +193,8 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
     <div className="mt-6 rounded-xl border border-line bg-paper p-4 flex items-start gap-3">
       <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
       <p className="text-sm">
-        <strong className="text-navy">Il report approfondito è in elaborazione.</strong> Stiamo preparando l&apos;analisi delle priorità con
-        gli interventi suggeriti: lo riceverà via email {BRAND.reportPromise} e lo ritroverà nell&apos;area personale.
+        <strong className="text-navy">Il report approfondito è in lavorazione.</strong> {BRAND.reportWorking}: lo riceverà via email{" "}
+        {BRAND.reportPromise} e lo ritroverà nell&apos;area personale.
       </p>
     </div>
   );

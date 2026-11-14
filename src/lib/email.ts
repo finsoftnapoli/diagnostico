@@ -126,7 +126,7 @@ abbiamo ricevuto il diagnostico di ${p.company}${stop(p.company)} L'${BRAND.repo
 
 ${lines.map((l) => `- ${l}`).join("\n")}
 
-Il report approfondito, con le priorità e gli interventi da cui partire, arriva ${BRAND.reportPromise} a questo indirizzo.
+${BRAND.reportWorking} al report approfondito, con le priorità e gli interventi da cui partire: arriva ${BRAND.reportPromise} a questo indirizzo.
 
 Nel frattempo può invitare i colleghi a compilare il diagnostico, per confrontare i punti di vista, e caricare visura o bilancio se non l'ha già fatto: il report ne terrà conto.
 
@@ -134,13 +134,13 @@ Area personale: ${p.link}
 
 ${ownerSentence()}`;
   const html = emailLayout({
-    preheader: `L'${BRAND.reportName} è nell'area personale; il report approfondito arriva ${BRAND.reportPromise}.`,
+    preheader: `L'${BRAND.reportName} è nell'area personale; ${BRAND.reportWorking.toLowerCase()} e il report arriva ${BRAND.reportPromise}.`,
     eyebrow: "Diagnostico ricevuto",
     title: `Il report arriva ${BRAND.reportPromise}`,
     body: `${para("Buongiorno,")}
 ${para(`abbiamo ricevuto il diagnostico di <strong>${esc(p.company)}</strong>${stop(p.company)} L'${esc(BRAND.reportName)} è già nell'area personale:`)}
 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:4px 0 18px;background:${C.paper};border-radius:10px"><tr><td style="padding:14px 18px;font-size:14px;line-height:1.7;color:${C.ink}">${lines.map((l) => esc(l)).join("<br>")}</td></tr></table>
-${para(`Il report approfondito, con le priorità e gli interventi da cui partire, arriva <strong>${esc(BRAND.reportPromise)}</strong> a questo indirizzo.`)}
+${para(`${esc(BRAND.reportWorking)} al report approfondito, con le priorità e gli interventi da cui partire: arriva <strong>${esc(BRAND.reportPromise)}</strong> a questo indirizzo.`)}
 ${para("Nel frattempo può invitare i colleghi a compilare il diagnostico, per confrontare i punti di vista, e caricare visura o bilancio se non l'ha già fatto: il report ne terrà conto.")}
 ${emailButton(p.link, "Apri l'area personale")}`,
   });

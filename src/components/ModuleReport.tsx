@@ -235,8 +235,8 @@ export default function ModuleReport({
               </>
             ) : (
               <>
-                <strong className="text-navy">L&apos;analisi è in preparazione.</strong> Stiamo preparando la lettura per sotto-ambito, il
-                piano di lavoro e gli indicatori: la riceverà via email {BRAND.reportPromise}.
+                <strong className="text-navy">L&apos;analisi è in lavorazione.</strong> {BRAND.reportWorking}: la riceverà via email{" "}
+                {BRAND.reportPromise}.
               </>
             )}
           </p>

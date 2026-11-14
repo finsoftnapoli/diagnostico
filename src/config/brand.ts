@@ -5,7 +5,9 @@ export const BRAND = {
   /** Nome del report e del grafico a radar: segno distintivo del servizio. */
   reportName: "Ottogramma",
   /** Tempo promesso per il report approfondito: usato in tutti i testi. */
-  reportPromise: "la mattina del giorno successivo",
+  reportPromise: "entro 24 ore",
+  /** Frase che accompagna la promessa: il lavoro è già iniziato. */
+  reportWorking: "I nostri esperti ci stanno già lavorando",
   tagline:
     "Diagnostico aziendale gratuito per PMI su 8 ambiti di gestione: il profilo della vostra azienda, il confronto con aziende simili e un report con le priorità, costruito sul metodo dei nostri esperti.",
   owner: "Finsoft",

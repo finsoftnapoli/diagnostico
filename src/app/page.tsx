@@ -83,8 +83,8 @@ export default function Home() {
             </h1>
             <p className="mt-6 text-lg text-white/85 max-w-2xl">
               Un check-up della gestione su 8 ambiti, frutto di 40 anni di esperienza in piccole e grandi aziende. Mentre risponde si
-              disegna l&apos;{BRAND.reportName}, il profilo della vostra azienda: alla fine lo legge a confronto con aziende simili e{" "}
-              {BRAND.reportPromise} riceve il report approfondito con le priorità.
+              disegna l&apos;{BRAND.reportName}, il profilo della vostra azienda: alla fine lo legge a confronto con aziende simili e,{" "}
+              {BRAND.reportPromise}, riceve il report approfondito con le priorità.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link

@@ -212,7 +212,7 @@ async function AreaContent() {
       text:
         latest.report_status === "failed"
           ? "Ci stiamo lavorando: La avvisiamo per email appena è pronto. Intanto può rileggere l'Ottogramma."
-          : `Lo riceve per email ${arrival.has(latest.id) ? releaseLabel(arrival.get(latest.id)!) : BRAND.reportPromise}. Intanto può rileggere l'${BRAND.reportName}.`,
+          : `${BRAND.reportWorking}: lo riceve per email ${arrival.has(latest.id) ? releaseLabel(arrival.get(latest.id)!) : BRAND.reportPromise}. Intanto può rileggere l'${BRAND.reportName}.`,
       href: `/area/report/${latest.id}`,
       cta: `Apri l'${BRAND.reportName}`,
     });
