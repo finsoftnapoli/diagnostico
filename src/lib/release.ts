@@ -65,7 +65,8 @@ export async function secondOpinion(input: unknown, narrative: unknown): Promise
   };
   const grave = out.problemi.filter((p) => p.gravita === "grave");
   return {
-    ok: out.esito === "ok" && grave.length === 0,
+    // conta la gravità dei problemi, non l'etichetta complessiva: i rilievi lievi restano visibili allo staff come note
+    ok: grave.length === 0,
     issues: out.problemi.map((p) => `${p.gravita === "grave" ? "Grave" : "Lieve"} · ${p.dove}: ${p.problema}`),
     usage: addUsage(undefined, msg.usage),
   };
