@@ -85,7 +85,7 @@ Prove delle regole di accesso del database su un Postgres locale: `supabase/test
 |---|---|
 | `src/config/brand.ts` | Nome del servizio, dati di Finsoft, versioni di informativa e condizioni: l'unico punto da cambiare per il nome |
 | `src/config/offers.ts` | Prezzi e descrizioni dei servizi a pagamento |
-| `src/config/benchmark.ts` | Riferimento indicativo per fascia di fatturato, macro-fasce e soglia per la mediana reale |
+| `src/config/benchmark.ts` | Riferimento dell'esperto per fascia di fatturato (sempre mostrato), macro-fasce e soglia oltre la quale compare anche la mediana reale, in un altro colore |
 | `src/config/ambiti.ts`, `faq.ts`, `site.ts` | Testi delle pagine pubbliche degli ambiti, domande frequenti, indirizzo del sito |
 | `src/lib/questionnaire.ts`, `modules.ts` | Domande del diagnostico e dei moduli (generati dagli script, non modificare a mano) |
 | `src/lib/scoring.ts`, `module-scoring.ts` | Motori di punteggio e priorità |

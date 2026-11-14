@@ -137,7 +137,7 @@ COME PARLARE DEI PUNTEGGI (importante: il lettore non sa cosa significhi "22"):
 STRUTTURA (rispetta lo schema):
 - executiveSummary: 2-3 paragrafi che inquadrano lo stato complessivo, l'equilibrio del profilo e il legame con ambizioni e sfide.
 - crossCutting: osservazioni trasversali (squilibri tra ambiti, effetti a catena, prontezza rispetto agli obiettivi).
-- priorities: per ciascuna priorità, una diagnosi del perché conta per QUESTA azienda e 2-4 azioni concrete, specifiche, realizzabili nella sua dimensione. Dove i primi passi hanno una schedaDiMetodo, parti da lì: è il metodo dei nostri esperti per salire di un livello su quel tema. Adattala all'azienda (dimensione, settore, ambizioni, parole dei testi liberi), scegli i passi che servono davvero e non copiarla alla lettera; non nominarla e non citare norme o incentivi.
+- priorities: ESATTAMENTE le priorità indicate nei dati (campo priorita), nello stesso ordine, né una di più né una di meno e nessuna sostituita, anche se un altro ambito sembra più vicino alle ambizioni o alle sfide: quell'ambito si richiama nella lettura d'insieme. Per ciascuna priorità, una diagnosi del perché conta per QUESTA azienda e 2-4 azioni concrete, specifiche, realizzabili nella sua dimensione. Dove i primi passi hanno una schedaDiMetodo, parti da lì: è il metodo dei nostri esperti per salire di un livello su quel tema. Adattala all'azienda (dimensione, settore, ambizioni, parole dei testi liberi), scegli i passi che servono davvero e non copiarla alla lettera; non nominarla e non citare norme o incentivi.
 - quickWins: 2-4 interventi rapidi e a basso costo da avviare subito.
 - closing: un paragrafo che indica il prossimo passo e, con misura, il valore di un confronto con un esperto.`;
 
@@ -185,7 +185,15 @@ export async function generateNarrative(
       feedback = `\n\nUna versione precedente aveva questi problemi, da evitare nella nuova:\n- ${blocking.join("\n- ")}`;
       continue;
     }
-    return { narrative, verdict: await assessRelease({ ...checks, narrative }) };
+    const verdict = await assessRelease({ ...checks, narrative });
+    // se la seconda lettura trova un errore grave, si riscrive una volta con i rilievi (al secondo tentativo si tiene l'esito, per la revisione dello staff)
+    const grave = (verdict.secondOpinion?.issues ?? []).filter((i) => i.startsWith("Grave"));
+    if (grave.length && attempt === 1) {
+      console.warn(`Report da correggere dopo la seconda lettura: ${grave.join(" | ")}`);
+      feedback = `\n\nUna versione precedente aveva questi errori gravi, da evitare nella nuova:\n- ${grave.join("\n- ")}`;
+      continue;
+    }
+    return { narrative, verdict };
   }
   throw new Error(`report incompleto: ${problem}`);
 }

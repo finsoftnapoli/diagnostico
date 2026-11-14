@@ -19,6 +19,8 @@ export default function RadarProfile({
   items,
   reference,
   referenceLabel,
+  market,
+  marketLabel,
   fontSize = 12,
   selected,
   onSelect,
@@ -31,6 +33,9 @@ export default function RadarProfile({
   items?: RadarItem[];
   reference?: Record<AreaCode, number>;
   referenceLabel?: string;
+  /** Mediana reale delle aziende, quando il campione basta: seconda linea, di un altro colore. */
+  market?: Record<AreaCode, number>;
+  marketLabel?: string;
   fontSize?: number;
 }) {
   const data = items
@@ -44,6 +49,7 @@ export default function RadarProfile({
         area: AREA_SHORT[a.code],
         score: a.score ?? 0,
         ref: reference?.[a.code] ?? null,
+        mkt: market?.[a.code] ?? null,
         priority: a.isPriority,
       }));
   const hasRef = items ? items.some((i) => i.ref != null) : !!reference;
@@ -122,6 +128,18 @@ export default function RadarProfile({
               stroke="#8a93a0"
               strokeWidth={1.5}
               strokeDasharray="5 4"
+              fill="none"
+              dot={false}
+              isAnimationActive={false}
+            />
+          )}
+          {market && !items && (
+            <Radar
+              name={marketLabel ?? "Mediana delle aziende"}
+              dataKey="mkt"
+              stroke="#0f8a8a"
+              strokeWidth={1.8}
+              strokeDasharray="2 3"
               fill="none"
               dot={false}
               isAnimationActive={false}

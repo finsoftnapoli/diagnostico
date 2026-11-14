@@ -71,7 +71,8 @@ export default function Report({
 }) {
   const r = draft.responses;
   const band = r.profile["PR-02"];
-  const [bench, setBench] = useState<Benchmark>(() => normativeBenchmark(band));
+  const bench: Benchmark = useMemo(() => normativeBenchmark(band), [band]);
+  const [market, setMarket] = useState<Benchmark | null>(null);
 
   // se il segmento ha abbastanza compilazioni reali, si usa la mediana
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function Report({
       .then((x) => (x.ok ? x.json() : null))
       .then((j: RealBenchmark | null) => {
         const real = medianBenchmark(j);
-        if (real) setBench(real);
+        if (real) setMarket(real);
       })
       .catch(() => {});
   }, [band]);
@@ -208,11 +209,14 @@ export default function Report({
             areas={res.areas}
             reference={bench.values}
             referenceLabel={bench.label}
+            market={market?.values}
+            marketLabel={market?.label}
             selected={narrative ? res.areas.findIndex((a) => a.code === openArea) : undefined}
             onSelect={narrative ? (i) => setOpenArea(res.areas[i]?.code === openArea ? null : (res.areas[i]?.code ?? null)) : undefined}
           />
           <p className="mt-1 text-xs text-muted text-center">
             Dal centro verso l&apos;esterno: da «{LEVEL_NAMES[0]}» a «{LEVEL_NAMES[3]}». {bench.note}
+            {market ? ` La linea tratteggiata in verde è la ${market.note.charAt(0).toLowerCase()}${market.note.slice(1)}` : ""}
           </p>
         </div>
         <div>

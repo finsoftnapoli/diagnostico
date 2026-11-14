@@ -5,7 +5,8 @@
 // definito da Finsoft sulla base dell'esperienza. Non è una media di aziende reali e
 // nel report è dichiarato come "riferimento indicativo". Valori da rivedere e validare nel pilota.
 //
-// Quando un segmento raggiunge MIN_SAMPLE compilazioni, il report usa la mediana reale (vedi /api/confronto).
+// Il riferimento dell'esperto resta sempre. Quando un segmento raggiunge MIN_SAMPLE compilazioni, accanto al riferimento
+// compare anche la mediana reale, con un colore diverso (vedi /api/confronto).
 import type { AreaCode } from "@/lib/types";
 
 export const MIN_SAMPLE = 30;
@@ -72,7 +73,7 @@ export function normativeBenchmark(band: string | undefined): Benchmark {
   return {
     kind: "riferimento",
     label: `Riferimento aziende ${bandText(b)}`,
-    note: `Livello atteso per un'azienda ben gestita con fatturato ${bandText(b)}, definito dai nostri esperti. Sarà sostituito dalla mediana delle aziende reali quando nel vostro segmento ci saranno almeno ${MIN_SAMPLE} compilazioni.`,
+    note: `Livello atteso per un'azienda ben gestita con fatturato ${bandText(b)}, definito dai nostri esperti.`,
     values,
   };
 }

@@ -35,7 +35,8 @@ export default function Ottogramma({
 }) {
   const r = draft.responses;
   const band = r.profile["PR-02"];
-  const [bench, setBench] = useState<Benchmark>(() => normativeBenchmark(band));
+  const bench: Benchmark = useMemo(() => normativeBenchmark(band), [band]);
+  const [market, setMarket] = useState<Benchmark | null>(null);
 
   useEffect(() => {
     if (!band) return;
@@ -43,7 +44,7 @@ export default function Ottogramma({
       .then((x) => (x.ok ? x.json() : null))
       .then((j: RealBenchmark | null) => {
         const real = medianBenchmark(j);
-        if (real) setBench(real);
+        if (real) setMarket(real);
       })
       .catch(() => {});
   }, [band]);
@@ -101,9 +102,16 @@ export default function Ottogramma({
 
       <section className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] items-start">
         <div>
-          <RadarProfile areas={res.areas} reference={bench.values} referenceLabel={bench.label} />
+          <RadarProfile
+            areas={res.areas}
+            reference={bench.values}
+            referenceLabel={bench.label}
+            market={market?.values}
+            marketLabel={market?.label}
+          />
           <p className="mt-1 text-xs text-muted text-center">
             Dal centro verso l&apos;esterno: da «{LEVEL_NAMES[0]}» a «{LEVEL_NAMES[3]}». {bench.note}
+            {market ? ` La linea tratteggiata in verde è la ${market.note.charAt(0).toLowerCase()}${market.note.slice(1)}` : ""}
           </p>
         </div>
         <div>

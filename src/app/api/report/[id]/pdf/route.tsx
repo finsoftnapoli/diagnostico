@@ -1,9 +1,8 @@
 // Report del diagnostico in PDF, impaginato sul server. Per il cliente solo quando il report è approvato;
 // lo staff può scaricarlo anche in revisione, come anteprima.
 import { renderToBuffer } from "@react-pdf/renderer";
-import { medianBenchmark, normativeBenchmark } from "@/config/benchmark";
+import { normativeBenchmark } from "@/config/benchmark";
 import { siteUrl } from "@/config/site";
-import { realBenchmark } from "@/lib/benchmark-server";
 import type { ReportInputs } from "@/lib/company-docs";
 import type { ReportNarrative } from "@/lib/report";
 import { emptyResponses } from "@/lib/scoring";
@@ -50,7 +49,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/report/[id]/
     ...(inputs?.governance ? { governance: inputs.governance } : {}),
   };
   const band = r.profile["PR-02"];
-  const bench = (band ? medianBenchmark(await realBenchmark(band)) : null) ?? normativeBenchmark(band);
+  const bench = normativeBenchmark(band);
   const d = reportPdfData(
     r,
     report.narrative as ReportNarrative,
