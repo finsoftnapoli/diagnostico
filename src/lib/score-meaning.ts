@@ -14,7 +14,7 @@ const NUM = ["nessuno", "uno", "due", "tre", "quattro", "cinque", "sei", "sette"
 /** Numeri in lettere fino a dieci, se tutto il gruppo è piccolo; altrimenti in cifre, per coerenza. */
 const numIn = (n: number, total: number) => (total <= 10 ? NUM[n] : String(n));
 
-/** Il livello in due o tre parole, per i titoli: "Di base", "Tra Informale e Di base". */
+/** Il livello in due o tre parole, per i titoli: "Base", "Tra Informale e Base". */
 export function levelShort(score: number | null): string {
   if (score === null) return "—";
   const avg = 1 + score / (100 / 3);
@@ -26,7 +26,7 @@ export function levelShort(score: number | null): string {
   return `Tra ${LEVEL_NAMES[low - 1]} e ${LEVEL_NAMES[low]}`;
 }
 
-/** Livello medio equivalente a un punteggio, a parole: "pratiche in media Informali, con qualche elemento Di base". */
+/** Livello medio equivalente a un punteggio, a parole: "pratiche in media Informali, con qualche elemento Base". */
 export function levelEquivalent(score: number): string {
   const avg = 1 + score / (100 / 3); // 0 → 1, 100 → 4
   const low = Math.min(3, Math.floor(avg));
@@ -40,7 +40,7 @@ export function levelEquivalent(score: number): string {
   return `pratiche in media a metà tra ${name(low)} e ${name(low + 1)}`;
 }
 
-/** Composizione per livello: "dei 24 temi, 17 sono al livello Informale, 6 Di base e 1 Strutturato". */
+/** Composizione per livello: "dei 24 temi, 17 sono al livello Informale, 6 Base e 1 Strutturato". */
 export function levelMix(levels: number[], what = "temi"): string {
   const n = levels.length;
   const counts = [1, 2, 3, 4].map((l) => levels.filter((x) => x === l).length);

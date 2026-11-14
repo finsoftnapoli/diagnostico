@@ -13,7 +13,7 @@ import { currentUser, supabaseServer, supabaseService } from "@/lib/supabase/ser
 import { readReport, trackReport } from "@/lib/report-access";
 import type { Responses } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Il vostro report" };
+export const metadata: Metadata = { title: "Il report approfondito" };
 
 export default function SavedReportPage({ params }: PageProps<"/area/report/[id]">) {
   return (

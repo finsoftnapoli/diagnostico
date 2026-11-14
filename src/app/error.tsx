@@ -12,7 +12,7 @@ export default function Error({ error, retry }: { error: Error & { digest?: stri
     <div className="mx-auto max-w-3xl px-4 py-20">
       <h1 className="text-3xl font-semibold text-navy">Qualcosa non ha funzionato</h1>
       <p className="mt-3 text-muted">
-        Riprovate tra qualche istante. Le risposte del questionario restano salvate nel browser. Se il problema continua, scriveteci a{" "}
+        Riprovi tra qualche istante. Le risposte del questionario restano salvate nel browser. Se il problema continua, ci scriva a{" "}
         <a className="underline" href={`mailto:${BRAND.contactEmail}`}>
           {BRAND.contactEmail}
         </a>

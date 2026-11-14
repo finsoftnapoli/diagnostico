@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     }
   } catch (e) {
     console.error("Email di accesso non inviata:", e instanceof Error ? e.message : e);
-    return fail(500, "Invio dell'email non riuscito, riprovate tra poco");
+    return fail(500, "Invio dell'email non riuscito, riprovi tra poco");
   }
   return NextResponse.json({});
 }

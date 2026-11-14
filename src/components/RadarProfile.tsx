@@ -90,8 +90,28 @@ export default function RadarProfile({
           <PolarRadiusAxis
             domain={[-100 / 3, 100]}
             ticks={[0, 100 / 3, 200 / 3, 100] as unknown as number[]}
-            tickFormatter={(v: number) => LEVEL_NAMES[Math.round(v / (100 / 3))]?.split(" ")[0] ?? ""}
-            tick={{ fontSize: 10, fill: "#8a93a0" }}
+            tick={({ x, y, payload }) => {
+              const name = LEVEL_NAMES[Math.round(Number(payload.value) / (100 / 3))]?.split(" ")[0] ?? "";
+              if (!name) return <g />;
+              // testo orizzontale, scuro, con alone bianco: si legge sopra la griglia e la linea di riferimento
+              return (
+                <text
+                  x={Number(x) - 4}
+                  y={y}
+                  textAnchor="end"
+                  dominantBaseline="central"
+                  fontSize={Math.max(11, fontSize - 1)}
+                  fontWeight={600}
+                  fill="#3d4756"
+                  stroke="#ffffff"
+                  strokeWidth={3.5}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
+                >
+                  {name}
+                </text>
+              );
+            }}
             axisLine={false}
             angle={67.5}
           />

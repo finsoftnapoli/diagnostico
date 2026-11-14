@@ -45,7 +45,7 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/moduli/[id
       })
       .eq("id", id)
       .eq("status", "in_progress");
-    if (error) return NextResponse.json({ error: "Invio non riuscito, riprovate" }, { status: 500 });
+    if (error) return NextResponse.json({ error: "Invio non riuscito, riprovi" }, { status: 500 });
     // dopo la risposta: generazione del report, che parte da solo se supera i controlli
     if (process.env.ANTHROPIC_API_KEY) after(() => generateNow("module_assessments", id));
     return NextResponse.json({ ok: true, completed: true });

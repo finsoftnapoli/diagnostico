@@ -132,13 +132,13 @@ export default function Report({
           <Eye className="size-4 mt-0.5 shrink-0 text-navy" aria-hidden />
           {shared === "esempio" ? (
             <span>
-              <strong className="text-navy">Report di esempio.</strong> L&apos;azienda è di fantasia: serve a mostrare che cosa ricevete
-              dopo il diagnostico. Provate a scegliere un ambito sull&apos;{BRAND.reportName} e a spuntare le azioni.
+              <strong className="text-navy">Report di esempio.</strong> L&apos;azienda è di fantasia: serve a mostrare che cosa riceve dopo
+              il diagnostico. Provi a scegliere un ambito sull&apos;{BRAND.reportName} e a spuntare le azioni.
             </span>
           ) : (
             <span>
-              <strong className="text-navy">{shared === "sintesi" ? "Sintesi del report" : "Report"} in sola lettura.</strong> Vi è stato
-              condiviso da {company ?? "un'azienda"}: è un documento riservato, non inoltrate il link.
+              <strong className="text-navy">{shared === "sintesi" ? "Sintesi del report" : "Report"} in sola lettura.</strong> Le è stato
+              condiviso da {company ?? "un'azienda"}: è un documento riservato, non inoltri il link.
             </span>
           )}
         </p>
@@ -276,9 +276,9 @@ export default function Report({
       <section id="priorita" className="scroll-mt-16 mt-14">
         <h2 className="text-2xl font-semibold text-navy">Le priorità e da dove partire</h2>
         <p className="mt-1 text-sm text-muted max-w-3xl">
-          Gli ambiti su cui concentrarvi per primi, perché pesano di più sulle vostre ambizioni e sulle sfide che avete indicato. Per
-          ciascuno, le azioni suggerite e il passo che porta i temi più deboli al livello successivo.
-          {canTick && " Spuntate le azioni man mano che le avviate: il report tiene il conto."}
+          Gli ambiti su cui concentrarsi per primi, perché pesano di più sulle vostre ambizioni e sulle sfide che ha indicato. Per ciascuno,
+          le azioni suggerite e il passo che porta i temi più deboli al livello successivo.
+          {canTick && " Spunti le azioni man mano che le avvia: il report tiene il conto."}
         </p>
         {allActions.length > 0 && (canTick || doneCount > 0) && (
           <div className="no-print mt-4 flex items-center gap-3 text-sm">
@@ -385,7 +385,7 @@ export default function Report({
         <section id="ambizioni" className="scroll-mt-16 mt-14">
           <h2 className="text-2xl font-semibold text-navy">Quanto l&apos;azienda è pronta per le sue ambizioni</h2>
           <p className="mt-1 text-sm text-muted max-w-3xl">
-            Per ogni obiettivo che avete indicato, quanto sono solidi oggi gli ambiti da cui dipende e qual è il punto più debole da cui
+            Per ogni obiettivo che ha indicato, quanto sono solidi oggi gli ambiti da cui dipende e qual è il punto più debole da cui
             partire.
           </p>
           <div className="mt-6 space-y-4">
@@ -423,7 +423,7 @@ export default function Report({
         <section id="sfide" className="scroll-mt-16 mt-14">
           <h2 className="text-2xl font-semibold text-navy">Le sfide: dove possono nascere</h2>
           <p className="mt-1 text-sm text-muted max-w-3xl">
-            Per ogni sfida che avete indicato, i temi collegati in cui le pratiche sono oggi informali o di base: sono le cause più
+            Per ogni sfida che ha indicato, i temi collegati in cui le pratiche sono oggi ai livelli «Informale» o «Base»: sono le cause più
             probabili, da verificare per prime.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -562,19 +562,19 @@ export default function Report({
       {/* Invito */}
       {shared ? (
         <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
-          <h2 className="text-xl font-semibold">Volete lo stesso quadro per la vostra azienda?</h2>
+          <h2 className="text-xl font-semibold">Vuole lo stesso quadro per la vostra azienda?</h2>
           <p className="mt-2 text-white/75 max-w-2xl">
             Il diagnostico è gratuito e richiede circa 15 minuti: otto ambiti di gestione, l&apos;{BRAND.reportName} subito e il report
             approfondito {BRAND.reportPromise}.
           </p>
           <Link href="/diagnostico" className="mt-5 inline-flex items-center gap-2 bg-white text-navy font-semibold px-5 py-2.5 rounded-lg">
-            Iniziate il diagnostico <ArrowRight className="size-4" aria-hidden />
+            Inizia il diagnostico <ArrowRight className="size-4" aria-hidden />
           </Link>
         </section>
       ) : (
         <>
           <section className="no-print mt-14 bg-navy text-white rounded-xl p-6 sm:p-8">
-            <h2 className="text-xl font-semibold">{narrative ? "Il prossimo passo" : "Volete trasformare le priorità in un piano?"}</h2>
+            <h2 className="text-xl font-semibold">{narrative ? "Il prossimo passo" : "Vuole trasformare le priorità in un piano?"}</h2>
             {narrative?.closing && <p className="mt-2 text-white/90 max-w-3xl leading-relaxed">{narrative.closing}</p>}
             <p className="mt-2 text-white/75 max-w-2xl">
               In un&apos;ora con un nostro consulente senior validiamo l&apos;{BRAND.reportName}, definiamo il livello da raggiungere su
@@ -732,8 +732,8 @@ function HowTo({ theme, level }: { theme: string; level: number }) {
         </dl>
         {c.sources?.length ? (
           <p className="mt-3 text-xs text-muted">
-            Da sapere: {c.sources.map((k) => `${SOURCES[k].label}. ${SOURCES[k].note}`).join(" ")} Verificate con i vostri consulenti come
-            si applica al vostro caso.
+            Da sapere: {c.sources.map((k) => `${SOURCES[k].label}. ${SOURCES[k].note}`).join(" ")} Verifichi con i Suoi consulenti come si
+            applica al vostro caso.
           </p>
         ) : null}
       </div>
@@ -791,7 +791,7 @@ function Numbers({ f, finScore }: { f: NonNullable<Draft["responses"]["financial
         <Banknote className="size-6" aria-hidden strokeWidth={1.75} /> I numeri dell&apos;ultimo bilancio{f.year ? ` (${f.year})` : ""}
       </h2>
       <p className="mt-1 text-sm text-muted">
-        Dati letti dal bilancio che avete caricato. Le soglie di lettura sono generali e vanno adattate al settore.
+        Dati letti dal bilancio che ha caricato. Le soglie di lettura sono generali e vanno adattate al settore.
       </p>
       <div className="mt-6 grid gap-3 grid-cols-2 lg:grid-cols-3">
         {tiles.map(([label, value, sub]) => (
@@ -847,7 +847,7 @@ function GovernanceBlock({ g, strLevel }: { g: Governance; strLevel: number | un
     notes.push("Controllo molto concentrato: la pianificazione della successione e le regole tra soci pesano sulla continuità.");
   if (strLevel !== undefined && strLevel >= 3 && g.organo === "amministratore unico" && g.organoControllo === false)
     notes.push(
-      "Avete indicato una governance strutturata: con amministratore unico e senza organo di controllo, verificate che ci sia davvero una voce esterna indipendente.",
+      "Ha indicato una governance strutturata: con amministratore unico e senza organo di controllo, verifichi che ci sia davvero una voce esterna indipendente.",
     );
   if (!facts.length) return null;
   return (

@@ -57,7 +57,7 @@ export default function TeamView({ members }: { members: MemberResult[] }) {
           <h3 className="font-semibold text-navy">Dove il management non è allineato</h3>
           {members.length < 2 ? (
             <p className="mt-2 text-sm text-muted">
-              Il confronto compare quando almeno un collega ha completato il diagnostico: invitate i responsabili dal vostro report.
+              Il confronto compare quando almeno un collega ha completato il diagnostico: inviti i responsabili dal report.
             </p>
           ) : gaps.length === 0 ? (
             <p className="mt-2 text-sm text-muted">Le risposte sono allineate: su nessun tema distano più di un livello.</p>

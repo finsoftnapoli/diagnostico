@@ -225,7 +225,7 @@ export default function ModulePdf({ d, siteUrl }: { d: ModulePdfData; siteUrl: s
         <View break>
           <Text style={s.h1}>Sotto-ambito per sotto-ambito</Text>
           <Text style={[s.p, s.muted]}>
-            Per ogni tema, la situazione che avete indicato come più vicina a quella di oggi e il passo che porta al livello successivo.
+            Per ogni tema, la situazione che ha indicato come più vicina a quella di oggi e il passo che porta al livello successivo.
           </Text>
           {d.subs.map((x) => (
             <SubCard key={x.code} x={x} reviewed={d.reviewed} />

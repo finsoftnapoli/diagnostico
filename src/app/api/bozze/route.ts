@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     .single();
   if (error) {
     console.error("Salvataggio bozza non riuscito:", error.message);
-    return NextResponse.json({ error: "Salvataggio non riuscito, riprovate tra poco" }, { status: 500 });
+    return NextResponse.json({ error: "Salvataggio non riuscito, riprovi tra poco" }, { status: 500 });
   }
   return NextResponse.json({ id: data.id });
 }

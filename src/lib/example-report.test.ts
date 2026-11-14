@@ -11,7 +11,7 @@ describe("report di esempio", () => {
     const levels = Object.values(exampleResponses().levels);
     expect(levels.filter((l) => l === 1)).toHaveLength(7);
     expect(levels.filter((l) => l === 2)).toHaveLength(15);
-    expect(EXAMPLE_NARRATIVE.executiveSummary).toContain("7 sono al livello «Informale» e 15 al livello «Di base»");
+    expect(EXAMPLE_NARRATIVE.executiveSummary).toContain("7 sono al livello «Informale» e 15 al livello «Base»");
     expect(res.areas.reduce((a, b) => ((b.score ?? 0) > (a.score ?? 0) ? b : a)).code).toBe("OPS");
   });
 });

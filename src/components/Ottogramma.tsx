@@ -178,7 +178,7 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
   if (status === "failed")
     return (
       <div className="mt-6 rounded-xl border border-line bg-paper p-4 text-sm text-muted">
-        Il report approfondito non è stato generato: ci stiamo lavorando e vi avviseremo via email appena è pronto.
+        Il report approfondito non è stato generato: ci stiamo lavorando e La avviseremo via email appena è pronto.
       </div>
     );
   return (
@@ -186,7 +186,7 @@ function ReportBanner({ status, href }: { status: "pending" | "ready" | "failed"
       <Clock3 className="size-5 text-navy shrink-0" aria-hidden strokeWidth={1.75} />
       <p className="text-sm">
         <strong className="text-navy">Il report approfondito è in elaborazione.</strong> Stiamo preparando l&apos;analisi delle priorità con
-        gli interventi suggeriti: lo riceverete via email {BRAND.reportPromise} e lo ritroverete nell&apos;area personale.
+        gli interventi suggeriti: lo riceverà via email {BRAND.reportPromise} e lo ritroverà nell&apos;area personale.
       </p>
     </div>
   );

@@ -45,7 +45,7 @@ export default function MethodPage() {
       <S t="Priorità che partono dalle vostre ambizioni">
         <p>
           Le priorità non sono semplicemente gli ambiti più deboli. I nostri algoritmi pesano ogni ambito rispetto alle ambizioni per i
-          prossimi anni e alle sfide di oggi che indicate nel questionario: conta di più ciò da cui dipendono i risultati che volete
+          prossimi anni e alle sfide di oggi che indica nel questionario: conta di più ciò da cui dipendono i risultati che vuole
           raggiungere.
         </p>
       </S>
@@ -60,7 +60,7 @@ export default function MethodPage() {
       <S t="Il valore dell'esperto">
         <p>
           Ogni report passa da controlli di qualità e dalla supervisione dei nostri esperti, che intervengono quando serve. Con gli
-          approfondimenti per ambito e le consulenze da remoto, un consulente senior vi aiuta a trasformare le priorità in un piano, con
+          approfondimenti per ambito e le consulenze da remoto, un consulente senior La aiuta a trasformare le priorità in un piano, con
           tempi e responsabili.
         </p>
       </S>

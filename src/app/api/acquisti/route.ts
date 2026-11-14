@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   const user = auth.user;
   if (!user) return NextResponse.json({ error: "Accesso richiesto" }, { status: 401 });
   if (!isStripeConfigured())
-    return NextResponse.json({ error: `I pagamenti online non sono ancora attivi: scriveteci a ${BRAND.contactEmail}` }, { status: 503 });
+    return NextResponse.json({ error: `I pagamenti online non sono ancora attivi: ci scriva a ${BRAND.contactEmail}` }, { status: 503 });
 
   const body = (await request.json().catch(() => ({}))) as {
     companyId?: string;
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (!company) return NextResponse.json({ error: "Azienda non trovata" }, { status: 404 });
   const db = supabaseService();
   const billing = await billingOf(db, company.id);
-  if (!billing) return NextResponse.json({ error: "Inserite prima i dati di fatturazione", needBilling: true }, { status: 422 });
+  if (!billing) return NextResponse.json({ error: "Inserisca prima i dati di fatturazione", needBilling: true }, { status: 422 });
   const cart = checkCart(body.lines, await ownedAreas(db, company.id));
   if ("error" in cart) return NextResponse.json({ error: cart.error }, { status: 422 });
   const slotId = body.slotId && /^[0-9a-f-]{36}$/i.test(body.slotId) ? body.slotId : null;
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error("Sessione di pagamento non creata:", e instanceof Error ? e.message : e);
     await cancelOrder(db, order.id);
-    return NextResponse.json({ error: "Pagamento non disponibile, riprovate tra poco" }, { status: 502 });
+    return NextResponse.json({ error: "Pagamento non disponibile, riprovi tra poco" }, { status: 502 });
   }
 }
 

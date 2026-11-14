@@ -11,13 +11,13 @@ export async function POST(request: Request) {
   const company = body.companyId ? await companyOfMember(auth.user.id, body.companyId) : null;
   if (!company) return NextResponse.json({ error: "Azienda non trovata" }, { status: 404 });
   const v = validateBilling(body.billing);
-  if (!v.ok) return NextResponse.json({ error: "Controllate i dati evidenziati", fields: v.errors }, { status: 422 });
+  if (!v.ok) return NextResponse.json({ error: "Controlli i dati evidenziati", fields: v.errors }, { status: 422 });
   const { error } = await supabaseService()
     .from("billing_profiles")
     .upsert({ company_id: company.id, ...v.billing, updated_by: auth.user.id, updated_at: new Date().toISOString() });
   if (error) {
     console.error("Dati di fatturazione non salvati:", error.message);
-    return NextResponse.json({ error: "Salvataggio non riuscito, riprovate" }, { status: 500 });
+    return NextResponse.json({ error: "Salvataggio non riuscito, riprovi" }, { status: 500 });
   }
   return NextResponse.json({ ok: true, billing: v.billing });
 }

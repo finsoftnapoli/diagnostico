@@ -61,7 +61,7 @@ export default function Login() {
     }
     const { error } = await supabaseBrowser().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
-    if (error) return setError("Codice non valido o scaduto: controllate l'ultima email ricevuta o richiedete un nuovo codice.");
+    if (error) return setError("Codice non valido o scaduto: controlli l'ultima email ricevuta o richieda un nuovo codice.");
     router.push(next);
     router.refresh();
   }
@@ -71,14 +71,14 @@ export default function Login() {
       <h1 className="text-2xl font-semibold text-navy">Accedi</h1>
       {sent === null ? (
         <p className="mt-2 text-sm text-muted">
-          Vi inviamo un&apos;email con un codice e un link di accesso: niente password da ricordare.
+          Le inviamo un&apos;email con un codice e un link di accesso: niente password da ricordare.
         </p>
       ) : (
         <div className="mt-4 flex gap-3 rounded-lg bg-paper px-4 py-3 text-sm">
           <MailCheck className="size-5 shrink-0 text-navy" aria-hidden />
           <p>
-            Abbiamo scritto a <strong>{email.trim()}</strong>. Inserite il codice, oppure aprite il link dell&apos;email da questo browser.
-            Se non la trovate, guardate anche nella posta indesiderata.
+            Abbiamo scritto a <strong>{email.trim()}</strong>. Inserisca il codice, oppure apra il link dell&apos;email da questo browser.
+            Se non la trova, guardi anche nella posta indesiderata.
           </p>
         </div>
       )}

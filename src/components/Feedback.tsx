@@ -20,8 +20,8 @@ export default function Feedback({
 
   async function send() {
     setError(null);
-    if (!ask && !rating) return setError("Scegliete un voto da 1 a 5.");
-    if (ask && !message.trim()) return setError("Scrivete la vostra domanda.");
+    if (!ask && !rating) return setError("Scelga un voto da 1 a 5.");
+    if (ask && !message.trim()) return setError("Scriva la Sua domanda.");
     setState("busy");
     const res = await fetch("/api/riscontri", {
       method: "POST",
@@ -31,7 +31,7 @@ export default function Feedback({
     if (!res?.ok) {
       const json = (await res?.json().catch(() => ({}))) as { error?: string } | undefined;
       setState("idle");
-      return setError(json?.error ?? "Invio non riuscito, riprovate.");
+      return setError(json?.error ?? "Invio non riuscito, riprovi.");
     }
     setState("done");
   }
@@ -39,7 +39,7 @@ export default function Feedback({
   if (state === "done")
     return (
       <section className="no-print mt-10 rounded-xl border border-line bg-paper p-5 text-sm" role="status">
-        {ask ? "Domanda ricevuta: vi rispondiamo per email." : "Grazie: il vostro riscontro ci aiuta a migliorare il servizio."}
+        {ask ? "Domanda ricevuta: Le rispondiamo per email." : "Grazie: il Suo riscontro ci aiuta a migliorare il servizio."}
       </section>
     );
   return (
@@ -49,8 +49,8 @@ export default function Feedback({
         {ask
           ? "Una domanda ai nostri esperti"
           : kind === "ottogramma"
-            ? "Quanto vi è utile questa lettura?"
-            : "Quanto vi è stato utile il report?"}
+            ? "Quanto Le è utile questa lettura?"
+            : "Quanto Le è stato utile il report?"}
       </h2>
       {!ask && (
         <div className="mt-3 flex items-center gap-2" role="radiogroup" aria-label="Voto da 1 a 5">
@@ -71,7 +71,7 @@ export default function Feedback({
       )}
       <label className="mt-3 block text-sm">
         <span className="text-muted">
-          {ask ? "Scrivete qui: rispondiamo per email." : "Che cosa mancava o non era chiaro? (facoltativo)"}
+          {ask ? "Scriva qui: rispondiamo per email." : "Che cosa mancava o non era chiaro? (facoltativo)"}
         </span>
         <textarea
           value={message}

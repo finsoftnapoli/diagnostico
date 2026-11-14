@@ -206,9 +206,9 @@ export async function grantCredit(db: Db, p: { userId: string; companyId: string
       await sendEmail({
         to: u.user.email,
         subject: `Servizi attivati per ${company}`,
-        text: `Abbiamo attivato per ${company}, senza costi:\n${list.map((x) => `- ${x}`).join("\n")}\n\nLi trovate nell'area personale: ${link}\n\n${ownerSentence()}`,
+        text: `Abbiamo attivato per ${company}, senza costi:\n${list.map((x) => `- ${x}`).join("\n")}\n\nLi trova nell'area personale: ${link}\n\n${ownerSentence()}`,
         html: emailLayout({
-          preheader: "Servizi attivati senza costi: li trovate nell'area personale.",
+          preheader: "Servizi attivati senza costi: li trova nell'area personale.",
           title: "Servizi attivati",
           eyebrow: company,
           body: `${para(`Abbiamo attivato per <strong>${esc(company)}</strong>, senza costi:`)}
@@ -381,13 +381,13 @@ export const xmlFileName = (number: string) => `fattura_${number.replace(/\W+/g,
 /** Prenota uno slot usando un'ora di consulenza già acquistata. */
 export async function bookWithCredit(db: Db, p: { userId: string; companyId: string; slotId: string; topic?: string | null }) {
   const credit = await consultCredit(db, p.companyId);
-  if (!credit.next) return { error: "Non avete ore di consulenza disponibili" };
+  if (!credit.next) return { error: "Non ha ore di consulenza disponibili" };
   const { data: claimed } = await db.rpc("claim_slot", { p_slot: p.slotId, p_status: "booked", p_minutes: 0, p_order: null });
   if (!claimed) return { error: "L'orario scelto non è più disponibile" };
   const { data: used } = await db.rpc("use_credit", { p_entitlement: credit.next, p_delta: 1 });
   if (!used) {
     await db.from("expert_slots").update({ status: "open" }).eq("id", p.slotId);
-    return { error: "Non avete ore di consulenza disponibili" };
+    return { error: "Non ha ore di consulenza disponibili" };
   }
   const { data: b, error } = await db
     .from("bookings")
@@ -405,7 +405,7 @@ export async function bookWithCredit(db: Db, p: { userId: string; companyId: str
   if (error) {
     await db.rpc("use_credit", { p_entitlement: credit.next, p_delta: -1 });
     await db.from("expert_slots").update({ status: "open" }).eq("id", p.slotId);
-    return { error: "Prenotazione non riuscita, riprovate" };
+    return { error: "Prenotazione non riuscita, riprovi" };
   }
   return { id: b.id as string };
 }
@@ -505,31 +505,31 @@ export async function sendBookingEmails(db: Db, bookingId: string, origin: strin
   ];
   const date = when(start);
   const subject = cancelled ? `Consulenza annullata: ${date}` : `Consulenza confermata: ${date}`;
-  const link = url ? `Collegamento alla videochiamata: ${url}` : "Vi invieremo il collegamento alla videochiamata prima della sessione.";
+  const link = url ? `Collegamento alla videochiamata: ${url}` : "Le invieremo il collegamento alla videochiamata prima della sessione.";
   const body = cancelled
-    ? `la consulenza di ${date} è stata annullata. L'ora resta disponibile: potete scegliere un nuovo orario dall'area personale (${origin}/area/servizi).`
+    ? `la consulenza di ${date} è stata annullata. L'ora resta disponibile: può scegliere un nuovo orario dall'area personale (${origin}/area/servizi).`
     : `la consulenza da remoto è confermata per ${date} (${slot.duration_min} minuti). ${link}\nIn allegato l'invito da aggiungere al calendario.`;
   const detail = (label: string, value: string) =>
     `<tr><td style="padding:4px 0;font-size:13px;color:${C.muted};width:110px">${esc(label)}</td><td style="padding:4px 0;font-size:15px;color:${C.ink};font-weight:700">${value}</td></tr>`;
   const html = emailLayout({
     preheader: cancelled ? `Consulenza di ${date} annullata.` : `Consulenza confermata per ${date}.`,
     eyebrow: "Consulenza senior da remoto",
-    title: cancelled ? "Consulenza annullata" : "La vostra consulenza è in calendario",
+    title: cancelled ? "Consulenza annullata" : "La consulenza è in calendario",
     body: cancelled
       ? `${para("Buongiorno,")}
-${para(`la consulenza di <strong>${esc(date)}</strong> è stata annullata. L'ora resta disponibile: potete scegliere un nuovo orario quando volete.`)}
+${para(`la consulenza di <strong>${esc(date)}</strong> è stata annullata. L'ora resta disponibile: può scegliere un nuovo orario quando vuole.`)}
 ${emailButton(`${origin}/area/servizi`, "Scegli un nuovo orario")}`
       : `${para("Buongiorno,")}
-${para(`la vostra consulenza da remoto con un nostro consulente senior è confermata${company ? ` per <strong>${esc(company)}</strong>` : ""}.`)}
+${para(`la Sua consulenza da remoto con un nostro consulente senior è confermata${company ? ` per <strong>${esc(company)}</strong>` : ""}.`)}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.paper};border:1px solid ${C.line};border-radius:10px;margin:18px 0 6px"><tr><td style="padding:14px 20px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 ${detail("Quando", esc(date))}
 ${detail("Durata", `${slot.duration_min} minuti`)}
-${detail("Dove", url ? `<a href="${esc(url)}" style="color:${C.navySoft}">Videochiamata</a>` : "Videochiamata: il collegamento vi arriva prima della sessione")}
+${detail("Dove", url ? `<a href="${esc(url)}" style="color:${C.navySoft}">Videochiamata</a>` : "Videochiamata: il collegamento Le arriva prima della sessione")}
 ${b.topic ? detail("Temi", esc(b.topic as string)) : ""}
 </table></td></tr></table>
-${para("In allegato trovate l'invito da aggiungere al calendario. Tenete a portata di mano il vostro Ottogramma: partiremo da lì.", `font-size:14px;color:${C.muted};margin-top:14px`)}
-${url ? emailButton(url, "Apri la videochiamata") : emailButton(`${origin}/area/servizi`, "Vai ai vostri servizi")}`,
+${para("In allegato trova l'invito da aggiungere al calendario. Tenga a portata di mano l'Ottogramma della vostra azienda: partiremo da lì.", `font-size:14px;color:${C.muted};margin-top:14px`)}
+${url ? emailButton(url, "Apri la videochiamata") : emailButton(`${origin}/area/servizi`, "Vai ai servizi")}`,
   });
   if (to)
     await sendEmail({

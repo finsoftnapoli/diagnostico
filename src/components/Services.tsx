@@ -75,7 +75,7 @@ export default function Services({ data }: { data: ServicesData }) {
     setError(null);
     if (!billing) {
       setEditBilling(true);
-      setError("Inserite i dati di fatturazione per procedere.");
+      setError("Inserisca i dati di fatturazione per procedere.");
       document.getElementById("fatturazione")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
@@ -98,7 +98,7 @@ export default function Services({ data }: { data: ServicesData }) {
   return (
     <div className="mt-6">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-3xl font-semibold text-navy">I vostri servizi</h1>
+        <h1 className="text-3xl font-semibold text-navy">I servizi</h1>
         {data.companies.length > 1 && (
           <select
             value={data.company.id}
@@ -119,14 +119,14 @@ export default function Services({ data }: { data: ServicesData }) {
         <div className="mt-6 rounded-xl border border-navy bg-navy/5 p-4 text-sm flex gap-3">
           <Check className="size-5 text-navy shrink-0" aria-hidden />
           <p>
-            <strong className="text-navy">Pagamento ricevuto, grazie.</strong> I servizi si attivano in pochi secondi; riceverete
+            <strong className="text-navy">Pagamento ricevuto, grazie.</strong> I servizi si attivano in pochi secondi; riceverà
             un&apos;email di conferma e la fattura elettronica tramite il Sistema di Interscambio.
           </p>
         </div>
       )}
       {!data.paymentsActive && (
         <p className="mt-6 rounded-xl bg-paper p-4 text-sm">
-          I pagamenti online saranno attivi a breve. Nel frattempo scriveteci a{" "}
+          I pagamenti online saranno attivi a breve. Nel frattempo ci scriva a{" "}
           <a className="underline" href={`mailto:${BRAND.contactEmail}`}>
             {BRAND.contactEmail}
           </a>{" "}
@@ -299,7 +299,7 @@ function Modules({
         })}
       </div>
       {sel.size === 0 && !allOwned && data.paymentsActive && (
-        <p className="mt-3 text-sm text-muted">Scegliete uno o più ambiti qui sopra: il pulsante di acquisto compare con il totale.</p>
+        <p className="mt-3 text-sm text-muted">Scelga uno o più ambiti qui sopra: il pulsante di acquisto compare con il totale.</p>
       )}
       {sel.size > 0 && <div className="mt-4 max-w-2xl">{terms}</div>}
       {sel.size > 0 && (
@@ -324,8 +324,8 @@ function Modules({
             </p>
             {owned.size > 0 && (
               <p className="mt-1 text-sm text-muted">
-                Avete già {owned.size === 1 ? "1 approfondimento attivo" : `${owned.size} approfondimenti attivi`}: con il percorso si
-                attivano gli altri e le 2 ore di consulenza, allo stesso prezzo.
+                Ha già {owned.size === 1 ? "1 approfondimento attivo" : `${owned.size} approfondimenti attivi`}: con il percorso si attivano
+                gli altri e le 2 ore di consulenza, allo stesso prezzo.
               </p>
             )}
             <ul className="mt-2 text-sm space-y-1">
@@ -440,7 +440,7 @@ function Consulting({
         Un&apos;ora in videochiamata con un nostro consulente senior sul vostro diagnostico. {euro(p.price)} + IVA, da pagare al momento
         della prenotazione.{" "}
         {data.hours > 0 && (
-          <strong className="text-navy">Avete {data.hours === 1 ? "1 ora disponibile" : `${data.hours} ore disponibili`}.</strong>
+          <strong className="text-navy">Ha {data.hours === 1 ? "1 ora disponibile" : `${data.hours} ore disponibili`}.</strong>
         )}
       </p>
 
@@ -472,7 +472,7 @@ function Consulting({
       {byDay.length === 0 ? (
         <div className="mt-4 rounded-xl bg-paper p-4 text-sm flex flex-wrap items-center justify-between gap-3">
           <p>
-            Al momento non ci sono orari liberi nelle prossime settimane: chiedeteci una data e vi rispondiamo entro un giorno lavorativo.
+            Al momento non ci sono orari liberi nelle prossime settimane: ci chieda una data e Le rispondiamo entro un giorno lavorativo.
           </p>
           <a
             className="inline-flex items-center gap-2 rounded-lg border border-navy px-4 py-2 font-semibold text-navy hover:bg-navy hover:text-white"
@@ -483,7 +483,7 @@ function Consulting({
         </div>
       ) : (
         <>
-          <p className="mt-5 text-sm font-medium">Scegliete data e ora (ora italiana)</p>
+          <p className="mt-5 text-sm font-medium">Scelga data e ora (ora italiana)</p>
           <div className="mt-2 space-y-3">
             {byDay.map(([k, list]) => (
               <div key={k} className="flex flex-wrap items-center gap-2 text-sm">
@@ -504,7 +504,7 @@ function Consulting({
           {slot && (
             <div className="mt-4 rounded-xl bg-paper p-4">
               <label className="block text-sm">
-                <span className="font-medium">Su che cosa volete concentrarvi? (facoltativo)</span>
+                <span className="font-medium">Su che cosa vuole concentrarsi? (facoltativo)</span>
                 <textarea
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
@@ -521,7 +521,7 @@ function Consulting({
                     className="inline-flex items-center gap-2 bg-navy text-white text-sm font-semibold px-4 py-2.5 rounded-lg disabled:opacity-60"
                   >
                     {booking ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Prenota
-                    con le vostre ore
+                    con le ore a disposizione
                   </button>
                 ) : (
                   <>

@@ -50,9 +50,22 @@ export const VISURA_SCHEMA = {
     },
   },
   required: [
-    "ragione_sociale", "partita_iva", "forma_giuridica", "ateco_codice", "ateco_descrizione",
-    "settore", "regione", "comune_sede", "anno_costituzione", "addetti",
-    "organo_amministrativo", "numero_amministratori", "organo_controllo", "numero_soci", "quota_socio_principale", "persone",
+    "ragione_sociale",
+    "partita_iva",
+    "forma_giuridica",
+    "ateco_codice",
+    "ateco_descrizione",
+    "settore",
+    "regione",
+    "comune_sede",
+    "anno_costituzione",
+    "addetti",
+    "organo_amministrativo",
+    "numero_amministratori",
+    "organo_controllo",
+    "numero_soci",
+    "quota_socio_principale",
+    "persone",
   ],
   additionalProperties: false,
 } as const;
@@ -79,9 +92,23 @@ export const BILANCIO_SCHEMA = {
     dipendenti: nullable("integer"),
   },
   required: [
-    "ragione_sociale", "partita_iva", "anno_esercizio", "ricavi", "valore_produzione", "ebitda", "ebit",
-    "utile_netto", "costo_personale", "patrimonio_netto", "totale_attivo", "debiti_finanziari",
-    "disponibilita_liquide", "crediti_commerciali", "debiti_fornitori", "rimanenze", "dipendenti",
+    "ragione_sociale",
+    "partita_iva",
+    "anno_esercizio",
+    "ricavi",
+    "valore_produzione",
+    "ebitda",
+    "ebit",
+    "utile_netto",
+    "costo_personale",
+    "patrimonio_netto",
+    "totale_attivo",
+    "debiti_finanziari",
+    "disponibilita_liquide",
+    "crediti_commerciali",
+    "debiti_fornitori",
+    "rimanenze",
+    "dipendenti",
   ],
   additionalProperties: false,
 } as const;
@@ -392,6 +419,6 @@ export function financialKpis(f: Financials): FinancialKpis {
   if (k.dso !== null && k.dso > 90)
     k.notes.push(`I clienti pagano in media in circa ${k.dso} giorni: il capitale circolante assorbe molta cassa.`);
   if (k.dio !== null && k.dio > 365)
-    k.notes.push("Le rimanenze valgono più di un anno di ricavi: verificate se comprendono lavori in corso o beni difficili da vendere.");
+    k.notes.push("Le rimanenze valgono più di un anno di ricavi: verifichi se comprendono lavori in corso o beni difficili da vendere.");
   return k;
 }

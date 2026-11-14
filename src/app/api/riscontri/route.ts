@@ -15,17 +15,16 @@ export async function POST(request: Request) {
   if (!body.kind || !KINDS.includes(body.kind)) return NextResponse.json({ error: "Richiesta non valida" }, { status: 400 });
   const rating = Number.isInteger(body.rating) && (body.rating as number) >= 1 && (body.rating as number) <= 5 ? body.rating : null;
   const message = typeof body.message === "string" ? body.message.trim().slice(0, 2000) : "";
-  if (!rating && !message) return NextResponse.json({ error: "Indicate un voto o scrivete un messaggio" }, { status: 400 });
+  if (!rating && !message) return NextResponse.json({ error: "Indichi un voto o scriva un messaggio" }, { status: 400 });
   const refId = body.refId && /^[0-9a-f-]{36}$/i.test(body.refId) ? body.refId : null;
   const db = supabaseService();
   const since = new Date(Date.now() - 86_400_000).toISOString();
   const { count } = await db.from("feedback").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", since);
-  if ((count ?? 0) >= DAILY_MAX)
-    return NextResponse.json({ error: "Avete già inviato molti messaggi oggi: riprovate domani" }, { status: 429 });
+  if ((count ?? 0) >= DAILY_MAX) return NextResponse.json({ error: "Ha già inviato molti messaggi oggi: riprovi domani" }, { status: 429 });
   const { error } = await db
     .from("feedback")
     .insert({ kind: body.kind, ref_id: refId, user_id: user.id, rating, message: message || null });
-  if (error) return NextResponse.json({ error: "Invio non riuscito, riprovate" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Invio non riuscito, riprovi" }, { status: 500 });
   // una domanda o un commento scritto arrivano subito allo staff, che può rispondere all'utente
   if (message && isEmailConfigured()) {
     const what = body.kind === "domanda" ? "Domanda" : "Riscontro";

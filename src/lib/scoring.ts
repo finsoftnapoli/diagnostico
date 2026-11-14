@@ -134,7 +134,7 @@ export function computeResult(r: Responses): Result {
         area: q.area,
         level,
         answer,
-        message: `Hai indicato il livello ${level} su "${q.theme}", ma alla domanda "${q.check.text}" hai risposto "${answer}". Il livello potrebbe essere sovrastimato.`,
+        message: `Ha indicato il livello ${level} su "${q.theme}", ma alla domanda "${q.check.text}" ha risposto "${answer}". Il livello potrebbe essere sovrastimato.`,
       });
     }
   }
@@ -166,7 +166,7 @@ function reasonsFor(row: AreaResult, r: Responses): string[] {
     .filter((o): o is Choice => !!o && link(o, row.code) > 0)
     .map((o) => o.label.toLowerCase());
   if (cr.length) out.push(`Legato alle criticità: ${cr.join("; ")}`);
-  if (row.fromText) out.push("Richiamato nelle vostre descrizioni");
+  if (row.fromText) out.push("Richiamato nelle Sue descrizioni");
   return out;
 }
 

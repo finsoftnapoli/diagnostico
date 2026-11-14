@@ -37,7 +37,7 @@ ${p.eyebrow ? `<p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-sp
 ${p.body}
 </td></tr>
 <tr><td style="background:#ffffff;border:1px solid ${C.line};border-top:0;border-radius:0 0 12px 12px;padding:18px 32px;font-size:12px;line-height:1.6;color:${C.muted}">
-Domande? Rispondi a questa email o scrivi a <a href="mailto:${esc(BRAND.contactEmail)}" style="color:${C.navySoft}">${esc(BRAND.contactEmail)}</a>.<br>${esc(ownerSentence())}
+Domande? Risponda a questa email o scriva a <a href="mailto:${esc(BRAND.contactEmail)}" style="color:${C.navySoft}">${esc(BRAND.contactEmail)}</a>.<br>${esc(ownerSentence())}
 </td></tr>
 </table>
 </td></tr></table>

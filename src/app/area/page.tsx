@@ -162,7 +162,7 @@ async function AreaContent() {
       );
       const members: MemberResult[] = latest.map((r) => ({
         id: r.id,
-        label: r.user_id === user.id ? "La vostra compilazione" : (r.respondent_email ?? "Collega"),
+        label: r.user_id === user.id ? "La Sua compilazione" : (r.respondent_email ?? "Collega"),
         completedAt: r.completed_at,
         scores: Object.fromEntries((r.area_scores ?? []).map((s) => [s.area, s.score])) as Partial<Record<AreaCode, number | null>>,
         levels: Object.fromEntries((r.answers ?? []).map((a) => [a.question_id, a.level])),
@@ -190,7 +190,7 @@ async function AreaContent() {
   if (!latest)
     todo.push({
       icon: FileText,
-      title: "Iniziate il diagnostico",
+      title: "Inizi il diagnostico",
       text: `Circa 15 minuti: l'${BRAND.reportName} subito, il report approfondito ${BRAND.reportPromise}.`,
       href: "/diagnostico",
       cta: "Inizia",
@@ -198,10 +198,10 @@ async function AreaContent() {
   else if (latest.report_status === "ready")
     todo.push({
       icon: FileText,
-      title: started.get(latest.id) ? "Proseguite con le azioni del report" : "Il vostro report approfondito è pronto",
+      title: started.get(latest.id) ? "Prosegua con le azioni del report" : "Il report approfondito è pronto",
       text: started.get(latest.id)
-        ? `Avete avviato ${started.get(latest.id)} ${started.get(latest.id) === 1 ? "azione" : "azioni"}: spuntate le successive man mano che partono.`
-        : "Leggete le priorità, spuntate le azioni che avviate e inviatelo a chi lavora con voi.",
+        ? `Ha avviato ${started.get(latest.id)} ${started.get(latest.id) === 1 ? "azione" : "azioni"}: spunti le successive man mano che partono.`
+        : "Legga le priorità, spunti le azioni che avvia e lo invii a chi lavora con Lei.",
       href: `/area/report/${latest.id}`,
       cta: "Apri il report",
     });
@@ -211,8 +211,8 @@ async function AreaContent() {
       title: latest.report_status === "failed" ? "Il report approfondito è in ritardo" : "Il report approfondito è in preparazione",
       text:
         latest.report_status === "failed"
-          ? "Ci stiamo lavorando: vi avvisiamo per email appena è pronto. Intanto potete rileggere l'Ottogramma."
-          : `Lo ricevete per email ${arrival.has(latest.id) ? releaseLabel(arrival.get(latest.id)!) : BRAND.reportPromise}. Intanto potete rileggere l'${BRAND.reportName}.`,
+          ? "Ci stiamo lavorando: La avvisiamo per email appena è pronto. Intanto può rileggere l'Ottogramma."
+          : `Lo riceve per email ${arrival.has(latest.id) ? releaseLabel(arrival.get(latest.id)!) : BRAND.reportPromise}. Intanto può rileggere l'${BRAND.reportName}.`,
       href: `/area/report/${latest.id}`,
       cta: `Apri l'${BRAND.reportName}`,
     });
@@ -226,23 +226,23 @@ async function AreaContent() {
       text:
         m.status === "pronto"
           ? "La lettura per sotto-ambito, il piano di lavoro e gli indicatori da seguire."
-          : "Otto sotto-ambiti, circa 15 minuti. Potete fermarvi e riprendere.",
+          : "Otto sotto-ambiti, circa 15 minuti. Può fermarsi e riprendere.",
       href: m.id ? `/area/modulo/${m.id}` : "/area/servizi",
       cta: m.status === "pronto" ? "Apri" : m.status === "in corso" ? "Riprendi" : "Inizia",
     });
   if (nextBooking)
     todo.push({
       icon: CalendarClock,
-      title: "La vostra consulenza",
-      text: `${moment(nextBooking).replace(/^./, (c) => c.toUpperCase())}. Trovate il link della videochiamata tra i servizi.`,
+      title: "La Sua consulenza",
+      text: `${moment(nextBooking).replace(/^./, (c) => c.toUpperCase())}. Trova il link della videochiamata tra i servizi.`,
       href: "/area/servizi#consulenza",
       cta: "Dettagli",
     });
   else if (hours > 0)
     todo.push({
       icon: CalendarClock,
-      title: "Prenotate la consulenza",
-      text: `Avete ${hours === 1 ? "un'ora disponibile" : `${hours} ore disponibili`} con un nostro consulente senior.`,
+      title: "Prenoti la consulenza",
+      text: `Ha ${hours === 1 ? "un'ora disponibile" : `${hours} ore disponibili`} con un nostro consulente senior.`,
       href: "/area/servizi#consulenza",
       cta: "Scegli l'orario",
     });
@@ -327,12 +327,12 @@ async function AreaContent() {
             })}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-muted">Qui trovate i vostri report dopo il primo diagnostico.</p>
+          <p className="mt-3 text-sm text-muted">Qui trova i report dopo il primo diagnostico.</p>
         )}
         {mine.length > 0 && (
           <p className="mt-3 text-sm">
             <Link href="/diagnostico" className="underline text-navy-soft">
-              Ripetete il diagnostico
+              Ripeta il diagnostico
             </Link>{" "}
             <span className="text-muted">tra qualche mese per vedere i progressi: il report mette a confronto i due profili.</span>
           </p>
@@ -349,7 +349,7 @@ async function AreaContent() {
           </div>
           {mods.length === 0 && !nextBooking && hours === 0 ? (
             <p className="mt-3 text-sm text-muted">
-              Dopo il report potete andare più a fondo su un ambito, con un approfondimento in 8 sotto-ambiti, oppure confrontarvi per
+              Dopo il report può andare più a fondo su un ambito, con un approfondimento in 8 sotto-ambiti, oppure confrontarsi per
               un&apos;ora con un nostro consulente senior.
             </p>
           ) : (
@@ -399,8 +399,8 @@ async function AreaContent() {
         <section key={t.companyId} className="mt-12">
           <h2 className="text-xl font-semibold text-navy">Il management di {t.name}</h2>
           <p className="mt-1 text-sm text-muted">
-            Siete amministratori di questo spazio aziendale: vedete le compilazioni dei colleghi che avete invitato, i temi su cui le
-            risposte divergono e le ambizioni su cui convergete. Gli inviti si inviano dal report.
+            Lei è amministratore di questo spazio aziendale: vede le compilazioni dei colleghi che ha invitato, i temi su cui le risposte
+            divergono e le ambizioni su cui convergono. Gli inviti si inviano dal report.
           </p>
           <div className="mt-6">
             <TeamView members={t.members} />
@@ -428,8 +428,8 @@ async function AreaContent() {
         <h2 className="text-xl font-semibold text-navy">I vostri documenti</h2>
         <p className="mt-1 text-sm text-muted">
           Visure, bilanci, business plan e altri documenti dell&apos;azienda. Caricando un bilancio più recente o il piano aziendale, il
-          prossimo report approfondito ne terrà conto. Restano in un archivio privato per 24 mesi dall&apos;ultimo accesso; potete
-          eliminarli in qualsiasi momento.
+          prossimo report approfondito ne terrà conto. Restano in un archivio privato per 24 mesi dall&apos;ultimo accesso; può eliminarli
+          in qualsiasi momento.
         </p>
         {!memberOf.length && (
           <p className="mt-3 text-sm text-muted">Potrete aggiungere documenti dopo aver completato il primo diagnostico.</p>

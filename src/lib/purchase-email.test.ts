@@ -17,7 +17,7 @@ const base: PurchaseEmailInput = {
 describe("email di conferma dell'acquisto", () => {
   it("riepiloga ordine, totali e fattura con i prossimi passi del modulo", () => {
     const m = purchaseEmail(base);
-    expect(m.subject).toBe("Acquisto confermato: il vostro approfondimento è attivo");
+    expect(m.subject).toBe("Acquisto confermato: l'approfondimento è attivo");
     expect(m.html).toContain("Approfondimento Finanza e controllo");
     expect(m.html).toContain("€122");
     expect(m.html).toContain("Fattura n. 1/DIA");
@@ -31,13 +31,13 @@ describe("email di conferma dell'acquisto", () => {
 
   it("adatta titolo e passi a consulenza e percorso completo", () => {
     const c = purchaseEmail({ ...base, booked: true, items: [{ sku: "consulenza", description: "x", netCents: 20000 }] });
-    expect(c.subject).toBe("Acquisto confermato: la vostra consulenza è prenotata");
+    expect(c.subject).toBe("Acquisto confermato: la consulenza è prenotata");
     expect(c.html).toContain("La consulenza è in calendario");
     const b = purchaseEmail({ ...base, items: [{ sku: "bundle", description: "x", netCents: 50000 }] });
-    expect(b.subject).toBe("Acquisto confermato: il vostro percorso completo è attivo");
-    expect(b.html).toContain("Prenota le 2 ore di consulenza");
+    expect(b.subject).toBe("Acquisto confermato: il percorso completo è attivo");
+    expect(b.html).toContain("Prenotazione delle 2 ore di consulenza");
     const lost = purchaseEmail({ ...base, slotLost: true, items: [{ sku: "consulenza", description: "x", netCents: 20000 }] });
     expect(lost.html).toContain("non era più disponibile");
-    expect(lost.html).toContain("Scegliete data e ora della consulenza");
+    expect(lost.html).toContain("Scelta di data e ora della consulenza");
   });
 });

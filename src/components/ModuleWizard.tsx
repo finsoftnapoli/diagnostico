@@ -95,8 +95,8 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
           <p className="text-sm text-muted">Approfondimento</p>
           <h1 className="text-3xl font-semibold text-navy leading-tight">{a.name}</h1>
           <p className="mt-1 text-muted">
-            8 sotto-ambiti, {qs.length} domande. Per ciascuna scegliete la situazione più vicina alla realtà di oggi, non a quella
-            desiderata. Le risposte si salvano da sole: potete interrompere e riprendere quando volete.
+            8 sotto-ambiti, {qs.length} domande. Per ciascuna scelga la situazione più vicina alla realtà di oggi, non a quella desiderata.
+            Le risposte si salvano da sole: può interrompere e riprendere quando vuole.
           </p>
         </div>
       </div>
@@ -231,7 +231,7 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
                   {sending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Check className="size-4" aria-hidden />} Invia per
                   l&apos;analisi
                 </button>
-                {answered === qs.length && <p className="text-sm text-muted">Dopo l&apos;invio non potrete più modificare le risposte.</p>}
+                {answered === qs.length && <p className="text-sm text-muted">Dopo l&apos;invio non potrà più modificare le risposte.</p>}
               </div>
             </section>
           )}
@@ -265,10 +265,10 @@ export default function ModuleWizard({ id, area, initial }: { id: string; area: 
           </div>
           <p className="mt-2 text-sm text-muted">
             {doneSubs === 0
-              ? "Si disegna mentre rispondete: un vertice per ogni sotto-ambito."
+              ? "Si disegna mentre risponde: un vertice per ogni sotto-ambito."
               : doneSubs < subs.length
                 ? `${doneSubs} ${doneSubs === 1 ? "sotto-ambito" : "sotto-ambiti"} su ${subs.length}: più il vertice è lontano dal centro, più le pratiche sono mature.`
-                : "L'Ottogramma è completo: aggiungete le note e inviate per l'analisi."}
+                : "L'Ottogramma è completo: aggiunga le note e invii per l'analisi."}
           </p>
         </aside>
       </div>

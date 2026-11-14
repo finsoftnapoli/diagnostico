@@ -63,7 +63,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/report/[id]
   ]);
   if (error) return NextResponse.json({ error: "Condivisione non ancora attiva" }, { status: 503 });
   if ((today ?? 0) >= MAX_SHARES_PER_DAY)
-    return NextResponse.json({ error: "Avete raggiunto il limite di condivisioni per oggi: riprovate domani" }, { status: 429 });
+    return NextResponse.json({ error: "Ha raggiunto il limite di condivisioni per oggi: riprovi domani" }, { status: 429 });
   if ((active ?? 0) >= MAX_ACTIVE_SHARES)
     return NextResponse.json(
       { error: "Ci sono già molti link attivi per questo report: revocatene qualcuno prima di crearne altri" },
@@ -86,7 +86,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/report/[id]
     .single();
   if (insertError) {
     console.error("Condivisione non creata:", insertError.message);
-    return NextResponse.json({ error: "Condivisione non riuscita, riprovate" }, { status: 500 });
+    return NextResponse.json({ error: "Condivisione non riuscita, riprovi" }, { status: 500 });
   }
   const link = `${siteUrl()}/condiviso/${token}`;
   let sent = false;
@@ -121,6 +121,6 @@ export async function DELETE(request: Request, ctx: RouteContext<"/api/report/[i
     .eq("id", share)
     .eq("assessment_id", id)
     .is("revoked_at", null);
-  if (error) return NextResponse.json({ error: "Revoca non riuscita, riprovate" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Revoca non riuscita, riprovi" }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

@@ -30,7 +30,7 @@ export default function AreaExplorer({
   const mine = themes.filter((t) => t.area === selected);
   return (
     <div className="no-print mt-6">
-      <p className="text-sm text-muted">Scegliete un ambito per vedere da cosa dipende il punteggio e qual è il passo successivo.</p>
+      <p className="text-sm text-muted">Scelga un ambito per vedere da cosa dipende il punteggio e qual è il passo successivo.</p>
       <div className="mt-3 flex flex-wrap gap-2" role="tablist" aria-label="Ambiti">
         {areas.map((x) => (
           <button

@@ -14,7 +14,7 @@ export default function ModulePage({ params }: PageProps<"/area/modulo/[id]">) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <Link href="/area/servizi" className="no-print text-sm underline text-navy-soft">
-        ← I vostri servizi
+        ← I servizi
       </Link>
       <div className="mt-6">
         <Suspense fallback={<p className="text-muted">Caricamento…</p>}>

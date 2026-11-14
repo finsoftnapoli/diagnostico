@@ -16,29 +16,29 @@ export const remindersEnabled = () => process.env.REMINDERS !== "0";
 
 export function draftReminderEmail(p: { link: string; expires: Date }) {
   const date = p.expires.toLocaleDateString("it-IT", { day: "numeric", month: "long" });
-  const subject = "Il vostro diagnostico è rimasto a metà";
-  const intro = `Avete iniziato il diagnostico di ${BRAND.name} e lo avete salvato per continuare più tardi: le risposte date finora sono al sicuro e si riprende dal punto in cui vi siete fermati.`;
-  const how = `Per riprendere, accedete con la stessa email: vi inviamo un codice e tornate subito alle domande. La bozza resta disponibile fino al ${date}.`;
+  const subject = "Il diagnostico è rimasto a metà";
+  const intro = `Ha iniziato il diagnostico di ${BRAND.name} e lo ha salvato per continuare più tardi: le risposte date finora sono al sicuro e si riprende dal punto in cui si è fermato.`;
+  const how = `Per riprendere, acceda con la stessa email: Le inviamo un codice e torna subito alle domande. La bozza resta disponibile fino al ${date}.`;
   const text = `Buongiorno,
 
 ${intro}
 
 ${how}
 
-Riprendete il diagnostico: ${p.link}
+Riprenda il diagnostico: ${p.link}
 
-Questo è l'unico promemoria che riceverete per questa bozza.
+Questo è l'unico promemoria che riceverà per questa bozza.
 
 ${ownerSentence()}`;
   const html = emailLayout({
     preheader: "Le risposte date finora sono salvate: bastano pochi minuti per arrivare all'Ottogramma.",
     eyebrow: "Diagnostico in sospeso",
-    title: "Il vostro diagnostico è rimasto a metà",
+    title: "Il diagnostico è rimasto a metà",
     body: `${para("Buongiorno,")}
 ${para(esc(intro))}
 ${para(esc(how))}
 ${emailButton(p.link, "Riprendi il diagnostico")}
-${para("Questo è l'unico promemoria che riceverete per questa bozza.", "font-size:13px;color:#5b6573;margin-top:18px")}`,
+${para("Questo è l'unico promemoria che riceverà per questa bozza.", "font-size:13px;color:#5b6573;margin-top:18px")}`,
   });
   return { subject, text, html };
 }

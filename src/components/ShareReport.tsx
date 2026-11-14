@@ -31,7 +31,7 @@ export default function ShareReport({ assessmentId }: { assessmentId: string }) 
 
   async function create(withEmail: boolean) {
     setError(null);
-    if (withEmail && !/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Scrivete l'email di chi deve ricevere il report.");
+    if (withEmail && !/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Scriva l'email di chi deve ricevere il report.");
     setBusy(true);
     const res = await fetch(url, {
       method: "POST",
@@ -41,7 +41,7 @@ export default function ShareReport({ assessmentId }: { assessmentId: string }) 
     const json = (await res?.json().catch(() => ({}))) as
       { link?: string; share?: ShareRow; sent?: boolean; emailFailed?: boolean; error?: string } | undefined;
     setBusy(false);
-    if (!res?.ok || !json?.link) return setError(json?.error ?? "Condivisione non riuscita, riprovate.");
+    if (!res?.ok || !json?.link) return setError(json?.error ?? "Condivisione non riuscita, riprovi.");
     setCreated({ link: json.link, sent: !!json.sent, emailFailed: !!json.emailFailed });
     setCopied(false);
     if (json.share) setShares((s) => [json.share as ShareRow, ...(s ?? [])]);
@@ -86,8 +86,8 @@ export default function ShareReport({ assessmentId }: { assessmentId: string }) 
               <div>
                 <h2 className="text-xl font-semibold text-navy">Invia il report a…</h2>
                 <p className="mt-1 text-sm text-muted">
-                  Un socio, il commercialista, la banca: chi riceve il link legge il report online, in sola lettura e senza registrarsi.
-                  Potete ritirare il link in ogni momento.
+                  Un socio, il commercialista, la banca: chi riceve il link legge il report online, in sola lettura e senza registrarsi. Può
+                  ritirare il link in ogni momento.
                 </p>
               </div>
               <button
@@ -187,7 +187,7 @@ export default function ShareReport({ assessmentId }: { assessmentId: string }) 
                   {created.sent
                     ? "Email inviata."
                     : created.emailFailed
-                      ? "Link creato, ma l'email non è partita: inviatelo voi."
+                      ? "Link creato, ma l'email non è partita: lo invii Lei."
                       : "Link creato."}
                 </p>
                 <p className="mt-1 text-muted">Copiatelo adesso: per sicurezza non lo conserviamo e non potremo mostrarlo di nuovo.</p>
@@ -214,7 +214,7 @@ export default function ShareReport({ assessmentId }: { assessmentId: string }) 
             {shares === null ? (
               <p className="mt-2 text-sm text-muted">Caricamento…</p>
             ) : shares.length === 0 ? (
-              <p className="mt-2 text-sm text-muted">Non avete ancora condiviso questo report.</p>
+              <p className="mt-2 text-sm text-muted">Non ha ancora condiviso questo report.</p>
             ) : (
               <ul className="mt-2 divide-y divide-line border-y border-line text-sm">
                 {shares.map((s) => {

@@ -23,7 +23,7 @@ export default function InviteColleagues({ people }: { people: { name: string; r
 
   async function send(i: number) {
     const r = rows[i];
-    if (!/^\S+@\S+\.\S+$/.test(r.email)) return set(i, { state: "error", note: "Inserite un'email valida" });
+    if (!/^\S+@\S+\.\S+$/.test(r.email)) return set(i, { state: "error", note: "Inserisca un'email valida" });
     set(i, { state: "sending", note: undefined });
     const res = await fetch("/api/inviti", {
       method: "POST",
@@ -38,12 +38,12 @@ export default function InviteColleagues({ people }: { people: { name: string; r
   return (
     <section className="mt-14 rounded-xl border border-line p-5 sm:p-6">
       <h2 className="text-2xl font-semibold text-navy flex items-center gap-2">
-        <UserPlus className="size-6" aria-hidden strokeWidth={1.75} /> Confrontate la vostra visione con quella dei colleghi
+        <UserPlus className="size-6" aria-hidden strokeWidth={1.75} /> Confronti la Sua visione con quella dei colleghi
       </h2>
       <p className="mt-2 text-sm text-muted max-w-3xl">
-        Invita soci, amministratori o responsabili a compilare il diagnostico della stessa azienda. Vedrai le loro risposte accanto alle
-        vostre e dove il management non è allineato: spesso è lì che si trovano le priorità vere.
-        {people.length > 0 && " Abbiamo suggerito le persone indicate nella visura: inserite l'email di chi volete invitare."}
+        Inviti soci, amministratori o responsabili a compilare il diagnostico della stessa azienda. Vedrà le loro risposte accanto alle Sue
+        e dove il management non è allineato: spesso è lì che si trovano le priorità vere.
+        {people.length > 0 && " Abbiamo suggerito le persone indicate nella visura: inserisca l'email di chi vuole invitare."}
       </p>
       <div className="mt-5 space-y-3">
         {rows.map((r, i) => (
@@ -92,8 +92,8 @@ export default function InviteColleagues({ people }: { people: { name: string; r
         Aggiungi un&apos;altra persona
       </button>
       <p className="mt-4 text-xs text-muted">
-        L&apos;invito parte a vostro nome, con la vostra email come indirizzo di risposta, e spiega che le risposte individuali saranno
-        visibili a voi come amministratori dello spazio aziendale. Non mostriamo i vostri risultati a chi invitate.
+        L&apos;invito parte a Suo nome, con la Sua email come indirizzo di risposta, e spiega che le risposte individuali saranno visibili a
+        Lei come amministratore dello spazio aziendale. Non mostriamo i Suoi risultati a chi invita.
       </p>
     </section>
   );

@@ -45,7 +45,7 @@ function Empty() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="text-2xl font-semibold text-navy">Nessun risultato da mostrare</h1>
-      <p className="mt-2 text-muted">Completate il diagnostico per vedere il profilo della vostra azienda.</p>
+      <p className="mt-2 text-muted">Completi il diagnostico per vedere il profilo della vostra azienda.</p>
       <Link href="/diagnostico" className="mt-6 inline-block bg-navy text-white px-5 py-2.5 rounded-lg">
         Vai al diagnostico
       </Link>
@@ -60,7 +60,7 @@ function RemoteDraft({ id, onLoaded }: { id: string; onLoaded: (d: Draft) => voi
     void (async () => {
       const { data } = await supabaseBrowser().auth.getUser();
       if (!data.user) {
-        setMessage("Per vedere i risultati aprite il link dell'email dallo stesso browser in cui avete compilato il diagnostico.");
+        setMessage("Per vedere i risultati apra il link dell'email dallo stesso browser in cui ha compilato il diagnostico.");
         return;
       }
       const res = await fetch(`/api/bozze/${encodeURIComponent(id)}`);

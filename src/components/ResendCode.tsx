@@ -37,7 +37,7 @@ export default function ResendCode({ onResend, initialWait = RESEND_SECONDS }: P
       if (r.wait) setUntil(Date.now() + r.wait * 1000);
       return;
     }
-    setNote({ text: "Abbiamo inviato un nuovo codice: usate quello dell'ultima email.", ok: true });
+    setNote({ text: "Abbiamo inviato un nuovo codice: usi quello dell'ultima email.", ok: true });
     setUntil(Date.now() + RESEND_SECONDS * 1000);
   }
 
@@ -46,7 +46,7 @@ export default function ResendCode({ onResend, initialWait = RESEND_SECONDS }: P
     <div className="text-sm" aria-live="polite">
       {left > 0 ? (
         <p className="text-muted">
-          Non è arrivata? Potete richiedere un nuovo codice tra <span className="tabular-nums font-medium text-ink">{mmss}</span>.
+          Non è arrivata? Può richiedere un nuovo codice tra <span className="tabular-nums font-medium text-ink">{mmss}</span>.
         </p>
       ) : (
         <button

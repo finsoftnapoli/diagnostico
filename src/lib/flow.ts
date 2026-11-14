@@ -33,24 +33,24 @@ export function stepProblem(s: Step, r: Responses): string | null {
     }
     case "question": {
       const q = ORDERED_QUESTIONS[s.index];
-      if (!r.levels[q.id]) return "Scegliete la situazione più vicina alla vostra.";
-      if (!r.checks[q.id]) return "Rispondete anche alla verifica rapida.";
+      if (!r.levels[q.id]) return "Scelga la situazione più vicina alla Sua.";
+      if (!r.checks[q.id]) return "Risponda anche alla verifica rapida.";
       return null;
     }
     case "objectives":
-      if (!r.objectives.length) return "Scegliete almeno un obiettivo.";
+      if (!r.objectives.length) return "Scelga almeno un obiettivo.";
       if (r.objectivesText.trim().length < MIN_TEXT)
-        return `Raccontate le vostre ambizioni in almeno ${MIN_TEXT} caratteri: è da qui che parte il report.`;
+        return `Racconti le Sue ambizioni in almeno ${MIN_TEXT} caratteri: è da qui che parte il report.`;
       return null;
     case "issues":
-      if (!r.issues.length) return "Scegliete almeno una sfida.";
+      if (!r.issues.length) return "Scelga almeno una sfida.";
       if (r.issuesText.trim().length < MIN_TEXT)
         return `Descrivete le sfide in almeno ${MIN_TEXT} caratteri: è da qui che parte il report.`;
       return null;
     case "profile": {
       const miss = PROFILE_FIELDS.filter((f) => f.required && !r.profile[f.id]?.trim());
       if (miss.length) return `Mancano: ${miss.map((f) => f.label.toLowerCase()).join(", ")}.`;
-      if (!isValidItalianVat(r.profile["PR-10"] ?? "")) return "Controllate la partita IVA: deve avere 11 cifre valide.";
+      if (!isValidItalianVat(r.profile["PR-10"] ?? "")) return "Controlli la partita IVA: deve avere 11 cifre valide.";
       return null;
     }
   }

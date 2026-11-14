@@ -20,7 +20,7 @@ export default function Offers({ assessmentId, priorities }: { assessmentId?: st
     <section className="mt-14">
       <h2 className="text-2xl font-semibold text-navy">Vai più a fondo</h2>
       <p className="mt-1 text-sm text-muted max-w-3xl">
-        Il diagnostico mostra dove intervenire. Per trasformarlo in un piano potete approfondire un ambito alla volta o confrontarvi con un
+        Il diagnostico mostra dove intervenire. Per trasformarlo in un piano può approfondire un ambito alla volta o confrontarsi con un
         nostro consulente senior.
       </p>
       <div className="mt-6 grid gap-4 lg:grid-cols-3 items-stretch">

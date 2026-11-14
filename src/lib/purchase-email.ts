@@ -39,32 +39,32 @@ function steps(p: PurchaseEmailInput): { title: string; text: string }[] {
   const out: { title: string; text: string }[] = [];
   if (modules || bundle) {
     out.push({
-      title: bundle || modules > 1 ? "Avvia gli approfondimenti" : "Avvia l'approfondimento",
+      title: bundle || modules > 1 ? "Avvio degli approfondimenti" : "Avvio dell'approfondimento",
       text:
         bundle || modules > 1
           ? "Dall'area personale: per ogni ambito 8 sotto-ambiti e 16-18 domande, una ventina di minuti."
           : "Dall'area personale: 8 sotto-ambiti e 16-18 domande, una ventina di minuti.",
     });
-    out.push({ title: "Vedi subito l'Ottogramma dell'ambito", text: "I punteggi per sotto-ambito compaiono appena confermi le risposte." });
+    out.push({ title: "L'Ottogramma dell'ambito, subito", text: "I punteggi per sotto-ambito compaiono appena conferma le risposte." });
     out.push({
-      title: `Ricevi il report ${BRAND.reportPromise}`,
+      title: `Il report ${BRAND.reportPromise}`,
       text: "Piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire, costruito sulla metodologia dei nostri esperti.",
     });
   }
   if (bundle)
     out.push({
-      title: `Prenota le ${BUNDLE_HOURS} ore di consulenza`,
-      text: "Quando volete, anche in due sessioni, tra gli orari disponibili nell'area personale.",
+      title: `Prenotazione delle ${BUNDLE_HOURS} ore di consulenza`,
+      text: "Quando vuole, anche in due sessioni, tra gli orari disponibili nell'area personale.",
     });
   if (consult)
     out.push(
       p.booked
         ? {
             title: "La consulenza è in calendario",
-            text: "Vi abbiamo inviato a parte la conferma con data, ora e invito da aggiungere al calendario.",
+            text: "Le abbiamo inviato a parte la conferma con data, ora e invito da aggiungere al calendario.",
           }
         : {
-            title: "Scegliete data e ora della consulenza",
+            title: "Scelta di data e ora della consulenza",
             text: "Dall'area personale, tra gli orari disponibili dei nostri consulenti.",
           },
     );
@@ -73,22 +73,22 @@ function steps(p: PurchaseEmailInput): { title: string; text: string }[] {
 
 function title(p: PurchaseEmailInput) {
   const modules = p.items.filter((l) => l.sku === "modulo").length;
-  if (p.items.some((l) => l.sku === "bundle")) return "Il vostro percorso completo è attivo";
-  if (modules > 1) return "I vostri approfondimenti sono attivi";
-  if (modules === 1) return "Il vostro approfondimento è attivo";
-  return p.booked ? "La vostra consulenza è prenotata" : "La vostra ora di consulenza è attiva";
+  if (p.items.some((l) => l.sku === "bundle")) return "Il percorso completo è attivo";
+  if (modules > 1) return "Gli approfondimenti sono attivi";
+  if (modules === 1) return "L'approfondimento è attivo";
+  return p.booked ? "La consulenza è prenotata" : "L'ora di consulenza è attiva";
 }
 
 export function purchaseEmail(p: PurchaseEmailInput) {
   const heading = title(p);
   const date = p.paidAt.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" });
   const startsModule = p.items.some((l) => l.sku === "modulo" || l.sku === "bundle");
-  const cta = startsModule ? "Inizia l'approfondimento" : "Vai ai vostri servizi";
+  const cta = startsModule ? "Inizia l'approfondimento" : "Vai ai servizi";
   const invoice = p.invoiceNo
-    ? `La fattura elettronica n. ${p.invoiceNo} vi arriverà tramite il Sistema di Interscambio e sarà disponibile anche nel cassetto fiscale dell'azienda.`
-    : "La fattura elettronica vi arriverà tramite il Sistema di Interscambio e sarà disponibile anche nel cassetto fiscale dell'azienda.";
+    ? `La fattura elettronica n. ${p.invoiceNo} arriverà tramite il Sistema di Interscambio e sarà disponibile anche nel cassetto fiscale dell'azienda.`
+    : "La fattura elettronica arriverà tramite il Sistema di Interscambio e sarà disponibile anche nel cassetto fiscale dell'azienda.";
   const lost =
-    "L'orario che avevate scelto nel frattempo non era più disponibile: l'ora di consulenza è comunque attiva, scegliete un nuovo orario dall'area personale.";
+    "L'orario che aveva scelto nel frattempo non era più disponibile: l'ora di consulenza è comunque attiva, scelga un nuovo orario dall'area personale.";
   const list = steps(p);
   const views = p.items.map((l) => ({ ...itemView(l), amount: euro(l.netCents / 100) }));
 
@@ -130,7 +130,7 @@ ${list
     : "";
 
   const body = `${p.slotLost ? `<div style="margin:0 0 18px;padding:12px 16px;border-radius:8px;background:#f9eeda;font-size:14px;line-height:1.5;color:${C.ink}"><strong>${esc(lost)}</strong></div>` : ""}
-${para(`Grazie, <strong>${esc(p.company)}</strong>${stop(p.company)} Il pagamento è andato a buon fine e quanto avete acquistato è già disponibile nell'area personale.`)}
+${para(`Grazie, <strong>${esc(p.company)}</strong>${stop(p.company)} Il pagamento è andato a buon fine e quanto ha acquistato è già disponibile nell'area personale.`)}
 ${summary}
 ${stepsHtml}
 ${emailButton(p.link, cta)}
@@ -145,7 +145,7 @@ ${para(esc(invoice), `font-size:13px;color:${C.muted};margin-top:18px`)}`;
 
   const text = `${heading}
 
-Grazie, ${p.company}${stop(p.company)} Il pagamento è andato a buon fine e quanto avete acquistato è già disponibile nell'area personale.
+Grazie, ${p.company}${stop(p.company)} Il pagamento è andato a buon fine e quanto ha acquistato è già disponibile nell'area personale.
 ${p.slotLost ? `\n${lost}\n` : ""}
 RIEPILOGO DELL'ORDINE (${date})
 ${views.map((v) => `- ${v.title}: ${v.amount}`).join("\n")}

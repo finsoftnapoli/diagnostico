@@ -107,8 +107,8 @@ export default async function AreaLandingPage({ params }: PageProps<"/ambiti/[sl
         <div className="mx-auto max-w-5xl px-4 py-14">
           <h2 className="text-xl font-semibold text-navy">L&apos;approfondimento: gli 8 sotto-ambiti</h2>
           <p className="mt-2 text-muted max-w-3xl">
-            Dopo il diagnostico potete acquistare l&apos;approfondimento dell&apos;ambito: un {BRAND.reportName} dedicato, con 2-3 domande
-            per sotto-ambito, punteggi subito e un report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire.{" "}
+            Dopo il diagnostico può acquistare l&apos;approfondimento dell&apos;ambito: un {BRAND.reportName} dedicato, con 2-3 domande per
+            sotto-ambito, punteggi subito e un report con piano di lavoro a 3, 6 e 12 mesi e indicatori da seguire.{" "}
             {euro(PRODUCTS.modulo.price)} + IVA.
           </p>
           <ol className="mt-6 grid gap-3 sm:grid-cols-2">

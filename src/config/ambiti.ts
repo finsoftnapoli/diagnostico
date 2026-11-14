@@ -21,7 +21,7 @@ export const AREA_PAGES: AreaPage[] = [
     slug: "strategia-governance",
     seoTitle: "Diagnostico di strategia e governance per PMI",
     seoDescription:
-      "Valutate direzione strategica, pianificazione, delega, organo amministrativo, passaggio generazionale e adeguati assetti della vostra PMI. Gratuito.",
+      "Valuti direzione strategica, pianificazione, delega, organo amministrativo, passaggio generazionale e adeguati assetti della vostra PMI. Gratuito.",
     intro:
       "Nelle PMI la strategia vive spesso nella testa del titolare: funziona finché l'azienda è piccola, poi rallenta le decisioni e rende fragile la continuità. Il diagnostico misura quanto la direzione è chiara e condivisa, come si decide e si delega, che ruolo svolgono l'organo amministrativo e i soci e quanto sono presidiati i rischi e gli adeguati assetti richiesti dal Codice della crisi.",
     signals: [
@@ -111,7 +111,7 @@ export const AREA_PAGES: AreaPage[] = [
     slug: "innovazione",
     seoTitle: "Diagnostico della capacità di innovazione per PMI",
     seoDescription:
-      "Strategia dell'innovazione, raccolta delle idee, selezione dei progetti, sviluppo e lancio, collaborazioni, incentivi e brevetti: misurate come innova la vostra PMI.",
+      "Strategia dell'innovazione, raccolta delle idee, selezione dei progetti, sviluppo e lancio, collaborazioni, incentivi e brevetti: misuri come innova la vostra PMI.",
     intro:
       "Molte PMI innovano di continuo su richiesta dei clienti, ma senza priorità, risorse dedicate né misura dei risultati. Il diagnostico misura quanto è chiaro dove innovare, come nascono e si scelgono i progetti, come si sviluppano e si lanciano prodotti e servizi, con chi collaborate, quanto sfruttate incentivi e proprietà intellettuale e quanto la cultura aziendale sostiene chi sperimenta.",
     signals: [

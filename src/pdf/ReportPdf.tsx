@@ -101,7 +101,7 @@ function HowToRead({ d }: { d: ReportPdfData }) {
     <View>
       <Text style={s.h1}>Come leggere questo report</Text>
       <Text style={s.p}>
-        Per ciascuno dei 24 temi del diagnostico avete scelto la situazione più vicina a quella di oggi, tra quattro livelli di maturità. I
+        Per ciascuno dei 24 temi del diagnostico ha scelto la situazione più vicina a quella di oggi, tra quattro livelli di maturità. I
         punteggi da 0 a 100 riassumono quanto le pratiche dell&apos;azienda sono avanti lungo questa scala: 0 vuol dire che tutte sono al
         primo livello, 100 che tutte sono al più avanzato.
       </Text>
@@ -212,7 +212,7 @@ function ThemeDetail({ d }: { d: ReportPdfData }) {
   return (
     <View>
       <Text style={s.h1}>Dettaglio per ambito e tema</Text>
-      <Text style={[s.p, s.muted]}>Per ogni tema, la situazione che avete indicato come più vicina a quella di oggi.</Text>
+      <Text style={[s.p, s.muted]}>Per ogni tema, la situazione che ha indicato come più vicina a quella di oggi.</Text>
       {d.areas.map((a) => (
         <View key={a.code} style={{ marginTop: 8 }} wrap={false}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -346,7 +346,7 @@ export default function ReportPdf({ d, siteUrl }: { d: ReportPdfData; siteUrl: s
             </View>
           </View>
           <Link src={`${siteUrl}/area/servizi`} style={{ marginTop: 8, color: C.navySoft, fontWeight: 600 }}>
-            Scopri i servizi nella vostra area personale ›
+            Scopra i servizi nella Sua area personale ›
           </Link>
           <Text style={[s.small, { marginTop: 24 }]}>
             Autovalutazione orientativa basata sulle risposte fornite ed elaborata con la metodologia proprietaria di {t(d.owner)} e non è

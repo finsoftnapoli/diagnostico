@@ -230,13 +230,13 @@ export default function ModuleReport({
           <p className="text-sm">
             {failed ? (
               <>
-                <strong className="text-navy">L&apos;analisi è in ritardo.</strong> Ci stiamo lavorando e vi avviseremo via email appena è
+                <strong className="text-navy">L&apos;analisi è in ritardo.</strong> Ci stiamo lavorando e La avviseremo via email appena è
                 pronta.
               </>
             ) : (
               <>
                 <strong className="text-navy">L&apos;analisi è in preparazione.</strong> Stiamo preparando la lettura per sotto-ambito, il
-                piano di lavoro e gli indicatori: la riceverete via email {BRAND.reportPromise}.
+                piano di lavoro e gli indicatori: la riceverà via email {BRAND.reportPromise}.
               </>
             )}
           </p>

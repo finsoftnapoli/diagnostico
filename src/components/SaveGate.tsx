@@ -62,7 +62,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controllate l'indirizzo email.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controlli l'indirizzo email.");
     setBusy(true);
     track("codice");
     const res = await saveDraftAndSendLink({
@@ -84,7 +84,7 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
     setBusy(true);
     const { error } = await supabaseBrowser().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
-    if (error) return setError("Codice non valido o scaduto. Controllate l'email o richiedetene uno nuovo.");
+    if (error) return setError("Codice non valido o scaduto. Controlli l'email o ne richieda uno nuovo.");
     await save();
   }
 
@@ -107,13 +107,13 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       <div className="flex justify-center" aria-hidden>
         <LiveOttogramma areas={liveAreas(draft.responses)} size={190} />
       </div>
-      <h1 className="mt-4 text-3xl font-semibold text-navy">Il vostro {BRAND.reportName} è completo</h1>
+      <h1 className="mt-4 text-3xl font-semibold text-navy">Il Suo {BRAND.reportName} è completo</h1>
       {phase === "checking" && <p className="mt-6 text-muted">Un momento…</p>}
       {phase === "email" && (
         <form onSubmit={sendLink} className="mt-6 space-y-4">
           <p className="text-muted">
-            Manca un passo per leggerlo: indicate l&apos;email aziendale e confermatela con il codice che vi inviamo. Vedrete subito le
-            evidenze, il confronto con aziende simili e le priorità; {BRAND.reportPromise} riceverete il report approfondito, e potrete
+            Manca un passo per leggerlo: indichi l&apos;email aziendale e la confermi con il codice che Le inviamo. Vedrà subito le
+            evidenze, il confronto con aziende simili e le priorità; {BRAND.reportPromise} riceverà il report approfondito, e potrà
             ritrovare tutto nell&apos;area personale e invitare i colleghi.
           </p>
           <label className="block text-sm">
@@ -133,8 +133,8 @@ export default function SaveGate({ draft, onSaved }: { draft: Draft; onSaved: (d
       {phase === "sent" && (
         <form onSubmit={verify} className="mt-6 space-y-4">
           <p className="text-muted">
-            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Inserite qui il codice che trovate nell&apos;email, oppure
-            aprite il link da questo stesso browser. Se non la trovate, controllate nella posta indesiderata.
+            Abbiamo scritto a <strong className="text-ink">{email}</strong>. Inserisca qui il codice che trova nell&apos;email, oppure apra
+            il link da questo stesso browser. Se non la trova, controlli nella posta indesiderata.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Codice</span>

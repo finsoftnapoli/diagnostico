@@ -75,7 +75,7 @@ export default function Wizard() {
       const sb = supabaseBrowser();
       const { data } = await sb.auth.getUser();
       if (!data.user) {
-        setNotice("Per riprendere aprite il link dell'email da questo stesso browser.");
+        setNotice("Per riprendere apra il link dell'email da questo stesso browser.");
         return;
       }
       const res = await fetch(`/api/bozze/${encodeURIComponent(id)}`);
@@ -87,7 +87,7 @@ export default function Wizard() {
       const merged = { ...emptyResponses(), ...d.responses };
       setR(merged);
       setStep(firstIncomplete(merged));
-      setNotice("Bozza recuperata: riprendete da dove eravate rimasti.");
+      setNotice("Bozza recuperata: riprenda da dove era rimasto.");
       window.history.replaceState(null, "", "/diagnostico");
     })();
   }, []);
@@ -115,7 +115,7 @@ export default function Wizard() {
   }
 
   function forward() {
-    const problem = cur.kind === "start" && !human ? "Attendete la verifica di sicurezza." : stepProblem(cur, r);
+    const problem = cur.kind === "start" && !human ? "Attenda la verifica di sicurezza." : stepProblem(cur, r);
     if (problem) {
       setError(problem);
       if (cur.kind === "profile") setShowMissing(true);
@@ -200,14 +200,14 @@ export default function Wizard() {
               {cur.kind === "objectives" && (
                 <Ranked
                   eyebrow="Ambizioni"
-                  title="Dove volete portare l'azienda nei prossimi 2-3 anni?"
-                  hint="Scegliete fino a tre obiettivi, in ordine di importanza: il primo che toccate è il più importante."
+                  title="Dove vuole portare l'azienda nei prossimi 2-3 anni?"
+                  hint="Scelga fino a tre obiettivi, in ordine di importanza: il primo che tocca è il più importante."
                   catalogue={OBJECTIVES}
                   selected={r.objectives}
                   onChange={(objectives) => update({ objectives })}
                   text={r.objectivesText}
                   onText={(objectivesText) => update({ objectivesText })}
-                  textPrompt="Pensate a dove volete essere tra due o tre anni: che cosa volete ottenere, e perché proprio adesso? Scrivetelo con parole vostre, come lo direste a un socio."
+                  textPrompt="Pensi a dove vuole essere tra due o tre anni: che cosa vuole ottenere, e perché proprio adesso? Lo scriva con parole Sue, come lo direbbe a un socio."
                   textPlaceholder="Per esempio: vogliamo crescere all'estero del 30% e, entro due anni, mio figlio entrerà in azienda; per questo devo delegare la parte commerciale, che oggi seguo da solo."
                   textAreas={r.objectivesTextAreas}
                   onTextAreas={(objectivesTextAreas) => update({ objectivesTextAreas })}
@@ -217,13 +217,13 @@ export default function Wizard() {
                 <Ranked
                   eyebrow="Sfide"
                   title="Quali sono oggi le sfide principali?"
-                  hint="Scegliete fino a tre criticità, in ordine di gravità: la prima che toccate è la più pressante."
+                  hint="Scelga fino a tre criticità, in ordine di gravità: la prima che tocca è la più pressante."
                   catalogue={ISSUES}
                   selected={r.issues}
                   onChange={(issues) => update({ issues })}
                   text={r.issuesText}
                   onText={(issuesText) => update({ issuesText })}
-                  textPrompt="Pensate a che cosa vi frena di più oggi, e a che cosa succede se tra un anno non è cambiato nulla. Bastano poche righe concrete."
+                  textPrompt="Pensi a che cosa frena di più l'azienda oggi, e a che cosa succede se tra un anno non è cambiato nulla. Bastano poche righe concrete."
                   textPlaceholder="Per esempio: scopriamo solo a fine anno se abbiamo guadagnato, la banca ci chiede previsioni di cassa che non sappiamo fare e i margini sulle commesse più grandi sono in calo."
                   textAreas={r.issuesTextAreas}
                   onTextAreas={(issuesTextAreas) => update({ issuesTextAreas })}
@@ -333,13 +333,13 @@ function OttogrammaPanel({ areas, active }: { areas: LiveArea[]; active: AreaCod
   const done = areas.filter((a) => a.done);
   return (
     <div className="rounded-2xl border border-line bg-paper/60 p-5">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">Il vostro Ottogramma</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">L&apos;Ottogramma della vostra azienda</p>
       <div className="mt-2 flex justify-center">
         <LiveOttogramma areas={areas} active={active} size={176} />
       </div>
       <p className="mt-2 text-sm text-muted">
         {done.length === 0
-          ? "Si disegna mentre rispondete: un vertice per ogni ambito."
+          ? "Si disegna mentre risponde: un vertice per ogni ambito."
           : done.length < areas.length
             ? `${done.length} ${done.length === 1 ? "ambito" : "ambiti"} su ${areas.length}: più il vertice è lontano dal centro, più le pratiche sono mature.`
             : "L'Ottogramma è completo. Mancano ambizioni, sfide e i dati dell'azienda."}
@@ -462,7 +462,7 @@ function Start({ r, update }: SectionProps) {
       <h1 className="text-3xl font-semibold text-navy">Circa 15 minuti, una domanda alla volta</h1>
       {r.context && (
         <p className="mt-4 rounded-lg border border-navy/30 bg-navy/5 px-4 py-3 text-sm">
-          Compilate il diagnostico come colleghi di <strong>{r.context.companyName}</strong>
+          Compili il diagnostico come collega di <strong>{r.context.companyName}</strong>
           {r.context.companyName.endsWith(".") ? "" : "."} Il profilo dell&apos;azienda è già compilato; le risposte individuali saranno
           visibili all&apos;amministratore dello spazio aziendale, che potrà confrontarle con quelle degli altri colleghi.
         </p>
@@ -471,10 +471,10 @@ function Start({ r, update }: SectionProps) {
         {[
           {
             icon: CheckIcon,
-            t: "Per ogni tema scegliete la descrizione più vicina alla situazione di oggi, non a quella desiderata: un quadro onesto produce priorità più utili.",
+            t: "Per ogni tema scelga la descrizione più vicina alla situazione di oggi, non a quella desiderata: un quadro onesto produce priorità più utili.",
           },
-          { icon: Users, t: "L'Ottogramma, il profilo della vostra azienda sugli 8 ambiti, si disegna mentre rispondete." },
-          { icon: PauseCircle, t: "Potete interrompere quando volete: le risposte si salvano da sole e riprendete da dove eravate." },
+          { icon: Users, t: "L'Ottogramma, il profilo della vostra azienda sugli 8 ambiti, si disegna mentre risponde." },
+          { icon: PauseCircle, t: "Può interrompere quando vuole: le risposte si salvano da sole e riprende da dove era rimasto." },
         ].map(({ icon: Icon, t }, i) => (
           <li key={i} className="flex gap-3">
             <Icon className="size-5 shrink-0 text-navy mt-0.5" aria-hidden strokeWidth={1.75} />
@@ -497,7 +497,7 @@ function Start({ r, update }: SectionProps) {
             onBlur={vat.check}
           />
           <span className="mt-1 block text-xs text-muted">
-            {vat.info ?? "Se la indicate adesso compiliamo noi alcuni dati dell'azienda; altrimenti ve la chiediamo alla fine."}
+            {vat.info ?? "Se la indica adesso compiliamo noi alcuni dati dell'azienda; altrimenti gliela chiediamo alla fine."}
           </span>
         </label>
       )}
@@ -743,7 +743,7 @@ function Ranked(props: {
         })}
       </div>
       {selected.length >= 3 && (
-        <p className="mt-2 text-xs text-muted">Ne avete scelti tre: per cambiarne uno, toccate prima quello da togliere.</p>
+        <p className="mt-2 text-xs text-muted">Ne ha scelti tre: per cambiarne uno, tocchi prima quello da togliere.</p>
       )}
 
       <div className="mt-8 rounded-2xl border border-navy/20 bg-navy/5 p-4 sm:p-5">
@@ -768,7 +768,7 @@ function Ranked(props: {
         </p>
         {len > 0 && (
           <div className="mt-4">
-            <p className="text-sm text-muted">A quali ambiti si riferisce soprattutto quello che avete scritto?</p>
+            <p className="text-sm text-muted">A quali ambiti si riferisce soprattutto quello che ha scritto?</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {AREAS.map((a) => {
                 const on = props.textAreas.includes(a.code);
@@ -828,8 +828,8 @@ function DocUpload({ r, update }: SectionProps) {
       if (upErr)
         throw new Error(
           /mime/i.test(upErr.message)
-            ? "Formato del file non accettato dall'archivio: scriveteci e lo abilitiamo."
-            : "Caricamento non riuscito, riprovatete",
+            ? "Formato del file non accettato dall'archivio: ci scriva e lo abilitiamo."
+            : "Caricamento non riuscito, riprovi",
         );
       // 2. lettura
       setMsg((m) => ({
@@ -841,7 +841,7 @@ function DocUpload({ r, update }: SectionProps) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ tipo: kind, path: p.path }),
       });
-      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprovate tra poco" }))) as {
+      const j = (await res.json().catch(() => ({ error: "Lettura non riuscita, riprovi tra poco" }))) as {
         error?: string;
         documentId?: string;
         profile?: Record<string, string>;
@@ -871,7 +871,7 @@ function DocUpload({ r, update }: SectionProps) {
       if (j.governance?.organo) parts.push(`governance: ${j.governance.organo}`);
       setMsg((m) => ({
         ...m,
-        [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controllate i campi qui sotto.` : "Letto: i campi erano già compilati.",
+        [kind]: parts.length ? `Fatto: ${parts.join("; ")}. Controlli i campi qui sotto.` : "Letto: i campi erano già compilati.",
       }));
     } catch (e) {
       setMsg((m) => ({ ...m, [kind]: e instanceof Error ? e.message : "Lettura non riuscita" }));
@@ -883,12 +883,12 @@ function DocUpload({ r, update }: SectionProps) {
   return (
     <div className="mt-6 rounded-xl border border-dashed border-navy/40 bg-paper p-4 sm:p-5">
       <p className="font-semibold flex items-center gap-2">
-        <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Avete a portata di mano visura e bilancio?
+        <FileText className="size-5 text-navy" aria-hidden strokeWidth={1.75} /> Ha a portata di mano visura e bilancio?
       </p>
       <p className="mt-1 text-sm text-muted">
-        Caricateli con un clic o trascinandoli nei riquadri (facoltativo): la visura in PDF, il bilancio in PDF o nel formato XBRL del
+        Li carichi con un clic o trascinandoli nei riquadri (facoltativo): la visura in PDF, il bilancio in PDF o nel formato XBRL del
         Registro Imprese. Compiliamo noi i campi e il report includerà numeri chiave e governance. I file restano in un archivio privato e
-        potete cancellarli in qualsiasi momento dall&apos;area personale.
+        può cancellarli in qualsiasi momento dall&apos;area personale.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {DOCS.map((d) => {

@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabaseService().storage.from("documenti").createSignedUploadUrl(path);
   if (error || !data) {
     console.error("Preparazione caricamento non riuscita:", error?.message);
-    return NextResponse.json({ error: "Caricamento non disponibile, riprovate tra poco" }, { status: 500 });
+    return NextResponse.json({ error: "Caricamento non disponibile, riprovi tra poco" }, { status: 500 });
   }
   return NextResponse.json({ path: data.path, token: data.token });
 }

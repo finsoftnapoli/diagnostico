@@ -59,9 +59,9 @@ export default function Invite() {
       if (!res.ok) return setMessage("Invito non valido o non più disponibile.");
       const j = (await res.json()) as Info;
       setInfo(j);
-      if (j.status === "accepted") return setMessage("Questo invito è già stato utilizzato: accedete dall'area personale.");
+      if (j.status === "accepted") return setMessage("Questo invito è già stato utilizzato: acceda dall'area personale.");
       if (j.expired || j.status !== "pending")
-        return setMessage("L'invito è scaduto: chiedete a chi vi ha invitato di inviarne uno nuovo.");
+        return setMessage("L'invito è scaduto: chieda a chi Le ha mandato l'invito di inviarne uno nuovo.");
       setMessage(null);
       const sb = supabaseBrowser();
       const { data } = await sb.auth.getUser();
@@ -108,12 +108,12 @@ export default function Invite() {
       {info && !message && phase === "start" && (
         <>
           <p className="mt-4 text-muted">
-            {info.name ? `${info.name}, vi hanno invitato` : "Siete stati invitati"} a compilare il diagnostico gestionale di{" "}
+            {info.name ? `${info.name}, ha ricevuto un invito` : "Ha ricevuto un invito"} a compilare il diagnostico gestionale di{" "}
             <strong className="text-ink">{info.company}</strong> su {BRAND.name}. Le risposte dei diversi responsabili permettono di
             confrontare le visioni del management.
           </p>
           <p className="mt-3 text-sm text-muted">
-            Per iniziare confermiamo il vostro indirizzo <strong className="text-ink">{info.email}</strong>: vi inviamo un messaggio con un
+            Per iniziare confermiamo il Suo indirizzo <strong className="text-ink">{info.email}</strong>: Le inviamo un messaggio con un
             link e un codice.
           </p>
           <button
@@ -128,8 +128,8 @@ export default function Invite() {
       {info && phase === "sent" && (
         <form onSubmit={verify} className="mt-6 space-y-4">
           <p className="text-muted">
-            Abbiamo scritto a <strong className="text-ink">{info.email}</strong>: aprite il link oppure inserite qui il codice. Se non la
-            trovate, guardate anche nella posta indesiderata.
+            Abbiamo scritto a <strong className="text-ink">{info.email}</strong>: apra il link oppure inserisca qui il codice. Se non la
+            trova, guardi anche nella posta indesiderata.
           </p>
           <label className="block text-sm">
             <span className="font-medium">Codice</span>

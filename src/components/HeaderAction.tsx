@@ -42,7 +42,7 @@ function SaveLaterDialog({ onClose }: { onClose: () => void }) {
     setError(null);
     const d = loadDraft();
     if (!d) return setError("Non c'è ancora nulla da salvare.");
-    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controllate l'indirizzo email.");
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Controlli l'indirizzo email.");
     setBusy(true);
     const res = await saveDraftAndSendLink({
       email: email.trim(),
@@ -74,8 +74,8 @@ function SaveLaterDialog({ onClose }: { onClose: () => void }) {
         {sent ? (
           <>
             <p className="mt-3 text-muted">
-              Vi abbiamo inviato un&apos;email a <strong className="text-ink">{email}</strong>: aprite il link quando volete per riprendere
-              da dove siete rimasti. La bozza resta disponibile per 30 giorni.
+              Le abbiamo inviato un&apos;email a <strong className="text-ink">{email}</strong>: apra il link quando vuole per riprendere da
+              dove era rimasto. La bozza resta disponibile per 30 giorni.
             </p>
             <button onClick={onClose} className="mt-5 w-full bg-navy text-white font-semibold px-5 py-2.5 rounded-lg">
               Continua ora
@@ -83,7 +83,7 @@ function SaveLaterDialog({ onClose }: { onClose: () => void }) {
           </>
         ) : (
           <form onSubmit={submit} className="mt-3 space-y-4">
-            <p className="text-muted">Vi mandiamo un link per riprendere il diagnostico, anche da un altro dispositivo.</p>
+            <p className="text-muted">Le mandiamo un link per riprendere il diagnostico, anche da un altro dispositivo.</p>
             <label className="block text-sm">
               <span className="font-medium">Email</span>
               <input
