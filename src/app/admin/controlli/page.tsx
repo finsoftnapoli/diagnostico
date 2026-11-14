@@ -45,13 +45,27 @@ async function Controls() {
   if (!isStaff) return <p>Questa area è riservata allo staff.</p>;
   const db = supabaseService();
   const since = daysAgo(14).toISOString();
-  const [events, feedback, errors, probe, backup] = await Promise.all([
+  const [events, feedback, errors, probe, backup, reports, modules] = await Promise.all([
     db.from("funnel_events").select("name, step, device").gte("created_at", since).limit(20000),
     db.from("feedback").select("id, kind, rating, message, created_at").order("created_at", { ascending: false }).limit(50),
     db.from("error_log").select("id, source, message, path, created_at").order("created_at", { ascending: false }).limit(30),
     db.from("report_events").select("id", { count: "exact", head: true }),
     lastBackup(db).catch(() => null),
+    db.from("assessments").select("report_checks").not("report_checks", "is", null).order("updated_at", { ascending: false }).limit(100),
+    db
+      .from("module_assessments")
+      .select("report_checks")
+      .not("report_checks", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(100),
   ]);
+  const used = [...(reports.data ?? []), ...(modules.data ?? [])]
+    .map((x) => (x.report_checks as { usage?: { calls: number; input: number; output: number } } | null)?.usage)
+    .filter((u): u is { calls: number; input: number; output: number } => !!u);
+  const avg = (k: "calls" | "input" | "output") => (used.length ? Math.round(used.reduce((a, u) => a + u[k], 0) / used.length) : 0);
+  const priceIn = Number(process.env.AI_PRICE_INPUT_EUR_PER_MTOK);
+  const priceOut = Number(process.env.AI_PRICE_OUTPUT_EUR_PER_MTOK);
+  const costPerReport = priceIn > 0 && priceOut > 0 ? (avg("input") * priceIn + avg("output") * priceOut) / 1_000_000 : null;
   const ev = (events.data ?? []) as { name: string; step: string | null; device: string | null }[];
   const count = (name: string, step?: string) => ev.filter((e) => e.name === name && (step === undefined || e.step === step)).length;
   const funnel: { label: string; n: number }[] = [
@@ -188,6 +202,21 @@ async function Controls() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold text-navy">Consumo dell&apos;IA per report</h2>
+        {used.length === 0 ? (
+          <p className="mt-1 text-sm text-muted">Compare dal prossimo report generato.</p>
+        ) : (
+          <p className="mt-1 text-sm text-muted">
+            Media su {used.length} report recenti (scrittura e seconda lettura): {avg("calls")} chiamate,{" "}
+            {avg("input").toLocaleString("it-IT")} token in ingresso e {avg("output").toLocaleString("it-IT")} in uscita.
+            {costPerReport !== null
+              ? ` Costo stimato per report: circa ${costPerReport.toLocaleString("it-IT", { maximumFractionDigits: 2 })} €.`
+              : " Per vedere anche il costo stimato imposta AI_PRICE_INPUT_EUR_PER_MTOK e AI_PRICE_OUTPUT_EUR_PER_MTOK."}
+          </p>
+        )}
       </section>
 
       <section className="mt-10">

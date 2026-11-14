@@ -15,7 +15,21 @@ export interface ReleaseVerdict {
   releaseAfter?: string;
   /** Lo staff ha fermato l'invio automatico: il report parte solo con un'approvazione. */
   hold?: boolean;
+  /** Consumo dell'IA per questo report (generazione e seconda lettura), per tenere sotto controllo il costo. */
+  usage?: AiUsage;
 }
+
+export interface AiUsage {
+  calls: number;
+  input: number;
+  output: number;
+}
+
+export const addUsage = (a: AiUsage | undefined, u: { input_tokens?: number; output_tokens?: number } | undefined): AiUsage => ({
+  calls: (a?.calls ?? 0) + 1,
+  input: (a?.input ?? 0) + (u?.input_tokens ?? 0),
+  output: (a?.output ?? 0) + (u?.output_tokens ?? 0),
+});
 
 type Json = unknown;
 

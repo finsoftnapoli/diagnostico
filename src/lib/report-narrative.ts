@@ -12,7 +12,7 @@ import { areaReading, overallReading } from "./score-meaning";
 import { NARRATIVE_SCHEMA, type ReportNarrative } from "./report";
 import { DIAGNOSTIC_SPEC } from "./narrative-spec";
 import { assessRelease, REPORT_MODEL as MODEL } from "./release";
-import { releaseChecks, type ReleaseVerdict } from "./release-checks";
+import { addUsage, type AiUsage, releaseChecks, type ReleaseVerdict } from "./release-checks";
 import type { Responses } from "./types";
 
 /** Dati, già calcolati, da passare al modello: niente di nuovo viene inventato. */
@@ -155,6 +155,7 @@ export async function generateNarrative(
   const client = new Anthropic();
   let problem = "";
   let feedback = "";
+  let usage: AiUsage | undefined;
   // una risposta incompleta, o che non supera i controlli sul contenuto, si riscrive una volta con le correzioni richieste
   for (let attempt = 1; attempt <= 2; attempt++) {
     const msg = await client.messages.create({
@@ -166,6 +167,7 @@ export async function generateNarrative(
         { role: "user", content: `Ecco i dati del diagnostico. Scrivi il report.\n\n${JSON.stringify(input, null, 2)}${feedback}` },
       ],
     } as Anthropic.MessageCreateParamsNonStreaming);
+    usage = addUsage(usage, msg.usage);
     if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
     const text = msg.content.find((b) => b.type === "text");
     if (!text || text.type !== "text") throw new Error("risposta senza testo");
@@ -185,7 +187,13 @@ export async function generateNarrative(
       feedback = `\n\nUna versione precedente aveva questi problemi, da evitare nella nuova:\n- ${blocking.join("\n- ")}`;
       continue;
     }
-    const verdict = await assessRelease({ ...checks, narrative });
+    const assessed = await assessRelease({ ...checks, narrative });
+    usage = {
+      calls: (usage?.calls ?? 0) + (assessed.usage?.calls ?? 0),
+      input: (usage?.input ?? 0) + (assessed.usage?.input ?? 0),
+      output: (usage?.output ?? 0) + (assessed.usage?.output ?? 0),
+    };
+    const verdict = { ...assessed, usage };
     // se la seconda lettura trova un errore grave, si riscrive una volta con i rilievi (al secondo tentativo si tiene l'esito, per la revisione dello staff)
     const grave = (verdict.secondOpinion?.issues ?? []).filter((i) => i.startsWith("Grave"));
     if (grave.length && attempt === 1) {

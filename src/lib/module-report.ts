@@ -7,7 +7,7 @@ import { AREAS, ISSUES, OBJECTIVES } from "./questionnaire";
 import { areaReading, levelEquivalent, levelMix } from "./score-meaning";
 import { MODULE_SPEC } from "./narrative-spec";
 import { assessRelease, REPORT_MODEL as MODEL } from "./release";
-import { releaseChecks, type ReleaseVerdict } from "./release-checks";
+import { addUsage, type AiUsage, releaseChecks, type ReleaseVerdict } from "./release-checks";
 import type { supabaseService } from "./supabase/server";
 import type { AreaCode, Responses } from "./types";
 
@@ -146,6 +146,7 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<{ 
   const checks = { spec: MODULE_SPEC, input, company: input.azienda.nome };
   let problem = "";
   let feedback = "";
+  let usage: AiUsage | undefined;
   // una risposta incompleta, o che non supera i controlli sul contenuto, si riscrive una volta con le correzioni richieste
   for (let attempt = 1; attempt <= 2; attempt++) {
     const msg = await client.messages.create({
@@ -160,6 +161,7 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<{ 
         },
       ],
     } as Anthropic.MessageCreateParamsNonStreaming);
+    usage = addUsage(usage, msg.usage);
     if (msg.stop_reason === "refusal" || msg.stop_reason === "max_tokens") throw new Error(`stop_reason ${msg.stop_reason}`);
     const text = msg.content.find((b) => b.type === "text");
     if (!text || text.type !== "text") throw new Error("risposta senza testo");
@@ -186,7 +188,13 @@ export async function generateModuleReport(db: Db, moduleId: string): Promise<{ 
       feedback = `\n\nUna versione precedente aveva questi problemi, da evitare nella nuova:\n- ${blocking.join("\n- ")}`;
       continue;
     }
-    return { narrative: n, verdict: await assessRelease({ ...checks, narrative: n }) };
+    const assessed = await assessRelease({ ...checks, narrative: n });
+    const total: AiUsage = {
+      calls: (usage?.calls ?? 0) + (assessed.usage?.calls ?? 0),
+      input: (usage?.input ?? 0) + (assessed.usage?.input ?? 0),
+      output: (usage?.output ?? 0) + (assessed.usage?.output ?? 0),
+    };
+    return { narrative: n, verdict: { ...assessed, usage: total } };
   }
   throw new Error(`report incompleto: ${problem}`);
 }

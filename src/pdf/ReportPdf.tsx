@@ -1,4 +1,5 @@
 // Report del diagnostico impaginato in PDF (A4), generato sul server con @react-pdf/renderer.
+import { recommendationFor, SOURCES } from "@/config/recommendations";
 import { Document, Link, Page, Text, View } from "@react-pdf/renderer";
 import { LEVEL_NAMES } from "@/lib/insights";
 import { LEVEL_DESCRIPTIONS } from "@/lib/score-meaning";
@@ -157,6 +158,34 @@ function Profile({ d }: { d: ReportPdfData }) {
   );
 }
 
+const dot = (x: string) => (/[.!?]$/.test(x.trim()) ? x.trim() : `${x.trim()}.`);
+
+/** «Come fare»: la scheda di metodo che porta il tema al livello successivo. */
+function HowTo({ theme, level }: { theme: string; level: number }) {
+  const c = recommendationFor(theme, level);
+  if (!c) return null;
+  return (
+    <View style={{ marginTop: -2, marginBottom: 6, marginLeft: 8, borderLeftWidth: 1.5, borderLeftColor: C.line, paddingLeft: 8 }}>
+      <Text style={{ fontSize: 8.5, fontWeight: 600, color: C.navy }}>
+        Come fare: {t(c.title.charAt(0).toLowerCase() + c.title.slice(1))}
+      </Text>
+      {c.actions.map((x, k) => (
+        <Text key={x} style={{ fontSize: 8, marginTop: 1.5 }}>
+          {k + 1}. {t(x)}
+        </Text>
+      ))}
+      <Text style={{ fontSize: 8, marginTop: 3, color: C.muted }}>
+        Come capire se funziona: {dot(t(c.indicator))} Tempo tipico: {dot(t(c.time))} L&apos;errore da evitare: {dot(t(c.pitfall))}
+      </Text>
+      {c.sources?.length ? (
+        <Text style={{ fontSize: 7.5, marginTop: 2, color: C.muted }}>
+          Da sapere: {c.sources.map((k) => t(`${SOURCES[k].label}. ${SOURCES[k].note}`)).join(" ")}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
 function Priorities({ d }: { d: ReportPdfData }) {
   return (
     <View>
@@ -185,18 +214,21 @@ function Priorities({ d }: { d: ReportPdfData }) {
               <View style={{ marginTop: 8 }}>
                 <Text style={s.h3}>Da dove partire</Text>
                 {steps.map((st) => (
-                  <View key={st.id} style={[s.card, { flexDirection: "row", gap: 10 }]} wrap={false}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontWeight: 600, marginBottom: 3 }}>{t(st.theme)}</Text>
-                      <Text style={s.eyebrow}>Oggi · {LEVEL_NAMES[st.level - 1]}</Text>
-                      <Text style={{ fontSize: 8.5 }}>{t(st.current)}</Text>
-                    </View>
-                    {st.next && (
-                      <View style={{ flex: 1, backgroundColor: C.paper, borderRadius: 4, padding: 6 }}>
-                        <Text style={[s.eyebrow, { color: C.navySoft }]}>Passo successivo · {LEVEL_NAMES[st.level]}</Text>
-                        <Text style={{ fontSize: 8.5 }}>{t(st.next)}</Text>
+                  <View key={st.id} wrap={false}>
+                    <View style={[s.card, { flexDirection: "row", gap: 10 }]}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontWeight: 600, marginBottom: 3 }}>{t(st.theme)}</Text>
+                        <Text style={s.eyebrow}>Oggi · {LEVEL_NAMES[st.level - 1]}</Text>
+                        <Text style={{ fontSize: 8.5 }}>{t(st.current)}</Text>
                       </View>
-                    )}
+                      {st.next && (
+                        <View style={{ flex: 1, backgroundColor: C.paper, borderRadius: 4, padding: 6 }}>
+                          <Text style={[s.eyebrow, { color: C.navySoft }]}>Passo successivo · {LEVEL_NAMES[st.level]}</Text>
+                          <Text style={{ fontSize: 8.5 }}>{t(st.next)}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <HowTo theme={st.id} level={st.level} />
                   </View>
                 ))}
               </View>
