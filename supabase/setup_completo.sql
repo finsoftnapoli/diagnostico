@@ -831,3 +831,8 @@ revoke all on public.report_actions from anon, authenticated;
 -- 3. Promemoria: uno solo per bozza lasciata a metà e per invito senza risposta
 alter table public.drafts add column if not exists reminded_at timestamptz;
 alter table public.invitations add column if not exists reminded_at timestamptz;
+
+-- ===== 20261116000000_percorso_funzioni.sql =====
+-- Segnalazione del controllo di sicurezza di Supabase: la funzione che aggiorna «updated_at» non fissava il percorso di ricerca.
+-- Non cambia il comportamento; è rieseguibile.
+alter function public.touch_updated_at() set search_path = '';
