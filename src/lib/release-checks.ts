@@ -88,7 +88,7 @@ const BLOCKING_PATTERNS: { re: RegExp; message: string }[] = [
     message: "parla di sé come di un sistema automatico",
   },
   {
-    re: /\b(?:garantisc\w*|garantiamo|certamente|sicuramente|senza dubbio|senz'altro otterrete)\b/i,
+    re: /(?<!\bnon )(?<!\bné )\b(?:garantisc\w*|garantiamo)\b|\b(?:certamente|sicuramente|senza dubbio|senz'altro otterrete)\b/i,
     message: "contiene promesse o certezze",
   },
   {
@@ -102,7 +102,7 @@ const BLOCKING_PATTERNS: { re: RegExp; message: string }[] = [
   },
   { re: /https?:\/\/|\bwww\.|[\w.+-]+@[\w-]+\.[a-z]{2,}|\+39\s?\d/i, message: "contiene un indirizzo web, un'email o un telefono" },
   {
-    re: /\b(?:licenzi\w+|evasion\w*|elusion\w*|in nero|fare causa|denunci\w+|fallimento imminente|insolven\w+)\b/i,
+    re: /\b(?:licenzi\w+|evasion\w*|elusion\w*|in nero|fare causa|sporg\w+ denuncia|denunci\w* (?:penal\w*|querel\w*)|querel\w+|fallimento imminente|insolven\w+)\b/i,
     message: "tocca un tema delicato (personale, fisco, contenzioso, crisi) che richiede la lettura di un esperto",
   },
 ];

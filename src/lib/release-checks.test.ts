@@ -49,6 +49,10 @@ describe("controlli prima dell'invio automatico", () => {
     expect(check((n) => (n.closing += " Secondo uno studio, chi pianifica cresce di più.")).blocking[0]).toMatch(/studi/);
     expect(check((n) => (n.closing += " Valutate di licenziare il responsabile commerciale.")).blocking[0]).toMatch(/delicato/);
     expect(check((n) => (n.closing += " Scrivete a mario@esempio.it.")).blocking[0]).toMatch(/email/);
+    expect(check((n) => (n.closing += " Questa è un'analisi orientativa e non garantisce risultati.")).ok).toBe(true);
+    expect(check((n) => (n.closing += " Vi garantisce risultati sicuri.")).blocking[0]).toMatch(/promesse/);
+    expect(check((n) => (n.closing += " È la causa di ciò che denunciate: numeri poco affidabili.")).ok).toBe(true);
+    expect(check((n) => (n.closing += " Valutate una denuncia penale contro il fornitore.")).blocking[0]).toMatch(/delicato/);
     expect(check((n) => (n.closing += " Finanza è a 11 su 100? No: è a 22.")).blocking.join(" ")).toMatch(/autocorrezione/);
     expect(check((n) => (n.closing += " Come ha fatto Beta Impianti S.p.A. lo scorso anno.")).blocking[0]).toMatch(/altra società/);
     expect(check((n) => (n.closing += " Alfa S.r.l. ha le basi per farlo.")).ok).toBe(true);
